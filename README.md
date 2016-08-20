@@ -44,8 +44,9 @@ Once the basics are addressed the project will move on to more advanced
 distributed problems like security, authentication, authorization, RSync,
 P2P networks and other more complicated distributed problems.
 
-The road map isn't fully fixed, but the ambitions are clear:
-To make the implementation of advanced distributed systems much simpler.
+The road map isn't fully fixed, but the ambition is clear:
+To make the implementation of advanced distributed systems much, much
+simpler.
 
 
 ## Grid Ops by Nanosai.com
