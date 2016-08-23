@@ -9,32 +9,79 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by jjenkov on 05-11-2015.
+ * An IonObjectReader instance can read an object (instance) of some class from ION data ("normalize" the object in
+ * other words). An IonObjectReader instance is targeted at a single Java class. To read objects of multiple classes,
+ * create on IonObjectReader per class you want to read instances of.
+ *
+ *
  */
 public class IonObjectReader {
 
     private Class typeClass = null;
-    private Field[] fields = null;
 
     private Map<IonKeyFieldKey, IIonFieldReader> fieldReaderMap = new HashMap<>();
     private IonFieldReaderNop nopFieldReader = new IonFieldReaderNop();
 
     private IonKeyFieldKey currentKeyFieldKey = new IonKeyFieldKey();
 
+
+    /**
+     * Creates an IonObjectReader targeted at the given class.
+     * @param typeClass The class this IonObjectReader instance should be able to read instances of, from ION data.
+     */
     public IonObjectReader(Class typeClass) {
+        this(typeClass, new IonObjectReaderConfiguratorNopImpl());
+        /*
         this.typeClass = typeClass;
 
-        this.fields = this.typeClass.getDeclaredFields();
+        Field[] fields = this.typeClass.getDeclaredFields();
 
-        for(int i=0; i < this.fields.length; i++){
-            fields[i].setAccessible(true);
-            putFieldReader(fields[i], IonUtil.createFieldReader(fields[i]));
+        for(int i=0; i < fields.length; i++){
+            putFieldReader(fields[i].getName(), IonUtil.createFieldReader(fields[i]));
+        }
+        */
+     }
+
+
+    /**
+     * Creates an IonObjectReader targeted at the given class.
+     * The IIonObjectReaderConfigurator can configure (modify) this IonObjectReader instance.
+     * For instance, the configurator can signal that some fields should not be read, or that different field names
+     * are used in the ION data which should be mapped to other field names in the target Java class.
+     *
+     * @param typeClass The class this IonObjectReader instance should be able to read instances of, from ION data.
+     * @param configurator  The configurator that can configure each field reader (one per field in the target class) of this IonObjectReader - even exclude them.
+     */
+    public IonObjectReader(Class typeClass, IIonObjectReaderConfigurator configurator) {
+        this.typeClass = typeClass;
+
+        Field[] fields = this.typeClass.getDeclaredFields();
+
+        IonFieldReaderConfiguration fieldConfiguration = new IonFieldReaderConfiguration();
+
+        for(int i=0; i < fields.length; i++) {
+            fieldConfiguration.field     =  fields[i];
+            fieldConfiguration.include   = true;
+            fieldConfiguration.fieldName = fields[i].getName();
+            fieldConfiguration.alias     = null;
+
+            configurator.configure(fieldConfiguration);
+
+            if (fieldConfiguration.include) {
+                if (fieldConfiguration.alias == null) {
+                    putFieldReader(fields[i].getName(), IonUtil.createFieldReader(fields[i], configurator));
+                } else {
+                    putFieldReader(fieldConfiguration.alias, IonUtil.createFieldReader(fields[i], configurator));
+                }
+            }
         }
     }
 
-    private void putFieldReader(Field field, IIonFieldReader fieldReader) {
+
+
+    private void putFieldReader(String fieldName, IIonFieldReader fieldReader) {
         try {
-            this.fieldReaderMap.put(new IonKeyFieldKey(field.getName().getBytes("UTF-8")), fieldReader);
+            this.fieldReaderMap.put(new IonKeyFieldKey(fieldName.getBytes("UTF-8")), fieldReader);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -47,11 +94,11 @@ public class IonObjectReader {
         Object destination =  instantiateType();
 
         int leadByte = 255 & source[sourceOffset++];
-        int fieldType = leadByte >> 3;
+        int fieldType = leadByte >> 4;
 
         //todo if not object - throw exception
 
-        int lengthLength = leadByte & 7;  // 7 = binary 00000111 - filters out 5 top bits
+        int lengthLength = leadByte & 15;  // 15 = binary 00001111 - filters out 4 top bits
 
         if(lengthLength == 0){
             return null; //object field with value null is always 1 byte long.
@@ -68,18 +115,18 @@ public class IonObjectReader {
 
         while(sourceOffset < endIndex){
             leadByte     = 255 & source[sourceOffset++];
-            fieldType    = leadByte >> 3;
-            lengthLength = leadByte & 7;  // 7 = binary 00000111 - filters out 5 top bits
+            fieldType    = leadByte >> 4;
+            lengthLength = leadByte & 15;  // 15 = binary 00001111 - filters out 4 top bits
 
             //todo can this be optimized with a switch statement?
 
             //expect a key field
-            if(fieldType == IonFieldTypes.KEY || fieldType == IonFieldTypes.KEY_COMPACT){
+            if(fieldType == IonFieldTypes.KEY || fieldType == IonFieldTypes.KEY_SHORT){
 
                 //distinguish between length and lengthLength depending on compact key field or normal key field
                 length = 0;
-                if(fieldType == IonFieldTypes.KEY_COMPACT){
-                    length = leadByte & 7;
+                if(fieldType == IonFieldTypes.KEY_SHORT){
+                    length = leadByte & 15;
                 } else {
                     for(int i=0; i<lengthLength; i++){
                         length <<= 8;
@@ -101,9 +148,9 @@ public class IonObjectReader {
 
 
                 int nextLeadByte  = 255 & source[sourceOffset];
-                int nextFieldType = nextLeadByte >> 3;
+                int nextFieldType = nextLeadByte >> 4;
 
-                if(nextFieldType != IonFieldTypes.KEY && nextFieldType != IonFieldTypes.KEY_COMPACT){
+                if(nextFieldType != IonFieldTypes.KEY && nextFieldType != IonFieldTypes.KEY_SHORT){
                     sourceOffset += reader.read(source, sourceOffset, destination);
                 } else {
                     //next field is also a key - meaning the previous key has a value of null (no value field following it).

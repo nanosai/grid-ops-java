@@ -5,6 +5,8 @@ import com.nanosai.gridops.ion.write.*;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 /**
  * Created by jjenkov on 19-11-2015.
@@ -30,58 +32,135 @@ public class IonUtil {
         return 8;
     }
 
-    public static IIonFieldWriter createFieldWriter(Field field){
+    public static IIonFieldWriter createFieldWriter(Field field, IIonObjectWriterConfigurator configurator){
+        return createFieldWriter(field, field.getName(), configurator);
+    }
+
+    public static IIonFieldWriter createFieldWriter(Field field, String alias, IIonObjectWriterConfigurator configurator){
         field.setAccessible(true); //allows access to private fields, and supposedly speeds up reflection...  ?
         Class fieldType = field.getType();
 
         if(boolean.class.equals(fieldType)){
-            return new IonFieldWriterBoolean(field);
-        } else if(short.class.equals(fieldType)){
-            return new IonFieldWriterInt64(field);
-        } else if(int.class.equals(fieldType)){
-            return new IonFieldWriterInt64(field);
-        } else if(long.class.equals(fieldType)){
-            return new IonFieldWriterInt64(field);
-        } else if(float.class.equals(fieldType)){
-            return new IonFieldWriterFloat(field);
-        } else if(double.class.equals(fieldType)){
-            return new IonFieldWriterDouble(field);
-        } else if(String.class.equals(fieldType)){
-            return new IonFieldWriterString(field);
-        } else if(fieldType.isArray()){
-            return new IonFieldWriterTable(field);
+            return new IonFieldWriterBoolean(field, alias);
+        }
+        if(byte.class.equals(fieldType)){
+            return new IonFieldWriterByte(field, alias);
+        }
+        if(short.class.equals(fieldType)){
+            return new IonFieldWriterShort(field, alias);
+        }
+        if(int.class.equals(fieldType)){
+            return new IonFieldWriterInt(field, alias);
+        }
+        if(long.class.equals(fieldType)){
+            return new IonFieldWriterLong(field, alias);
+        }
+        if(float.class.equals(fieldType)){
+            return new IonFieldWriterFloat(field, alias);
+        }
+        if(double.class.equals(fieldType)){
+            return new IonFieldWriterDouble(field, alias);
+        }
+        if(String.class.equals(fieldType)){
+            return new IonFieldWriterString(field, alias);
+        }
+        if(Calendar.class.equals(fieldType)){
+            return new IonFieldWriterCalendar(field, alias);
+        }
+        if(GregorianCalendar.class.equals(fieldType)){
+            return new IonFieldWriterCalendar(field, alias);
+        }
+        if(fieldType.isArray()){
+            if(byte.class.equals(fieldType.getComponentType())){
+                return new IonFieldWriterArrayByte(field, alias);
+            }
+            if(short.class.equals(fieldType.getComponentType())){
+                return new IonFieldWriterArrayShort(field, alias);
+            }
+            if(int.class.equals(fieldType.getComponentType())){
+                return new IonFieldWriterArrayInt(field, alias);
+            }
+            if(long.class.equals(fieldType.getComponentType())){
+                return new IonFieldWriterArrayLong(field, alias);
+            }
+            if(float.class.equals(fieldType.getComponentType())){
+                return new IonFieldWriterArrayFloat(field, alias);
+            }
+            if(double.class.equals(fieldType.getComponentType())){
+                return new IonFieldWriterArrayDouble(field, alias);
+            }
+            return new IonFieldWriterTable(field, alias, configurator);
         }
 
-        //todo support object field writer
-
-        return null;
+        return new IonFieldWriterObject(field, alias, configurator);
     }
 
+
+    //todo remove this ?
+    /*
     public static IIonFieldReader createFieldReader(Field field){
+        return createFieldReader(field, null);
+    }
+    */
+
+    public static IIonFieldReader createFieldReader(Field field, IIonObjectReaderConfigurator configurator){
+
         field.setAccessible(true); //allows access to private fields, and supposedly speeds up reflection...  ?
         Class fieldType = field.getType();
 
         if(boolean.class.equals(fieldType)){
             return new IonFieldReaderBoolean(field);
-        } else if(short.class.equals(fieldType)){
+        }
+        if(short.class.equals(fieldType)){
             return new IonFieldReaderShort(field);
-        } else if(int.class.equals(fieldType)){
+        }
+        if(int.class.equals(fieldType)){
             return new IonFieldReaderInt(field);
-        } else if(long.class.equals(fieldType)){
+        }
+        if(long.class.equals(fieldType)){
             return new IonFieldReaderLong(field);
-        } else if(float.class.equals(fieldType)){
+        }
+        if(float.class.equals(fieldType)){
             return new IonFieldReaderFloat(field);
-        } else if(double.class.equals(fieldType)){
+        }
+        if(double.class.equals(fieldType)){
             return new IonFieldReaderDouble(field);
-        } else if(String.class.equals(fieldType)){
+        }
+        if(String.class.equals(fieldType)){
             return new IonFieldReaderString(field);
-        } else if(fieldType.isArray()){
-            return new IonFieldReaderTable(field);
+        }
+        if(Calendar.class.equals(fieldType)){
+            return new IonFieldReaderCalendar(field);
+        }
+        if(GregorianCalendar.class.equals(fieldType)){
+            return new IonFieldReaderCalendar(field);
+        }
+        if(fieldType.isArray()){
+            if(byte.class.equals(fieldType.getComponentType())){
+                return new IonFieldReaderArrayByte(field);
+            }
+            if(short.class.equals(fieldType.getComponentType())){
+                return new IonFieldReaderArrayShort(field);
+            }
+            if(int.class.equals(fieldType.getComponentType())){
+                return new IonFieldReaderArrayInt(field);
+            }
+            if(long.class.equals(fieldType.getComponentType())){
+                return new IonFieldReaderArrayLong(field);
+            }
+            if(float.class.equals(fieldType.getComponentType())){
+                return new IonFieldReaderArrayFloat(field);
+            }
+            if(double.class.equals(fieldType.getComponentType())){
+                return new IonFieldReaderArrayDouble(field);
+            }
+            return new IonFieldReaderTable(field, configurator);
+        } else {
+            return new IonFieldReaderObject(field, configurator);
         }
 
         //todo support object field writer
 
-        return null;
     }
 
     public static void writeLength(long length, int lengthLength, byte[] destination, int destinationOffset){
@@ -110,14 +189,14 @@ public class IonUtil {
             int fieldNameLength = fieldName.length;
             if(fieldNameLength <= 15){
                 keyField = new byte[1 + fieldName.length];
-                keyField[0] = (byte) (255 & ((fieldName.length << 4) | IonFieldTypes.KEY_COMPACT));
+                keyField[0] = (byte) (255 & ((IonFieldTypes.KEY_SHORT << 4) | fieldName.length));
                 System.arraycopy(fieldName, 0, keyField, 1, fieldName.length);
             } else {
                 int length = fieldName.length;
                 int lengthLength = IonUtil.lengthOfInt64Value(length);
                 keyField = new byte[1 + lengthLength + fieldName.length];
 
-                keyField[0] = (byte) (255 & ((lengthLength << 4) | IonFieldTypes.KEY));
+                keyField[0] = (byte) (255 & ((IonFieldTypes.KEY << 4) | lengthLength));
                 int destOffset = 1;
                 for(int i=(lengthLength-1)*8; i >= 0; i-=8){
                     keyField[destOffset++] = (byte) (255 & (length >> i));
@@ -133,6 +212,8 @@ public class IonUtil {
 
         return keyField;
     }
+
+
 
 
 }

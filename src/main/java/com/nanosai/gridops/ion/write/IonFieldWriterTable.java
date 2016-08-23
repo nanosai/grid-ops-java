@@ -6,6 +6,8 @@ import com.nanosai.gridops.ion.IonUtil;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by jjenkov on 04-11-2015.
@@ -20,20 +22,42 @@ public class IonFieldWriterTable implements IIonFieldWriter {
     protected IIonFieldWriter[] fieldWritersForArrayType = null;
 
 
-    public IonFieldWriterTable(Field field) {
+    public IonFieldWriterTable(Field field, String alias, IIonObjectWriterConfigurator configurator) {
         this.field = field;
-        this.keyField = IonUtil.preGenerateKeyField(field);
+        this.keyField = IonUtil.preGenerateKeyField(alias);
 
         Class typeInTable = field.getType().getComponentType();
 
         Field [] typeInTableFields = typeInTable.getDeclaredFields();
-        fieldWritersForArrayType = new IIonFieldWriter[typeInTableFields.length];
 
-        byte[][] fieldNames = new byte[typeInTableFields.length][];
+        List<IonFieldWriterConfiguration> fieldWriterConfigurationsTemp = new ArrayList<>();
+
+        for(int i=0; i<typeInTableFields.length; i++){
+            IonFieldWriterConfiguration fieldConfiguration = new IonFieldWriterConfiguration();
+            fieldConfiguration.field = typeInTableFields[i];
+            fieldConfiguration.include = true;
+            fieldConfiguration.fieldName = typeInTableFields[i].getName();
+            fieldConfiguration.alias = null;
+
+            configurator.configure(fieldConfiguration);
+
+            if(fieldConfiguration.include){
+                fieldWriterConfigurationsTemp.add(fieldConfiguration);
+            }
+        }
+
+
+        fieldWritersForArrayType = new IIonFieldWriter[fieldWriterConfigurationsTemp.size()];
+        byte[][] fieldNames = new byte[fieldWriterConfigurationsTemp.size()][];
         int totalKeyFieldsLength = 0;
-        for(int i=0; i < typeInTableFields.length; i++){
+
+        for(int i=0; i < fieldWriterConfigurationsTemp.size(); i++){
             try {
-                fieldNames[i] = typeInTableFields[i].getName().getBytes("UTF-8");
+                if(fieldWriterConfigurationsTemp.get(i).alias != null){
+                    fieldNames[i] = fieldWriterConfigurationsTemp.get(i).alias.getBytes("UTF-8");
+                } else {
+                    fieldNames[i] = fieldWriterConfigurationsTemp.get(i).fieldName.getBytes("UTF-8");
+                }
 
                 totalKeyFieldsLength += fieldNames[i].length;
 
@@ -44,8 +68,10 @@ public class IonFieldWriterTable implements IIonFieldWriter {
                     totalKeyFieldsLength += 1 + IonUtil.lengthOfInt64Value(fieldNames[i].length);
                 }
 
-                fieldWritersForArrayType[i] = IonUtil.createFieldWriter(typeInTableFields[i]);
+                fieldWritersForArrayType[i] = IonUtil.createFieldWriter(fieldWriterConfigurationsTemp.get(i).field, configurator);
+
             } catch (UnsupportedEncodingException e) {
+                //todo rethrow this exception if it ever occurs.
                 e.printStackTrace();
             }
 
@@ -56,10 +82,10 @@ public class IonFieldWriterTable implements IIonFieldWriter {
         int offset = 0;
         for(int i=0; i<fieldNames.length; i++){
             if(fieldNames[i].length <= 15){
-                allKeyFieldBytes[offset++] = (byte) (255 & ((fieldNames[i].length << 4) | IonFieldTypes.KEY_COMPACT));
+                allKeyFieldBytes[offset++] = (byte) (255 & ((IonFieldTypes.KEY_SHORT << 4) | fieldNames[i].length));
             } else {
                 int lengthLength = IonUtil.lengthOfInt64Value(fieldNames[i].length);
-                allKeyFieldBytes[offset++] = (byte) (255 & ((lengthLength << 4 | IonFieldTypes.KEY)));
+                allKeyFieldBytes[offset++] = (byte) (255 & ((IonFieldTypes.KEY << 4 | lengthLength)));
 
                 for(int j=(lengthLength-1)*8; i >= 0; i-=8){
                     allKeyFieldBytes[offset++] = (byte) (255 & (lengthLength >> i));
@@ -85,7 +111,7 @@ public class IonFieldWriterTable implements IIonFieldWriter {
     @Override
     public int writeValueField(Object sourceObject, byte[] destination, int destinationOffset, int maxLengthLength) {
         int startIndex = destinationOffset;
-        destination[destinationOffset] = (byte) (255 & ((maxLengthLength << 4) | IonFieldTypes.TABLE));
+        destination[destinationOffset] = (byte) (255 & (IonFieldTypes.TABLE << 4) | (maxLengthLength));
         destinationOffset += 1 + maxLengthLength ; // 1 for lead byte + make space for maxLengthLength length bytes.
 
 

@@ -19,6 +19,8 @@ public class IonFieldReaderTable implements IIonFieldReader {
     private Field field = null;
     private Class typeInTable = null;
     private Map<IonKeyFieldKey, IIonFieldReader> fieldReaderMap = new HashMap<>();
+    private IonFieldReaderNop nopFieldReader = new IonFieldReaderNop();
+
 
     private List tempList = new ArrayList();
 
@@ -32,25 +34,42 @@ public class IonFieldReaderTable implements IIonFieldReader {
 
     private IonKeyFieldKey tempKeyFieldKey = new IonKeyFieldKey();
 
-    public IonFieldReaderTable(Field field) {
+    public IonFieldReaderTable(Field field, IIonObjectReaderConfigurator configurator) {
         this.field = field;
 
         this.typeInTable = field.getType().getComponentType();  // field type is an array, so we need to get to the component type of the array.
 
         Field[] typeInTableFields = typeInTable.getDeclaredFields();
 
+        IonFieldReaderConfiguration fieldConfiguration = new IonFieldReaderConfiguration();
+
         for(int i=0; i<typeInTableFields.length; i++){
-            Field fieldOfTypeInTable = typeInTableFields[i];
-            putFieldReader(fieldOfTypeInTable, IonUtil.createFieldReader(fieldOfTypeInTable));
+            fieldConfiguration.field     =  typeInTableFields[i];
+            fieldConfiguration.include   = true;
+            fieldConfiguration.fieldName = typeInTableFields[i].getName();
+            fieldConfiguration.alias     = null;
+
+            configurator.configure(fieldConfiguration);
+
+            if (fieldConfiguration.include) {
+                if (fieldConfiguration.alias == null) {
+                    putFieldReader(typeInTableFields[i].getName(), IonUtil.createFieldReader(typeInTableFields[i], configurator));
+                } else {
+                    putFieldReader(fieldConfiguration.alias, IonUtil.createFieldReader(typeInTableFields[i], configurator));
+                }
+            }
+
+            //Field fieldOfTypeInTable = typeInTableFields[i];
+            //putFieldReader(fieldOfTypeInTable, IonUtil.createFieldReader(fieldOfTypeInTable));
         }
 
         //don't fill array until during reading.
         fieldReaderArray = new IIonFieldReader[typeInTableFields.length];
     }
 
-    private void putFieldReader(Field field, IIonFieldReader fieldReader) {
+    private void putFieldReader(String fieldName, IIonFieldReader fieldReader) {
         try {
-            this.fieldReaderMap.put(new IonKeyFieldKey(field.getName().getBytes("UTF-8")), fieldReader);
+            this.fieldReaderMap.put(new IonKeyFieldKey(fieldName.getBytes("UTF-8")), fieldReader);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -63,7 +82,7 @@ public class IonFieldReaderTable implements IIonFieldReader {
         int tableStartIndex = sourceOffset;
 
         int tableLeadByte = 255 & source[sourceOffset++];
-        int tableLengthLength  = tableLeadByte & 7;
+        int tableLengthLength  = tableLeadByte & 15;
 
         if(tableLengthLength == 0){
             return 1; //table field with null as values is always 1 byte long (has 0 keys and 0 values).
@@ -82,28 +101,37 @@ public class IonFieldReaderTable implements IIonFieldReader {
         tempKeyFieldKey.setSource(source);
         int fieldReadersInArray = 0;
 
+        IIonFieldReader tempFieldReader = null;
         boolean endOfKeyFieldsFound = false;
         while(!endOfKeyFieldsFound){
             int fieldLeadByte = 255 & source[sourceOffset++];
-            int fieldType     = fieldLeadByte & 15;
+            int fieldType     = fieldLeadByte >> 4;
 
             switch(fieldType){
-                case IonFieldTypes.KEY_COMPACT :  {
-                    int keyLength = fieldLeadByte >> 4;
+                case IonFieldTypes.KEY_SHORT:  {
+                    int keyLength = fieldLeadByte & 15;
                     tempKeyFieldKey.setOffsets(sourceOffset, keyLength);
-                    this.fieldReaderArray[fieldReadersInArray++] = this.fieldReaderMap.get(tempKeyFieldKey);
+                    tempFieldReader = this.fieldReaderMap.get(tempKeyFieldKey);
+                    if(tempFieldReader == null){
+                        tempFieldReader = this.nopFieldReader;
+                    }
+                    this.fieldReaderArray[fieldReadersInArray++] = tempFieldReader;
                     sourceOffset += keyLength;
                     break;
                 }
                 case IonFieldTypes.KEY : {
-                    int keyLengthLength = fieldLeadByte >> 4;
+                    int keyLengthLength = fieldLeadByte & 15;
                     int keyLength = 0;
                     for(int i=0; i < tableLengthLength; i++){
                         keyLength <<= 8;
                         keyLength |= 255 & source[sourceOffset++];
                     }
                     tempKeyFieldKey.setOffsets(sourceOffset, keyLength);
-                    this.fieldReaderArray[fieldReadersInArray++] = this.fieldReaderMap.get(tempKeyFieldKey);
+                    tempFieldReader = this.fieldReaderMap.get(tempKeyFieldKey);
+                    if(tempFieldReader == null){
+                        tempFieldReader = this.nopFieldReader;
+                    }
+                    this.fieldReaderArray[fieldReadersInArray++] = tempFieldReader;
                     sourceOffset += keyLength;
                     break;
                 }
