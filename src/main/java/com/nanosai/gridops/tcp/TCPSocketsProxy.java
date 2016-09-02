@@ -35,10 +35,8 @@ public class TCPSocketsProxy {
     private Selector        readSelector = null;
     private ByteBuffer      readBuffer   = null;
 
-    private TCPSocketPool tcpObjectPool       = new TCPSocketPool(1024);
-    private MemoryAllocator readMemoryAllocator = new MemoryAllocator(new byte[36 * 1024 * 1024], new long[10240],
-            (allocator) -> new TCPMessage(allocator));
-
+    private TCPSocketPool tcpObjectPool       = new TCPSocketPool(1024);  //todo make size configurable.
+    private MemoryAllocator readMemoryAllocator = null;
 
 
     // ***************************
@@ -49,8 +47,7 @@ public class TCPSocketsProxy {
 
     private List<TCPSocket> nonEmptyToEmptySockets = new ArrayList<>();
 
-    private MemoryAllocator writeMemoryAllocator = new MemoryAllocator(new byte[36 * 1024 * 1024], new long[10240],
-            (allocator) -> new TCPMessage(allocator));
+    private MemoryAllocator writeMemoryAllocator = null;
 
 
     // ***************************
@@ -59,11 +56,26 @@ public class TCPSocketsProxy {
     private List<TCPSocket> socketsToBeClosed = new ArrayList<>();
 
 
+    public TCPSocketsProxy(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory,
+                           MemoryAllocator inboundMessageAllocator, MemoryAllocator outboundMessageAllocator) throws IOException {
+        this.socketQueue          = socketQueue;
+        this.messageReaderFactory = messageReaderFactory;
+        this.readMemoryAllocator  = inboundMessageAllocator;
+        this.writeMemoryAllocator = outboundMessageAllocator;
+        init();
+    }
 
     public TCPSocketsProxy(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory) throws IOException {
         this.socketQueue          = socketQueue;
         this.messageReaderFactory = messageReaderFactory;
+        this.readMemoryAllocator  = new MemoryAllocator(new byte[36 * 1024 * 1024], new long[10240],
+                (allocator) -> new TCPMessage(allocator));
+        this.writeMemoryAllocator = new MemoryAllocator(new byte[36 * 1024 * 1024], new long[10240],
+                (allocator) -> new TCPMessage(allocator));
+        init();
+    }
 
+    private void init() throws IOException {
         this.readSelector         = Selector.open();
         this.readBuffer           = ByteBuffer.allocate(1024 * 1024);
 
@@ -231,8 +243,16 @@ public class TCPSocketsProxy {
         return (TCPMessage) this.writeMemoryAllocator.getMemoryBlock();
     }
 
+    public TCPMessage allocateWriteMemoryBlock(int lengthToAllocate) {
+        return (TCPMessage) getWriteMemoryBlock().allocate(lengthToAllocate);
+    }
+
     public TCPSocket getTCPSocket(long socketId) {
         return this.socketMap.get(socketId);
+    }
+
+    public void enqueue(TCPMessage tcpMessage) throws IOException {
+        enqueue(tcpMessage.tcpSocket, tcpMessage);
     }
 
     public void enqueue(TCPSocket tcpSocket, TCPMessage message) throws IOException {

@@ -6,7 +6,7 @@
 
     <groupId>com.nanosai</groupId>
     <artifactId>grid-ops</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 
     <dependencies>
 

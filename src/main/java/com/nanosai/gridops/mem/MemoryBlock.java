@@ -22,12 +22,12 @@ public class MemoryBlock {
     }
 
 
-    public int reserve(int length) {
+    public MemoryBlock allocate(int length) {
         this.startIndex = this.memoryAllocator.reserve(length);
         this.endIndex   = this.startIndex + length;
         this.writeIndex = this.startIndex;
 
-        return this.startIndex;
+        return this;
     }
 
     public void setComplete(boolean complete){
@@ -36,6 +36,14 @@ public class MemoryBlock {
 
     public boolean isComplete() {
         return this.isComplete;
+    }
+
+    public int lengthWritten() {
+        return this.writeIndex - this.startIndex;
+    }
+
+    public int lengthAllocated() {
+        return this.endIndex - this.startIndex;
     }
 
     public void free() {
@@ -56,5 +64,16 @@ public class MemoryBlock {
         byteBuffer.get(this.memoryAllocator.data, this.writeIndex, length);
         this.writeIndex += length;
     }
+
+    public void copyFrom(MemoryBlock source){
+        System.arraycopy(
+                source.memoryAllocator.data, source.startIndex,
+                this  .memoryAllocator.data, this.writeIndex,
+                source.lengthWritten()
+        );
+        this.writeIndex += source.lengthWritten();
+
+    }
+
 
 }

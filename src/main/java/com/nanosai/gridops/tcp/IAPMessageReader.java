@@ -26,7 +26,7 @@ public class IAPMessageReader implements IMessageReader {
 
     private int validityState = 0;
 
-    private int readStatus = STATUS_NOTHING_READ;
+    private int readStatus   = STATUS_NOTHING_READ;
 
     private int fieldType    = 0;
     private int lengthLength = 0;
@@ -93,7 +93,7 @@ public class IAPMessageReader implements IMessageReader {
                             return destOffset - startDestOffset; //return how many valid messages were read.
                         }
 
-                        this.currentMemoryBlock.reserve(1 + this.lengthBytesRead + this.length);  //reserve space for the message.
+                        this.currentMemoryBlock.allocate(1 + this.lengthBytesRead + this.length);  //allocate space for the message.
 
                         //write lead byte + length into currentMessage
                         this.currentMemoryBlock.writeLeadByte((this.fieldType << 4) | this.lengthLength);
