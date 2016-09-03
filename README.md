@@ -5,6 +5,10 @@ distributed systems in general, and a set of commonly used distributed
 systems infrastructure services. We want your distributed systems to
 get up and running as quickly as possible.
 
+## Grid Ops - Java Examples
+We have a separate project showing examples of how to use Grid Ops Java
+here: [Grid Ops Java Examples] (https://github.com/nanosai/grid-ops-java-examples)
+
 ## IAP
 Grid Ops is centered around the general purpose network protocol IAP.
 IAP is designed to have a compact message format which can be used
