@@ -53,7 +53,7 @@ public class IonFieldWriterArrayInt implements IIonFieldWriter {
             dest[destOffset++] = (byte) (255 & ((IonFieldTypes.ARRAY << 4) | arrayLengthLength) );
             int lengthStartOffset = destOffset;
 
-            //reserve arrayLengthLength bytes for later - when we know the real length (in bytes) of this ION array field
+            //allocate arrayLengthLength bytes for later - when we know the real length (in bytes) of this ION array field
             destOffset += arrayLengthLength;
 
             //write element count

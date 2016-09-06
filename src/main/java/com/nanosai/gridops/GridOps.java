@@ -94,14 +94,14 @@ public class GridOps {
 
     public static class TCPSocketsProxyBuilder {
         private int incomingMessageBufferSize = 16 * 1024 * 1024;
-        private int incomingMessageBufferFreeBlockMaxCount = 128 * 1024 * 1024;
+        private int incomingMessageBufferFreeBlockMaxCount = 128 * 1024;
         private IMemoryBlockFactory incomingMessageMemoryBlockFactory = null;
         private MemoryAllocator incomingMessageMemoryAllocator = null;
 
         private IMessageReaderFactory messageReaderFactory = null;
 
         private int outgoingMessageBufferSize = 16 * 1024 * 1024;
-        private int outgoingMessageBufferFreeBlockMaxCount = 128 * 1024 * 1024;
+        private int outgoingMessageBufferFreeBlockMaxCount = 128 * 1024;
         private IMemoryBlockFactory outgoingMessageMemoryBlockFactory = null;
         private MemoryAllocator outgoingMessageMemoryAllocator = null;
 
@@ -160,9 +160,11 @@ public class GridOps {
 
 
         public TCPSocketsProxy build() throws IOException {
+            /*
             if(this.newSocketsQueue == null){
                 throw new RuntimeException("The newSocketsQueue must not be null");
             }
+            */
 
             if(this.incomingMessageMemoryBlockFactory == null){
                 this.incomingMessageMemoryBlockFactory = (allocator) -> new TCPMessage(allocator);

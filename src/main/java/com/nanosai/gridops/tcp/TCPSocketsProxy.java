@@ -85,7 +85,7 @@ public class TCPSocketsProxy {
 
 
 
-    public void checkForNewInboundSockets() throws IOException {
+    public void drainSocketQueue() throws IOException {
 
         socketQueue.drainTo(this.newSocketsTemp);
 
@@ -98,6 +98,9 @@ public class TCPSocketsProxy {
         for(int i=0; i<this.newSocketsTemp.size(); i++){
             SocketChannel newSocket = this.newSocketsTemp.get(i);
 
+            addInboundSocket(newSocket);
+
+            /*
             newSocket.configureBlocking(false);
 
             //todo pool some of these objects - IAPMessageReader etc.
@@ -114,9 +117,32 @@ public class TCPSocketsProxy {
 
             tcpSocket.readSelectorSelectionKey = key;
             tcpSocket.isRegisteredWithReadSelector = true;
+            */
         }
 
         this.newSocketsTemp.clear();
+    }
+
+    public TCPSocket addInboundSocket(SocketChannel newSocket) throws IOException {
+
+        newSocket.configureBlocking(false);
+
+        //todo pool some of these objects - IAPMessageReader etc.
+        TCPSocket tcpSocket     = this.tcpObjectPool.getTCPSocket();
+        tcpSocket.socketId      = this.nextSocketId++;
+        tcpSocket.socketChannel = newSocket;
+        tcpSocket.messageReader = this.messageReaderFactory.createMessageReader();
+        tcpSocket.messageReader.init(this.readMemoryAllocator);
+
+        this.socketMap.put(tcpSocket.socketId, tcpSocket);
+
+        SelectionKey key = newSocket.register(readSelector, SelectionKey.OP_READ);
+        key.attach(tcpSocket);
+
+        tcpSocket.readSelectorSelectionKey = key;
+        tcpSocket.isRegisteredWithReadSelector = true;
+
+        return tcpSocket;
     }
 
     public int read(MemoryBlock[] msgDest) throws IOException{

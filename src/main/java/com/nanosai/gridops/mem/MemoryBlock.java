@@ -23,7 +23,7 @@ public class MemoryBlock {
 
 
     public MemoryBlock allocate(int length) {
-        this.startIndex = this.memoryAllocator.reserve(length);
+        this.startIndex = this.memoryAllocator.allocate(length);
         this.endIndex   = this.startIndex + length;
         this.writeIndex = this.startIndex;
 
@@ -50,16 +50,21 @@ public class MemoryBlock {
         this.memoryAllocator.free(this);
     }
 
+    //todo does this method really belong here?
+    
     public void writeLeadByte(int leadByte){
         this.memoryAllocator.data[this.writeIndex++] = (byte) (255 & (leadByte));
     }
 
+
+    //todo does this method really belong here? IAP specific code!
     public void writeLength(int length, int lengthLength){
         for(int i=(lengthLength -1) * 8; i>=0; i-=8){
             this.memoryAllocator.data[this.writeIndex++] = (byte) (255 & (length >> i));
         }
     }
 
+    //todo does this method really belong here? Should it be renamed to just "write" ?
     public void writeValue(ByteBuffer byteBuffer, int length){
         byteBuffer.get(this.memoryAllocator.data, this.writeIndex, length);
         this.writeIndex += length;

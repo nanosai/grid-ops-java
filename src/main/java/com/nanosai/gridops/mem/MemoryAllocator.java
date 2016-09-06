@@ -10,13 +10,15 @@ public class MemoryAllocator {
 
     private static long TO_AND_MASK = (long) Math.pow(2, 32)-1L;
 
-    public byte[] data = null;
-    public long[] freeBlocks = null;
-    public long[] usedBlocks = null;
+    public  byte[] data = null;              //public because we copy data into it from MemoryBlock's and other places.
+    private long[] freeBlocks = null;
+    //private long[] usedBlocks = null;
 
-    public int nextFreeBlockIndex = 0;
-    public int nextUsedBlockIndex = 0;
+    private int freeBlockCount = 0;
+    //private int nextUsedBlockIndex = 0;
+    private int freeBlockCountDefragLimit = 10000;
 
+    //todo make pooled memory block count configurable
     private MemoryBlock[] pooledMemoryBlocks = new MemoryBlock[1024 * 1024]; //max 1M messages pooled.
     private int pooledMessageCount = 0;
 
@@ -30,6 +32,8 @@ public class MemoryAllocator {
     public MemoryAllocator(byte[] data, long[] freeBlocks) {
         init(data, freeBlocks, (allocator) -> { return new MemoryBlock(allocator); });
     }
+
+
 
     private void init(byte[] data, long[] freeBlocks, IMemoryBlockFactory factory) {
         this.data = data;
@@ -50,14 +54,46 @@ public class MemoryAllocator {
 
 
 
-    //todo allocate()
-    public int reserve(int blockSize){
+
+    public int capacity() {
+        return this.data.length;
+    }
+
+    public int freeBlockCount() {
+        return this.freeBlockCount;
+    }
+
+    public int freeCapacity() {
+        int freeCapacity = 0;
+        for(int i=0; i<this.freeBlockCount; i++){
+            long from = this.freeBlocks[i];
+            from >>=32;
+
+            long to   = this.freeBlocks[i];
+            to &= TO_AND_MASK;
+
+            freeCapacity += (to - from);
+        }
+
+        return freeCapacity;
+    }
+
+    public int freeBlockCountDefragLimit() {
+        return freeBlockCountDefragLimit;
+    }
+
+    public void freeBlockCountDefragLimit(int freeBlockCountDefragLimit) {
+        this.freeBlockCountDefragLimit = freeBlockCountDefragLimit;
+    }
+
+    //todo ... make package visible only?
+    public int allocate(int blockSize){
 
         boolean freeBlockFound = false;
 
         int freeBlockIndex = 0;
 
-        while(!freeBlockFound && freeBlockIndex < this.nextFreeBlockIndex){
+        while(!freeBlockFound && freeBlockIndex < this.freeBlockCount){
             long fromTemp = this.freeBlocks[freeBlockIndex];
             fromTemp >>=32;
 
@@ -97,22 +133,22 @@ public class MemoryAllocator {
 
         blockDescriptor += to;
 
-        this.freeBlocks[nextFreeBlockIndex] = blockDescriptor;
-        nextFreeBlockIndex++;
+        this.freeBlocks[freeBlockCount] = blockDescriptor;
+        freeBlockCount++;
 
-        if(nextFreeBlockIndex == 10000){
-            garbageCollect();
+        if(freeBlockCount == freeBlockCountDefragLimit){
+            defragment();
         }
     }
 
-    public void garbageCollect() {
+    public void defragment() {
         //sort
-        Arrays.sort(this.freeBlocks, 0, this.nextFreeBlockIndex);
+        Arrays.sort(this.freeBlocks, 0, this.freeBlockCount);
 
         //merge
         int newIndex = 0;
 
-        for(int i=0; i < nextFreeBlockIndex;){
+        for(int i=0; i < freeBlockCount;){
             long from = this.freeBlocks[i];
             from >>=32;
 
@@ -130,7 +166,7 @@ public class MemoryAllocator {
             while(to == nextFrom ){
                 to = nextTo;      //todo this can be moved to after while loop?
                 nextIndex++;
-                if(nextIndex == this.nextFreeBlockIndex){
+                if(nextIndex == this.freeBlockCount){
                     break;
                 }
 
@@ -151,7 +187,7 @@ public class MemoryAllocator {
             this.freeBlocks[newIndex] = newBlockDescriptor;
             newIndex++;
         }
-        this.nextFreeBlockIndex = newIndex;
+        this.freeBlockCount = newIndex;
     }
 
 }
