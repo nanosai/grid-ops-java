@@ -21,6 +21,9 @@ public class TCPSocketPool {
         return new TCPSocket(this);
     }
 
+    public int freePooledTCPSocketCount() {
+        return this.pooledSocketCount;
+    }
 
     public void free(TCPSocket socket){
         //pool message if space

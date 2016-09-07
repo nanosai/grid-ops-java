@@ -51,7 +51,7 @@ public class MemoryBlock {
     }
 
     //todo does this method really belong here?
-    
+
     public void writeLeadByte(int leadByte){
         this.memoryAllocator.data[this.writeIndex++] = (byte) (255 & (leadByte));
     }
