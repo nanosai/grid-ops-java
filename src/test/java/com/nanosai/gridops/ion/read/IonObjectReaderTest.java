@@ -301,7 +301,7 @@ public class IonObjectReaderTest {
         SmallPojo readPojo2 = (SmallPojo) reader2.read(source, 0);
         assertEquals(false  , readPojo2.field0);
         assertEquals(999    , readPojo2.field1);
-        assertEquals(123.12F, readPojo2.field2, 0F);  //value should not be read.
+        assertEquals(123.12F, readPojo2.field2, 0F);  //value should not be bytesRead.
 
 
         IonObjectWriter writer3 = new IonObjectWriter(SmallPojo.class, config -> {
@@ -425,15 +425,15 @@ public class IonObjectReaderTest {
 
         PojoArray10Float pojo = new PojoArray10Float(3);
         pojo.pojos[0].field0 = 111.111f;
-        pojo.pojos[0].field2 = 222.222f; //this field is ignored in the reader, so in the read object it should have the default value.
+        pojo.pojos[0].field2 = 222.222f; //this field is ignored in the reader, so in the bytesRead object it should have the default value.
         pojo.pojos[0].field3 = 333.333f;
 
         pojo.pojos[1].field0 = 444.444f;
-        pojo.pojos[1].field2 = 222.222f; //this field is ignored in the reader, so in the read object it should have the default value.
+        pojo.pojos[1].field2 = 222.222f; //this field is ignored in the reader, so in the bytesRead object it should have the default value.
         pojo.pojos[1].field3 = 555.555f;
 
         pojo.pojos[2].field0 = 666.666f;
-        pojo.pojos[2].field2 = 222.222f; //this field is ignored in the reader, so in the read object it should have the default value.
+        pojo.pojos[2].field2 = 222.222f; //this field is ignored in the reader, so in the bytesRead object it should have the default value.
         pojo.pojos[2].field3 = 777.777f;
 
 
