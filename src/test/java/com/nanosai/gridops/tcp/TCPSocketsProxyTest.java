@@ -20,7 +20,7 @@ public class TCPSocketsProxyTest {
     }
 
     @Test
-    public void test() throws IOException {
+    public void testRead() throws IOException {
         BlockingQueue           blockingQueue = new ArrayBlockingQueue(1024);
         IAPMessageReaderFactory messageReaderFactory = new IAPMessageReaderFactory();
         MemoryAllocator readMemoryAllocator = new MemoryAllocator(
