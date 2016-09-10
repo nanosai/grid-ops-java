@@ -77,7 +77,7 @@ public class TCPSocket {
         int bytesRead = 0;
 
         try{
-            bytesRead = doRead(destinationBuffer);
+            bytesRead = doSocketRead(destinationBuffer);
         } catch(IOException e){
             this.endOfStreamReached = true;
             return -1;
@@ -87,7 +87,7 @@ public class TCPSocket {
 
         while(bytesRead > 0){
             try{
-                bytesRead = doRead(destinationBuffer);
+                bytesRead = doSocketRead(destinationBuffer);
                 if(bytesRead > 0){
                     totalBytesRead += bytesRead;
                 }
@@ -113,10 +113,8 @@ public class TCPSocket {
      * @return
      * @throws IOException
      */
-    protected int doRead(ByteBuffer destinationBuffer) throws IOException {
-        int bytesRead;
-        bytesRead = this.socketChannel.read(destinationBuffer);
-        return bytesRead;
+    protected int doSocketRead(ByteBuffer destinationBuffer) throws IOException {
+        return this.socketChannel.read(destinationBuffer);
     }
 
     public void enqueue(MemoryBlock memoryBlock) {

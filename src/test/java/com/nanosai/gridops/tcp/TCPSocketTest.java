@@ -41,7 +41,7 @@ public class TCPSocketTest {
         MemoryBlock[] msgDest      = new MemoryBlock[1024];
         int           msgDstOffset = 0;
 
-        tcpSocket.length = createMessage(tcpSocket.bytesToRead, 0);
+        tcpSocket.length = IapUtil.createMessage(tcpSocket.bytesToRead, 0);
         int msgCount = tcpSocket.readMessages(buffer, msgDest, msgDstOffset);
         assertEquals(0, msgCount);
         assertEquals(1, tcpSocket.doSocketReadCallCount);
@@ -78,7 +78,7 @@ public class TCPSocketTest {
         MemoryBlock[] msgDest      = new MemoryBlock[1024];
         int           msgDstOffset = 0;
 
-        tcpSocket.length = createMessage(tcpSocket.bytesToRead, 0);
+        tcpSocket.length = IapUtil.createMessage(tcpSocket.bytesToRead, 0);
 
         tcpSocket.windowSize = 2;
         tcpSocket.length = 15;
@@ -109,7 +109,7 @@ public class TCPSocketTest {
         MemoryBlock[] msgDest      = new MemoryBlock[1024];
         int           msgDstOffset = 0;
 
-        tcpSocket.length = createMessage(tcpSocket.bytesToRead, 0);
+        tcpSocket.length = IapUtil.createMessage(tcpSocket.bytesToRead, 0);
 
         tcpSocket.windowSize = 3;
         tcpSocket.length = 15;
@@ -126,27 +126,5 @@ public class TCPSocketTest {
 
 
 
-        public int createMessage(byte[] dest, int offset){
-        dest[offset + 0] = (byte) (255 & (IonFieldTypes.OBJECT << 4 | 2));
-        dest[offset + 1] = 0;
-        dest[offset + 2] = 12;
 
-        dest[offset + 3] = (byte) (255 & (IonFieldTypes.KEY_SHORT << 4 | 2));
-        dest[offset + 4] = 'k';
-        dest[offset + 5] = '1';
-
-        dest[offset + 6] = (byte) (255 & (IonFieldTypes.UTF_8_SHORT << 4 | 2));
-        dest[offset + 7] = 'v';
-        dest[offset + 8] = '1';
-
-        dest[offset + 9] = (byte) (255 & (IonFieldTypes.KEY_SHORT << 4 | 2));
-        dest[offset + 10] = 'k';
-        dest[offset + 11] = '2';
-
-        dest[offset + 12] = (byte) (255 & (IonFieldTypes.UTF_8_SHORT << 4 | 2));
-        dest[offset + 13] = 'v';
-        dest[offset + 14] = '2';
-
-        return 15; //total message length in bytes.
-    }
 }

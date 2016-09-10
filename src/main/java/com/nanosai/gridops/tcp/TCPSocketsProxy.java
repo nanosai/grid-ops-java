@@ -38,6 +38,9 @@ public class TCPSocketsProxy {
     private TCPSocketPool tcpObjectPool       = new TCPSocketPool(1024);  //todo make size configurable.
     private MemoryAllocator readMemoryAllocator = null;
 
+    private TCPSocket[] readySocketsTemp = new TCPSocket[128]; //todo maybe change later to TCPSocketProxy - if that class is added.
+
+
 
     // ***************************
     // Write oriented variables.
@@ -48,6 +51,7 @@ public class TCPSocketsProxy {
     private List<TCPSocket> nonEmptyToEmptySockets = new ArrayList<>();
 
     private MemoryAllocator writeMemoryAllocator = null;
+
 
 
     // ***************************
@@ -66,14 +70,17 @@ public class TCPSocketsProxy {
     }
 
     public TCPSocketsProxy(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory) throws IOException {
-        this.socketQueue          = socketQueue;
-        this.messageReaderFactory = messageReaderFactory;
-        this.readMemoryAllocator  = new MemoryAllocator(new byte[36 * 1024 * 1024], new long[10240],
-                (allocator) -> new TCPMessage(allocator));
-        this.writeMemoryAllocator = new MemoryAllocator(new byte[36 * 1024 * 1024], new long[10240],
-                (allocator) -> new TCPMessage(allocator));
-        init();
+        this(socketQueue,
+             messageReaderFactory,
+             new MemoryAllocator(new byte[36 * 1024 * 1024], new long[10240],
+                    (allocator) -> new TCPMessage(allocator) )
+             ,
+             new MemoryAllocator(new byte[36 * 1024 * 1024], new long[10240],
+                     (allocator) -> new TCPMessage(allocator) )
+             );
     }
+
+
 
     private void init() throws IOException {
         this.readSelector         = Selector.open();
@@ -86,41 +93,15 @@ public class TCPSocketsProxy {
 
 
     public void drainSocketQueue() throws IOException {
-
         socketQueue.drainTo(this.newSocketsTemp);
-
-        /*
-        if(this.newSocketsTemp.size() > 0){
-            System.out.println("New sockets: " + this.newSocketsTemp.size());
-        }
-        */
 
         for(int i=0; i<this.newSocketsTemp.size(); i++){
             SocketChannel newSocket = this.newSocketsTemp.get(i);
 
             addInboundSocket(newSocket);
+       }
 
-            /*
-            newSocket.configureBlocking(false);
-
-            //todo pool some of these objects - IAPMessageReader etc.
-            TCPSocket tcpSocket     = this.tcpObjectPool.getTCPSocket();
-            tcpSocket.socketId      = this.nextSocketId++;
-            tcpSocket.socketChannel = newSocket;
-            tcpSocket.messageReader = this.messageReaderFactory.createMessageReader();
-            tcpSocket.messageReader.init(this.readMemoryAllocator);
-
-            this.socketMap.put(tcpSocket.socketId, tcpSocket);
-
-            SelectionKey key = newSocket.register(readSelector, SelectionKey.OP_READ);
-            key.attach(tcpSocket);
-
-            tcpSocket.readSelectorSelectionKey = key;
-            tcpSocket.isRegisteredWithReadSelector = true;
-            */
-        }
-
-        this.newSocketsTemp.clear();
+       this.newSocketsTemp.clear();
     }
 
     public TCPSocket addInboundSocket(SocketChannel newSocket) throws IOException {
@@ -145,53 +126,51 @@ public class TCPSocketsProxy {
         return tcpSocket;
     }
 
-    public int read(MemoryBlock[] msgDest) throws IOException{
-        int selected = 0;
+    public int selectReadReadySockets(TCPSocket[] readyTcpSocket, int limit) throws IOException {
+        int readReady = this.readSelector.selectNow();
 
-        selected = this.readSelector.selectNow();
-
-        int receivedMessageCount = 0;
-        if(selected > 0){
+        int readyIndex = 0;
+        if(readReady > 0){
             Iterator<SelectionKey> iterator = this.readSelector.selectedKeys().iterator();
-
-            while(iterator.hasNext()){
+            while(iterator.hasNext() && readyIndex < limit){
                 SelectionKey selectionKey = iterator.next();
 
                 if(selectionKey.channel().isOpen()){
-                    try{
-                        TCPSocket tcpSocket = (TCPSocket) selectionKey.attachment();
-                        //todo Add some kind of flow control so that one TCPSocket cannot flood the system with messages.
-
-                        receivedMessageCount += tcpSocket.readMessages(this.readBuffer, msgDest, receivedMessageCount);
-
-
-                        if(tcpSocket.endOfStreamReached || tcpSocket.state != 0){
-                            tcpSocket.readSelectorSelectionKey.cancel();
-                            tcpSocket.isRegisteredWithReadSelector = false;
-
-                            this.socketsToBeClosed.add(tcpSocket);
-
-                        }
-
-
-                    } catch(IOException e){
-                        System.out.println("Error reading from socket channel");
-                        e.printStackTrace();
-                    }
-
-                } else {
-                    System.out.println("Socket closed!");
+                    readyTcpSocket[readyIndex++] = (TCPSocket) selectionKey.attachment();
                 }
-
-                //remove selection key if handled.
                 iterator.remove();
+            }
+        }
+        return readyIndex;
+    }
 
-                //todo check if we should take one more iteration here, or of the messages[] array is already full!
+    public int read(MemoryBlock[] msgDest) throws IOException {
+        int ready = selectReadReadySockets(this.readySocketsTemp, this.readySocketsTemp.length);
+
+        return read(msgDest, this.readySocketsTemp, ready);
+    }
+
+    protected int read(MemoryBlock[] msgDest, TCPSocket[] readReadySockets, int readReadySocketCount) throws IOException {
+
+        int receivedMessageCount = 0;
+        for(int i=0; i<readReadySocketCount; i++){
+            TCPSocket tcpSocket = readReadySockets[i];
+
+            receivedMessageCount += tcpSocket.readMessages(this.readBuffer, msgDest, receivedMessageCount);
+
+            if(tcpSocket.endOfStreamReached || tcpSocket.state != 0){
+                tcpSocket.readSelectorSelectionKey.cancel();
+                tcpSocket.isRegisteredWithReadSelector = false;
+
+                this.socketsToBeClosed.add(tcpSocket);
             }
         }
 
         return receivedMessageCount;
     }
+
+
+
 
     /*
      *  Write methods below
