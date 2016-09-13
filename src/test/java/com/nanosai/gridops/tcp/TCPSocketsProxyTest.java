@@ -37,15 +37,15 @@ public class TCPSocketsProxyTest {
         TCPSocketPool tcpSocketPool = new TCPSocketPool(1024);
 
         TCPSocketMock tcpSocketMock1 = createTCPSocketMock(tcpSocketPool, readMemoryAllocator);
-        tcpSocketMock1.length        =  IapUtil.createMessage(tcpSocketMock1.bytesToRead, 0);
-        tcpSocketMock1.length        += IapUtil.createMessage(tcpSocketMock1.bytesToRead, tcpSocketMock1.length);
+        tcpSocketMock1.sourceLength =  IapUtil.createMessage(tcpSocketMock1.byteSource, 0);
+        tcpSocketMock1.sourceLength += IapUtil.createMessage(tcpSocketMock1.byteSource, tcpSocketMock1.sourceLength);
         tcpSocketMock1.windowSize    = 1;
 
         readySockets[0] = tcpSocketMock1;
 
         TCPSocketMock tcpSocketMock2 = createTCPSocketMock(tcpSocketPool, readMemoryAllocator);
-        tcpSocketMock2.length        =  IapUtil.createMessage(tcpSocketMock2.bytesToRead, 0);
-        tcpSocketMock2.length        += IapUtil.createMessage(tcpSocketMock2.bytesToRead, tcpSocketMock2.length);
+        tcpSocketMock2.sourceLength =  IapUtil.createMessage(tcpSocketMock2.byteSource, 0);
+        tcpSocketMock2.sourceLength += IapUtil.createMessage(tcpSocketMock2.byteSource, tcpSocketMock2.sourceLength);
         tcpSocketMock2.windowSize    = 1;
 
         readySockets[1] = tcpSocketMock2;
@@ -60,11 +60,11 @@ public class TCPSocketsProxyTest {
         assertEquals(0, tcpSocketMock2.doSocketReadCallCount);
 
         tcpSocketMock1.reset();
-        tcpSocketMock1.length = 30; // messages are 15 bytes long each
+        tcpSocketMock1.sourceLength = 30; // messages are 15 bytes long each
         tcpSocketMock1.windowSize = 1;
 
         tcpSocketMock2.reset();
-        tcpSocketMock2.length = 30; // messages are 15 bytes long each
+        tcpSocketMock2.sourceLength = 30; // messages are 15 bytes long each
         tcpSocketMock2.windowSize = 1;
 
         assertEquals(0, tcpSocketMock1.bytesRead);
@@ -88,10 +88,14 @@ public class TCPSocketsProxyTest {
         TCPSocketMock tcpSocketMock = new TCPSocketMock(tcpSocketPool);
         tcpSocketMock.messageReader = new IAPMessageReader();
         tcpSocketMock.messageReader.init(readMemoryAllocator);
-        tcpSocketMock.bytesToRead   = new byte[1024];
+        tcpSocketMock.byteSource = new byte[1024];
         tcpSocketMock.bytesRead     = 0;
 
         return tcpSocketMock;
     }
+
+
+
+
 
 }

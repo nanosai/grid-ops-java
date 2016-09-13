@@ -36,9 +36,9 @@ public class IonObjectWriterTest {
 
         int index = 0;
 
-        assertEquals((IonFieldTypes.OBJECT << 4) | 2, 255 & dest[index++]);  //object field started - 194 = object field type << 3 | 2 (length length)
-        assertEquals(  0, 255 & dest[index++]);  //length of object - MSB
-        assertEquals(101, 255 & dest[index++]);  //length of object - LSB
+        assertEquals((IonFieldTypes.OBJECT << 4) | 2, 255 & dest[index++]);  //object field started - 194 = object field type << 3 | 2 (sourceLength sourceLength)
+        assertEquals(  0, 255 & dest[index++]);  //sourceLength of object - MSB
+        assertEquals(101, 255 & dest[index++]);  //sourceLength of object - LSB
 
         assertEquals((IonFieldTypes.KEY_SHORT << 4) | 6, 255 & dest[index++]);   //lead byte of key field
         assertEquals('f', 255 & dest[index++]);   //value of char 1 field
@@ -461,7 +461,7 @@ public class IonObjectWriterTest {
         PojoArray10Float pojoArray10 = new PojoArray10Float(10);
 
         int length = writer.writeObject(pojoArray10, 2, dest, 0);
-        System.out.println("length = " + length);
+        System.out.println("sourceLength = " + length);
 
     }
 

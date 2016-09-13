@@ -64,13 +64,13 @@ public class IonFieldWriterTests {
 
         int tableLength = writer.writeKeyAndValueFields(testPojo, dest, 0, 2);
 
-        //table length should be:
+        //table sourceLength should be:
         // key field : 1 + 1 + "testObjects" =  13
 
 
         int index = 0;
         assertEquals((IapFieldTypes.KEY   << 3) | 1, 255 & dest[index++]);
-        assertEquals(11, dest[index++]); //key length
+        assertEquals(11, dest[index++]); //key sourceLength
         assertEquals('t', dest[index++]);
         assertEquals('e', dest[index++]);
         assertEquals('s', dest[index++]);
@@ -84,9 +84,9 @@ public class IonFieldWriterTests {
         assertEquals('s', dest[index++]);
 
 
-        // table lead byte + 2 length bytes = 3
+        // table lead byte + 2 sourceLength bytes = 3
         // key field = 1 + 2 (id field) = 3
-        // 2 long fields of 1 lead byte + 1 length byte + 1 value byte = 2 x 3 = 6;
+        // 2 long fields of 1 lead byte + 1 sourceLength byte + 1 value byte = 2 x 3 = 6;
         assertEquals((IapFieldTypes.TABLE << 3) | 2, 255 & dest[index++]);
         assertEquals( 0, dest[index++]);
         assertEquals(61, dest[index++]);   // 5 compact keys (3 bytes), 1 boolean, 1 short, 1 int, 1 long and 1 float field

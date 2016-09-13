@@ -28,6 +28,6 @@ public class IapUtil {
         dest[offset + 13] = 'v';
         dest[offset + 14] = '2';
 
-        return 15; //total message length in bytes.
+        return 15; //total message sourceLength in bytes.
     }
 }

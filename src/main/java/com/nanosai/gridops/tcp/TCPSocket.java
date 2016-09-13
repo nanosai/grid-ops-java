@@ -144,7 +144,7 @@ public class TCPSocket {
             byteBuffer.put(byteArray, offset, length);
             byteBuffer.flip();
 
-            bytesWrittenNow = writeToSocketChannel(byteBuffer);
+            bytesWrittenNow = doSocketWrite(byteBuffer);
             totalBytesWritten += bytesWrittenNow;
             byteBuffer.clear();
 
@@ -170,7 +170,7 @@ public class TCPSocket {
             byteBuffer.put(byteArray, offset, length);
             byteBuffer.flip();
 
-            bytesWrittenNow = writeToSocketChannel(byteBuffer);
+            bytesWrittenNow = doSocketWrite(byteBuffer);
             this.bytesWritten += bytesWrittenNow;
 
             byteBuffer.clear();
@@ -188,7 +188,7 @@ public class TCPSocket {
 
 
 
-    public int writeToSocketChannel(ByteBuffer byteBuffer) throws IOException{
+    public int doSocketWrite(ByteBuffer byteBuffer) throws IOException{
         int bytesWritten      = this.socketChannel.write(byteBuffer);
         int totalBytesWritten = bytesWritten;
 
@@ -196,8 +196,6 @@ public class TCPSocket {
             bytesWritten = this.socketChannel.write(byteBuffer);
             totalBytesWritten += bytesWritten;
         }
-
-
 
         return totalBytesWritten;
     }

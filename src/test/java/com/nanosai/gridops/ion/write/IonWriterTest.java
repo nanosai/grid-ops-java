@@ -204,7 +204,7 @@ public class IonWriterTest {
         int bytesWritten = IonWriter.writeBytes(dest, 0, new byte[]{1,2,3,4,5}, 1,3);
         assertEquals(5, bytesWritten);
         assertEquals((IonFieldTypes.BYTES << 4) | 1, 255 & dest[index++]);
-        assertEquals(3, 255 & dest[index++]); //length byte
+        assertEquals(3, 255 & dest[index++]); //sourceLength byte
         assertEquals(2, 255 & dest[index++]);
         assertEquals(3, 255 & dest[index++]);
         assertEquals(4, 255 & dest[index++]);
@@ -216,7 +216,7 @@ public class IonWriterTest {
 
         assertEquals(15, writer.destIndex);
         assertEquals((IonFieldTypes.BYTES << 4) | 1, 255 & dest[index++]);
-        assertEquals(3, 255 & dest[index++]); //length byte
+        assertEquals(3, 255 & dest[index++]); //sourceLength byte
         assertEquals(7, 255 & dest[index++]);
         assertEquals(8, 255 & dest[index++]);
         assertEquals(9, 255 & dest[index++]);
@@ -1076,13 +1076,13 @@ public class IonWriterTest {
         int offset = 10;
 
         /*
-        int bytesWritten = IonWriter.writeComplexTypeIdShort(dest, offset, typeId);
+        int bytesWritten = IonWriter.writeComplexTypeIdShort(dest, sourceOffset, typeId);
 
         assertEquals(4, bytesWritten);
-        assertEquals((IonFieldTypes.COMPLEX_TYPE_ID_SHORT << 4) | 3, 255 & dest[offset++]);
-        assertEquals( 1, 255 & dest[offset++]);
-        assertEquals( 2, 255 & dest[offset++]);
-        assertEquals( 3, 255 & dest[offset++]);
+        assertEquals((IonFieldTypes.COMPLEX_TYPE_ID_SHORT << 4) | 3, 255 & dest[sourceOffset++]);
+        assertEquals( 1, 255 & dest[sourceOffset++]);
+        assertEquals( 2, 255 & dest[sourceOffset++]);
+        assertEquals( 3, 255 & dest[sourceOffset++]);
         */
 
     }
