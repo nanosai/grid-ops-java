@@ -46,7 +46,7 @@ public class TCPSocketTest {
         assertEquals(1, tcpSocket.doSocketReadCallCount);
 
         tcpSocket.reset();
-        tcpSocket.windowSize = 1; //read message 1 byte at a time from byte array
+        tcpSocket.readWindowSize = 1; //read message 1 byte at a time from byte array
         tcpSocket.sourceLength = 15;
         msgCount = tcpSocket.readMessages(buffer, msgDest, msgDstOffset);
         assertEquals( 1, msgCount);
@@ -56,7 +56,7 @@ public class TCPSocketTest {
         assertEquals (15, msgDest[0].endIndex);
 
 
-        //same test, now read 2 bytes at a time instead of 1 (tcpSocket.windowSize = 2)
+        //same test, now read 2 bytes at a time instead of 1 (tcpSocket.readWindowSize = 2)
 
         //todo generate an IONMessage. Make asserts that it is read correctly.
     }
@@ -79,7 +79,7 @@ public class TCPSocketTest {
 
         tcpSocket.sourceLength = IapUtil.createMessage(tcpSocket.byteSource, 0);
 
-        tcpSocket.windowSize = 2;
+        tcpSocket.readWindowSize = 2;
         tcpSocket.sourceLength = 15;
         msgDest[0] = null;
 
@@ -110,7 +110,7 @@ public class TCPSocketTest {
 
         tcpSocket.sourceLength = IapUtil.createMessage(tcpSocket.byteSource, 0);
 
-        tcpSocket.windowSize = 3;
+        tcpSocket.readWindowSize = 3;
         tcpSocket.sourceLength = 15;
         msgDest[0] = null;
 
@@ -130,6 +130,7 @@ public class TCPSocketTest {
         TCPSocketPool tcpSocketPool = new TCPSocketPool(10);
 
         TCPSocketMock tcpSocket = new TCPSocketMock(tcpSocketPool);
+        tcpSocket.writeWindowSize = 10;
 
         tcpSocket.byteDest = new byte[1024];
 
@@ -148,8 +149,7 @@ public class TCPSocketTest {
 
         tcpSocket.writeDirect(buffer, tcpMessage);
 
-
-        assertEquals(  1, tcpSocket.doSocketWriteCallCount);
+        assertEquals( 10, tcpSocket.doSocketWriteCallCount);
         assertEquals(100, tcpSocket.destLength);
 
         for(int i=0; i<100; i++){

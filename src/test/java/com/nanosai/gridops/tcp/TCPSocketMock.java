@@ -13,7 +13,7 @@ public class TCPSocketMock extends TCPSocket {
     public int    sourceOffset = 0;
     public int    sourceLength = 0;
 
-    public int    windowSize = 0; // window meaning a block of bytes.
+    public int    readWindowSize = 0; // window meaning a block of bytes.
     public int    bytesRead  = 0;
 
     public int    doSocketReadCallCount = 0;
@@ -23,6 +23,8 @@ public class TCPSocketMock extends TCPSocket {
     public byte[] byteDest = null;
     public int    destOffset = 0;
     public int    destLength = 0;
+
+    public int    writeWindowSize = 0; // window meaning a block of bytes.
 
     public int    doSocketWriteCallCount = 0;
 
@@ -35,7 +37,7 @@ public class TCPSocketMock extends TCPSocket {
     public void reset() {
         this.sourceOffset = 0;
         this.sourceLength = 0;
-        this.windowSize = 0;
+        this.readWindowSize = 0;
         this.bytesRead  = 0;
         this.doSocketReadCallCount = 0;
     }
@@ -44,7 +46,7 @@ public class TCPSocketMock extends TCPSocket {
     protected int doSocketRead(ByteBuffer destinationBuffer) throws IOException {
         this.doSocketReadCallCount++;
 
-        int bytesToRead = Math.min(this.sourceLength - this.bytesRead, this.windowSize);
+        int bytesToRead = Math.min(this.sourceLength - this.bytesRead, this.readWindowSize);
 
         destinationBuffer.put(this.byteSource, this.sourceOffset + this.bytesRead, bytesToRead);
         this.bytesRead += bytesToRead;
@@ -55,8 +57,9 @@ public class TCPSocketMock extends TCPSocket {
 
     @Override
     public int doSocketWrite(ByteBuffer byteBuffer) throws IOException {
-        int length = byteBuffer.remaining();
-        byteBuffer.get(this.byteDest, this.destOffset, length);
+        int length = Math.min(byteBuffer.remaining(), this.writeWindowSize);
+
+        byteBuffer.get(this.byteDest, this.destOffset + this.destLength, length);
         this.destLength += length;
 
         this.doSocketWriteCallCount++;

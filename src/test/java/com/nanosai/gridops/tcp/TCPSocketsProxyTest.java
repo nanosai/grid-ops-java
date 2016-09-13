@@ -39,14 +39,14 @@ public class TCPSocketsProxyTest {
         TCPSocketMock tcpSocketMock1 = createTCPSocketMock(tcpSocketPool, readMemoryAllocator);
         tcpSocketMock1.sourceLength =  IapUtil.createMessage(tcpSocketMock1.byteSource, 0);
         tcpSocketMock1.sourceLength += IapUtil.createMessage(tcpSocketMock1.byteSource, tcpSocketMock1.sourceLength);
-        tcpSocketMock1.windowSize    = 1;
+        tcpSocketMock1.readWindowSize = 1;
 
         readySockets[0] = tcpSocketMock1;
 
         TCPSocketMock tcpSocketMock2 = createTCPSocketMock(tcpSocketPool, readMemoryAllocator);
         tcpSocketMock2.sourceLength =  IapUtil.createMessage(tcpSocketMock2.byteSource, 0);
         tcpSocketMock2.sourceLength += IapUtil.createMessage(tcpSocketMock2.byteSource, tcpSocketMock2.sourceLength);
-        tcpSocketMock2.windowSize    = 1;
+        tcpSocketMock2.readWindowSize = 1;
 
         readySockets[1] = tcpSocketMock2;
 
@@ -61,11 +61,11 @@ public class TCPSocketsProxyTest {
 
         tcpSocketMock1.reset();
         tcpSocketMock1.sourceLength = 30; // messages are 15 bytes long each
-        tcpSocketMock1.windowSize = 1;
+        tcpSocketMock1.readWindowSize = 1;
 
         tcpSocketMock2.reset();
         tcpSocketMock2.sourceLength = 30; // messages are 15 bytes long each
-        tcpSocketMock2.windowSize = 1;
+        tcpSocketMock2.readWindowSize = 1;
 
         assertEquals(0, tcpSocketMock1.bytesRead);
         assertEquals(0, tcpSocketMock1.doSocketReadCallCount);

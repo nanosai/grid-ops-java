@@ -132,24 +132,22 @@ public class TCPSocket {
 
 
     public int writeDirect(ByteBuffer byteBuffer, TCPMessage message) throws IOException {
+        if(message.lengthWritten() > byteBuffer.capacity()){
+            return 0;
+        }
+
+        byteBuffer.put(message.memoryAllocator.data, message.startIndex, message.lengthWritten());
+        byteBuffer.flip();
+
         int totalBytesWritten = 0;
-        int bytesWrittenNow = 0;
+        int bytesWrittenNow   = 0;
 
         do {
-            byte[] byteArray = message.memoryAllocator.data;
-
-            int offset = message.startIndex + bytesWritten;
-            int length = message.writeIndex - offset;
-
-            byteBuffer.put(byteArray, offset, length);
-            byteBuffer.flip();
-
             bytesWrittenNow = doSocketWrite(byteBuffer);
             totalBytesWritten += bytesWrittenNow;
-            byteBuffer.clear();
-
-
         } while (bytesWrittenNow > 0 && (message.startIndex + totalBytesWritten < message.writeIndex));
+
+        byteBuffer.clear();
 
         return totalBytesWritten;
     }
