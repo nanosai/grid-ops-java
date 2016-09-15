@@ -123,7 +123,7 @@ public class TCPSocketTest {
     }
 
     @Test
-    public void testWriteDirect_singleMessage() throws IOException {
+    public void testWrite_singleMessage() throws IOException {
         MemoryAllocator memoryAllocator = new MemoryAllocator(
                 new byte[1024 * 1024], new long[1024], (allocator) -> new TCPMessage(allocator));
 
@@ -147,7 +147,7 @@ public class TCPSocketTest {
         //todo insert some data into the tcpMessage - write to tcpSocket - and verify that the
         // data was actually written to doSocketWrite().
 
-        tcpSocket.writeDirect(buffer, tcpMessage);
+        tcpSocket.write(buffer, tcpMessage);
 
         assertEquals( 10, tcpSocket.doSocketWriteCallCount);
         assertEquals(100, tcpSocket.destLength);

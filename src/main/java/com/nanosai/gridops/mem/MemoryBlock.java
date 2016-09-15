@@ -13,6 +13,7 @@ public class MemoryBlock {
     public int startIndex = 0;
     public int endIndex   = 0;
 
+    public int readIndex  = 0;
     public int writeIndex = 0;    //equal to the length of the block already written to.
 
     private boolean isComplete = false;
@@ -25,6 +26,7 @@ public class MemoryBlock {
     public MemoryBlock allocate(int length) {
         this.startIndex = this.memoryAllocator.allocate(length);
         this.endIndex   = this.startIndex + length;
+        this.readIndex  = this.startIndex;
         this.writeIndex = this.startIndex;
 
         return this;

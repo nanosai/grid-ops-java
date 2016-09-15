@@ -263,9 +263,9 @@ public class TCPSocketsProxy {
     public void enqueue(TCPSocket tcpSocket, TCPMessage message) throws IOException {
         if(tcpSocket.isEmpty()){
             //attempt to write message immediately instead of first queueing up the message.
-            int bytesWrittenDirect = tcpSocket.writeDirect(this.writeByteBuffer, message);
+            tcpSocket.write(this.writeByteBuffer, message);
 
-            if(bytesWrittenDirect == message.writeIndex - message.startIndex){ //if full message written
+            if(message.readIndex == message.writeIndex){ //if full message written
                 message.free();
             } else {  //else queue remainder of message.
                 if(!tcpSocket.isRegisteredWithWriteSelector){
@@ -273,7 +273,7 @@ public class TCPSocketsProxy {
                     tcpSocket.isRegisteredWithWriteSelector = true;
                 }
 
-                tcpSocket.enqueueRest(message, bytesWrittenDirect);
+                tcpSocket.enqueue(message);
             }
 
         } else {

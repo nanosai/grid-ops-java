@@ -32,7 +32,6 @@ public class TCPSocket {
      */
 
     private Queue writeQueue   = new Queue(16);
-    private int   bytesWritten = 0;
 
 
     public TCPSocket(TCPSocketPool tcpSocketPool) {
@@ -121,67 +120,46 @@ public class TCPSocket {
         this.writeQueue.put(memoryBlock);
     }
 
-    public void enqueueRest(MemoryBlock memoryBlock, int bytesAlreadyWritten) {
-        this.writeQueue.put(memoryBlock);
-        this.bytesWritten = bytesAlreadyWritten;
-    }
 
     public boolean isEmpty() {
         return this.writeQueue.available() == 0;
     }
 
 
-    public int writeDirect(ByteBuffer byteBuffer, TCPMessage message) throws IOException {
-        if(message.lengthWritten() > byteBuffer.capacity()){
-            return 0;
-        }
+    public boolean write(ByteBuffer byteBuffer, TCPMessage message) throws IOException {
+        byteBuffer.clear();
 
-        byteBuffer.put(message.memoryAllocator.data, message.startIndex, message.lengthWritten());
+        //todo make some calculations to limit the size of data written to that of the ByteBuffer.capacity()
+        byteBuffer.put(message.memoryAllocator.data, message.readIndex, message.writeIndex - message.readIndex);
+
         byteBuffer.flip();
 
-        int totalBytesWritten = 0;
-        int bytesWrittenNow   = 0;
+        int bytesWrittenNow = 0;
 
         do {
             bytesWrittenNow = doSocketWrite(byteBuffer);
-            totalBytesWritten += bytesWrittenNow;
-        } while (bytesWrittenNow > 0 && (message.startIndex + totalBytesWritten < message.writeIndex));
+            message.readIndex += bytesWrittenNow;
+        } while(bytesWrittenNow > 0 && byteBuffer.hasRemaining());
 
-        byteBuffer.clear();
-
-        return totalBytesWritten;
+        return bytesWrittenNow > 0; //can write more? Or was bytesWrittenNow == 0 ?
     }
 
 
     public void writeQueued(ByteBuffer byteBuffer) throws IOException {
+        TCPMessage messageInProgress = (TCPMessage) this.writeQueue.peek();
 
-        MemoryBlock messageInProgress = (MemoryBlock) this.writeQueue.peek();
+        boolean canWriteMoreToSocketNow = true;
 
-        int bytesWrittenNow = 0;
+        while(canWriteMoreToSocketNow && messageInProgress != null){
+             canWriteMoreToSocketNow = write(byteBuffer, messageInProgress);
 
-        do{
-            byte[] byteArray = messageInProgress.memoryAllocator.data;
+            if(messageInProgress.readIndex == messageInProgress.writeIndex){ //if message fully written to socket...
+                this.writeQueue.take();     // remove this message from queue
+                messageInProgress.free();   // free the memory allocated to this message
 
-            int offset = messageInProgress.startIndex + bytesWritten;
-            int length = messageInProgress.writeIndex - offset;
-
-            byteBuffer.put(byteArray, offset, length);
-            byteBuffer.flip();
-
-            bytesWrittenNow = doSocketWrite(byteBuffer);
-            this.bytesWritten += bytesWrittenNow;
-
-            byteBuffer.clear();
-
-            if(bytesWritten == (messageInProgress.writeIndex - messageInProgress.startIndex)){
-                this.bytesWritten = 0;
-                this.writeQueue.take();
-                messageInProgress.free();
-
-                messageInProgress = (MemoryBlock) this.writeQueue.peek();
+                messageInProgress = (TCPMessage) this.writeQueue.peek();  // take next message in queue, if any.
             }
-
-        } while(bytesWrittenNow > 0 && messageInProgress != null);
+        }
     }
 
 
@@ -230,7 +208,6 @@ public class TCPSocket {
             this.socketChannel.close();
             this.socketChannel = null;
         }
-
     }
 
 
