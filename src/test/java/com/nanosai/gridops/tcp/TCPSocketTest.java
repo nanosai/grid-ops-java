@@ -7,8 +7,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * Created by jjenkov on 08-09-2016.
@@ -139,10 +138,7 @@ public class TCPSocketTest {
         TCPMessage tcpMessage = (TCPMessage) memoryAllocator.getMemoryBlock();
         tcpMessage.allocate(1024);
 
-        for(int i=0; i < 100; i++){
-            tcpMessage.memoryAllocator.data[tcpMessage.startIndex + i] = (byte) i;
-        }
-        tcpMessage.writeIndex = tcpMessage.startIndex + 100;
+        writeDataToMessage(tcpMessage);
 
         //todo insert some data into the tcpMessage - write to tcpSocket - and verify that the
         // data was actually written to doSocketWrite().
@@ -152,15 +148,118 @@ public class TCPSocketTest {
         assertEquals( 10, tcpSocket.doSocketWriteCallCount);
         assertEquals(100, tcpSocket.destLength);
 
-        for(int i=0; i<100; i++){
-            assertEquals((byte) i, tcpSocket.byteDest[i]);
-        }
+        assertFullMessageWritten(tcpSocket, 0);
 
 
     }
 
+    private void assertFullMessageWritten(TCPSocketMock tcpSocket, int offset) {
+        for(int i=0; i<100; i++){
+            assertEquals((byte) i, tcpSocket.byteDest[offset + i]);
+        }
+    }
+
+    private void writeDataToMessage(TCPMessage tcpMessage) {
+        for(int i=0; i < 100; i++){
+            tcpMessage.memoryAllocator.data[tcpMessage.startIndex + i] = (byte) i;
+        }
+        tcpMessage.writeIndex = tcpMessage.startIndex + 100;
+    }
+
     @Test
-    public void testEnqueue_singleMessage() {
+    public void testWriteEnqueued() throws IOException {
+        MemoryAllocator memoryAllocator = new MemoryAllocator(
+                new byte[1024 * 1024], new long[1024], (allocator) -> new TCPMessage(allocator));
+
+        TCPSocketPool tcpSocketPool = new TCPSocketPool(10);
+
+        TCPSocketMock tcpSocket = new TCPSocketMock(tcpSocketPool);
+        tcpSocket.writeWindowSize = 10;
+
+        assertTrue(tcpSocket.isEmpty());
+
+        tcpSocket.byteDest = new byte[1024];
+
+        ByteBuffer    buffer       = ByteBuffer.allocate(1024 * 1024);
+        TCPMessage tcpMessage = (TCPMessage) memoryAllocator.getMemoryBlock();
+        tcpMessage.allocate(1024);
+
+        writeDataToMessage(tcpMessage);
+        tcpSocket.enqueue(tcpMessage);
+        assertFalse(tcpSocket.isEmpty());
+
+        tcpSocket.writeQueued(buffer);
+        assertTrue(tcpSocket.isEmpty());
+
+        assertEquals(10, tcpSocket.doSocketWriteCallCount);
+        assertEquals(100, tcpSocket.bytesWritten);
+        assertFullMessageWritten(tcpSocket, 0);
+
+
+        tcpSocket.doSocketWriteCallCount = 0;
+        tcpSocket.writeQueued(buffer);
+        assertEquals(0, tcpSocket.doSocketWriteCallCount);  //no messagaes queued - no writes expected
+
+        //test with 2 enqueued messages
+        //tcpMessage was freed after writing, so we need to allocate it again
+        tcpMessage = (TCPMessage) memoryAllocator.getMemoryBlock();
+        tcpMessage.allocate(1024);
+        writeDataToMessage(tcpMessage);
+        tcpSocket.enqueue(tcpMessage);
+
+        TCPMessage tcpMessage2 = (TCPMessage) memoryAllocator.getMemoryBlock();
+        tcpMessage2.allocate(1024);
+        writeDataToMessage(tcpMessage2);
+        tcpSocket.enqueue(tcpMessage2);
+
+        tcpSocket.writeQueued(buffer);
+        assertFullMessageWritten(tcpSocket, 100);
+        assertFullMessageWritten(tcpSocket, 200);
+
+
+        assertTrue(tcpSocket.isEmpty());
+        assertEquals(20, tcpSocket.doSocketWriteCallCount);
+        assertEquals(300, tcpSocket.bytesWritten);
+
+        tcpSocket.doSocketWriteCallCount = 0;
+        tcpSocket.writeQueued(buffer);
+        assertEquals(0, tcpSocket.doSocketWriteCallCount);
+        assertEquals(300, tcpSocket.bytesWritten);
+
+
+        // test with 1 enqueued message, and a write cap which imitates that only part of the message can be
+        // written to the underlying socket, and verity that half the message is written, and that the other half
+        // can be written later, and the queue emptied.
+        tcpMessage = (TCPMessage) memoryAllocator.getMemoryBlock();
+        tcpMessage.allocate(1024);
+        writeDataToMessage(tcpMessage);
+
+        assertTrue(tcpSocket.isEmpty());
+        tcpSocket.enqueue(tcpMessage);
+        assertFalse(tcpSocket.isEmpty());
+
+        tcpSocket.doSocketWriteCallCount = 0;
+        tcpSocket.writeCap = 50; //50 bytes write cap.
+        tcpSocket.bytesWritten = 0;
+
+        tcpSocket.writeQueued(buffer);
+        assertFalse(tcpSocket.isEmpty());
+
+        assertEquals( 6, tcpSocket.doSocketWriteCallCount);
+        assertEquals(50, tcpSocket.bytesWritten);
+
+        tcpSocket.writeQueued(buffer);
+        assertFalse(tcpSocket.isEmpty());
+        assertEquals(7, tcpSocket.doSocketWriteCallCount);
+        assertEquals(50, tcpSocket.bytesWritten);
+
+        tcpSocket.writeCap = 100;
+        tcpSocket.writeQueued(buffer);
+        assertTrue(tcpSocket.isEmpty());
+        assertEquals(12, tcpSocket.doSocketWriteCallCount);
+        assertEquals(100, tcpSocket.bytesWritten);
+        
+        assertFullMessageWritten(tcpSocket, 300);
 
     }
 

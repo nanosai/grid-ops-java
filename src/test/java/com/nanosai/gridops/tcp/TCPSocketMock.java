@@ -28,6 +28,9 @@ public class TCPSocketMock extends TCPSocket {
 
     public int    doSocketWriteCallCount = 0;
 
+    public int    bytesWritten = 0;
+    public int    writeCap = Integer.MAX_VALUE;
+
 
 
     public TCPSocketMock(TCPSocketPool tcpSocketPool) {
@@ -57,12 +60,16 @@ public class TCPSocketMock extends TCPSocket {
 
     @Override
     public int doSocketWrite(ByteBuffer byteBuffer) throws IOException {
+        this.doSocketWriteCallCount++;
+        if(this.bytesWritten >= this.writeCap){
+            return 0; //imitate a situation where not all of the message could be written to the underlying socket.
+        }
         int length = Math.min(byteBuffer.remaining(), this.writeWindowSize);
 
         byteBuffer.get(this.byteDest, this.destOffset + this.destLength, length);
         this.destLength += length;
 
-        this.doSocketWriteCallCount++;
+        this.bytesWritten += length;
 
         return length;
     }
