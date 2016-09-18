@@ -258,7 +258,7 @@ public class TCPSocketTest {
         assertTrue(tcpSocket.isEmpty());
         assertEquals(12, tcpSocket.doSocketWriteCallCount);
         assertEquals(100, tcpSocket.bytesWritten);
-        
+
         assertFullMessageWritten(tcpSocket, 300);
 
     }

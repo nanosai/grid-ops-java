@@ -198,6 +198,58 @@ public class IonWriterTest {
 
 
     @Test
+    public void testWriteObjectPushPop() {
+        byte[] dest = new byte[1024];
+
+        IonWriter writer = new IonWriter();
+        writer.setDestination(dest, 0);
+        writer.setComplexFieldStack(new int[16]);
+
+        writer.writeObjectBeginPush(2);
+        writer.writeInt64(1234);
+        writer.writeUtf8("abcd");
+
+        writer.writeObjectBeginPush(2);
+        writer.writeInt64(5678);
+        writer.writeUtf8("efgh");
+        writer.writeObjectEndPop();
+
+        writer.writeObjectEndPop();
+
+        assertEquals(22, writer.destIndex);
+
+        int index = 0;
+        assertEquals((IonFieldTypes.OBJECT << 4) | 2, 255 & dest[index++]);
+        assertEquals( 0, 255 & dest[index++]);
+        assertEquals(19, 255 & dest[index++]);
+
+        assertEquals((IonFieldTypes.INT_POS << 4) | 2, 255 & dest[index++]);
+        assertEquals(1234 >> 8  , 255 & dest[index++]);
+        assertEquals(1234  & 255, 255 & dest[index++]);
+
+        assertEquals((IonFieldTypes.UTF_8_SHORT << 4) | 4, 255 & dest[index++]);
+        assertEquals('a'  , 255 & dest[index++]);
+        assertEquals('b'  & 255, 255 & dest[index++]);
+        assertEquals('c'  & 255, 255 & dest[index++]);
+        assertEquals('d'  & 255, 255 & dest[index++]);
+
+        assertEquals((IonFieldTypes.OBJECT << 4) | 2, 255 & dest[index++]);
+        assertEquals( 0, 255 & dest[index++]);
+        assertEquals( 8, 255 & dest[index++]);
+
+        assertEquals((IonFieldTypes.INT_POS << 4) | 2, 255 & dest[index++]);
+        assertEquals(5678 >> 8  , 255 & dest[index++]);
+        assertEquals(5678  & 255, 255 & dest[index++]);
+
+        assertEquals((IonFieldTypes.UTF_8_SHORT << 4) | 4, 255 & dest[index++]);
+        assertEquals('e'  , 255 & dest[index++]);
+        assertEquals('f'  & 255, 255 & dest[index++]);
+        assertEquals('g'  & 255, 255 & dest[index++]);
+        assertEquals('h'  & 255, 255 & dest[index++]);
+    }
+
+
+    @Test
     public void testWriteBytes() {
 
         int index = 0;

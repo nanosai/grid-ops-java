@@ -19,6 +19,9 @@ public class IonWriter {
     public byte[] dest      = null;
     public int    destIndex = 0;
 
+    private int[] complexFieldStack = null; //used to store start indexes of complex fields that can contain nested fields.
+    private int   complexFieldStackIndex = 0;
+
     public IonWriter() {
     }
 
@@ -38,6 +41,10 @@ public class IonWriter {
 
     public void setOffset(int offset){
         this.destIndex = offset;
+    }
+
+    public void setComplexFieldStack(int[] stack){
+        this.complexFieldStack = stack;
     }
 
     /*
@@ -375,6 +382,22 @@ public class IonWriter {
     public void writeObjectEnd(int objectStartIndex, int lengthLength, int length){
         objectStartIndex++;  //jump over the lead byte of the ION Object field
 
+        for(int i=(lengthLength-1)*8; i >= 0; i-=8){
+            dest[objectStartIndex++] = (byte) (255 & (length >> i));
+        }
+    }
+
+    public void writeObjectBeginPush(int lengthLength){
+        this.complexFieldStack[this.complexFieldStackIndex++] = this.destIndex;
+        this.dest[this.destIndex++] = (byte) (255 & ((IonFieldTypes.OBJECT << 4) | lengthLength));
+        this.destIndex += lengthLength;
+    }
+    public void writeObjectEndPop(){
+        int objectStartIndex = this.complexFieldStack[this.complexFieldStackIndex--];
+        int lengthLength = 15 & (this.dest[objectStartIndex]);
+        int length = this.destIndex - objectStartIndex - 1 - lengthLength;
+
+        objectStartIndex++; //jump over lead byte of ION object field.
         for(int i=(lengthLength-1)*8; i >= 0; i-=8){
             dest[objectStartIndex++] = (byte) (255 & (length >> i));
         }
