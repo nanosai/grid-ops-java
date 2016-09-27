@@ -1,6 +1,7 @@
 package com.nanosai.gridops.ion.read;
 
 import com.nanosai.gridops.ion.IonFieldTypes;
+import com.nanosai.gridops.mem.MemoryBlock;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -49,7 +50,18 @@ public class IonReader {
         this.nextIndex = sourceOffset;
         this.sourceLength = length;
         this.intoIndexStackIndex = 0;
-        this.scopeEndIndex = length;
+        this.scopeEndIndex = length;   //todo should this not be this.sourceOffset + length?
+
+        return this;
+    }
+
+    public IonReader setSource(MemoryBlock sourceMemoryBlock){
+        this.source        = sourceMemoryBlock.memoryAllocator.data;
+        this.index         = sourceMemoryBlock.startIndex;
+        this.nextIndex     = sourceMemoryBlock.startIndex;
+        this.sourceLength  = sourceMemoryBlock.lengthWritten();
+        this.intoIndexStackIndex = 0;
+        this.scopeEndIndex = this.sourceLength; //todo should this not be this.sourceOffset + length?
 
         return this;
     }

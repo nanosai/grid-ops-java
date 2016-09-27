@@ -3,6 +3,7 @@ package com.nanosai.gridops.ion.write;
 import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.ion.IonUtil;
 import com.nanosai.gridops.ion.types.Key;
+import com.nanosai.gridops.mem.MemoryBlock;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
@@ -34,9 +35,16 @@ public class IonWriter {
         this.destIndex = destIndex;
     }
 
-    public void setDestination(byte[] dest, int offset){
+    public IonWriter setDestination(byte[] dest, int offset){
         this.dest      = dest;
         this.destIndex = offset;
+        return this;
+    }
+
+    public IonWriter setDestination(MemoryBlock destMemoryBlock){
+        this.dest      = destMemoryBlock.memoryAllocator.data;
+        this.destIndex = destMemoryBlock.startIndex;
+        return this;
     }
 
     public void setOffset(int offset){
