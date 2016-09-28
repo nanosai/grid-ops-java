@@ -2,6 +2,8 @@ package com.nanosai.gridops.ion.read;
 
 import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.ion.write.IonWriter;
+import com.nanosai.gridops.mem.MemoryAllocator;
+import com.nanosai.gridops.mem.MemoryBlock;
 import org.junit.Test;
 
 import java.util.*;
@@ -18,18 +20,56 @@ public class IonReaderTest {
     IonReader reader = new IonReader();
 
     @Test
-    public void testSetSource() {
+    public void testSetSource_byteArray() {
         byte[] source = new byte[10 * 1024];
 
-        int index = 0;
-        index += IonWriter.writeBytes(source, index, new byte[]{1, 2, 3, 4, 5});
-        index += IonWriter.writeBytes(source, index, null);
+        IonWriter writer = new IonWriter();
+        writer.setDestination(source, 0);
 
-        IonReader ionReader = new IonReader();
-        assertFalse(ionReader.hasNext());
+        writer.writeBytes(new byte[]{1, 2, 3, 4, 5});
+        writer.writeBytes(null);
 
-        ionReader.setSource(source, 0, index);
+        IonReader reader = new IonReader();
+        assertFalse(reader.hasNext());
+
+        reader.setSource(source, 0, writer.destIndex);
+        assertTrue(reader.hasNext());
+
+        writer.setDestination(source, 1000);
+        writer.writeBytes(new byte[]{1, 2, 3, 4, 5});
+        writer.writeBytes(null);
+
+        reader.setSource(source, 1000, writer.destIndex - 1000);
+        assertTrue(reader.hasNext());
+
+        reader.nextParse();
+        assertEquals(5, reader.fieldLength);
+        assertEquals(1, reader.source[reader.index]);
+        assertEquals(2, reader.source[reader.index + 1]);
+        assertEquals(3, reader.source[reader.index + 2]);
+        assertEquals(4, reader.source[reader.index + 3]);
+        assertEquals(5, reader.source[reader.index + 4]);
+
+
+    }
+
+
+    @Test
+    public void testSetSource_MemoryBlock() {
+        MemoryAllocator allocator = new MemoryAllocator(new byte[1024], new long[128]);
+        MemoryBlock   memoryBlock = allocator.getMemoryBlock().allocate(128);
+
+        IonWriter writer = new IonWriter().setDestination(memoryBlock);
+
+        writer.writeKey("abc");
+        writer.writeUtf8("abc");
+        writer.writeInt64(123);
+
+        IonReader ionReader = new IonReader().setSource(memoryBlock);
+
         assertTrue(ionReader.hasNext());
+
+
     }
 
 
@@ -235,7 +275,6 @@ public class IonReaderTest {
         assertEquals(999  , calendar2.get(Calendar.MILLISECOND)) ;
 
         assertEquals(TimeZone.getTimeZone("UTC")  , calendar2.getTimeZone()) ;
-
 
     }
 

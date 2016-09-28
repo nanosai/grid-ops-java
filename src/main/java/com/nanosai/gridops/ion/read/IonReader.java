@@ -50,7 +50,7 @@ public class IonReader {
         this.nextIndex = sourceOffset;
         this.sourceLength = length;
         this.intoIndexStackIndex = 0;
-        this.scopeEndIndex = length;   //todo should this not be this.sourceOffset + length?
+        this.scopeEndIndex = this.index + length;
 
         return this;
     }
@@ -61,7 +61,7 @@ public class IonReader {
         this.nextIndex     = sourceMemoryBlock.startIndex;
         this.sourceLength  = sourceMemoryBlock.lengthWritten();
         this.intoIndexStackIndex = 0;
-        this.scopeEndIndex = this.sourceLength; //todo should this not be this.sourceOffset + length?
+        this.scopeEndIndex = this.index + this.sourceLength;
 
         return this;
     }
