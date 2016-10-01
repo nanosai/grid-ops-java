@@ -1,6 +1,6 @@
 package com.nanosai.gridops.system;
 
-import com.nanosai.gridops.iap.IapMessage;
+import com.nanosai.gridops.iap.IapMessageKeys;
 import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.mem.MemoryBlock;
@@ -57,6 +57,6 @@ public class ProtocolHandler {
 
 
     private boolean isMessageTypeKey(IonReader reader) {
-        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessage.MESSAGE_TYPE_KEY_VALUE;
+        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.MESSAGE_TYPE_KEY_VALUE;
     }
 }

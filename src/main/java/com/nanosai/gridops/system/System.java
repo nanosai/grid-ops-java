@@ -1,6 +1,6 @@
 package com.nanosai.gridops.system;
 
-import com.nanosai.gridops.iap.IapMessage;
+import com.nanosai.gridops.iap.IapMessageKeys;
 import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.mem.MemoryBlock;
@@ -54,7 +54,7 @@ public class System {
 
 
     private boolean isSemanticProtocolIDKey(IonReader reader) {
-        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessage.SEMANTIC_PROTOCOL_ID_KEY_VALUE;
+        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.SEMANTIC_PROTOCOL_ID_KEY_VALUE;
     }
 
     public boolean systemIdEquals(byte[] otherId, int offset, int otherIdLength){

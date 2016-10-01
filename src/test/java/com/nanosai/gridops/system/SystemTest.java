@@ -1,7 +1,7 @@
 package com.nanosai.gridops.system;
 
 import com.nanosai.gridops.GridOps;
-import com.nanosai.gridops.iap.IapMessage;
+import com.nanosai.gridops.iap.IapMessageKeys;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.mem.MemoryAllocator;
@@ -74,7 +74,7 @@ public class SystemTest {
         writer.setComplexFieldStack(new int[16]);
         //writer.writeObjectBeginPush(2);
 
-        writer.writeKeyShort(new byte[]{IapMessage.SEMANTIC_PROTOCOL_ID_KEY_VALUE});
+        writer.writeKeyShort(new byte[]{IapMessageKeys.SEMANTIC_PROTOCOL_ID_KEY_VALUE});
         writer.writeBytes(new byte[]{semanticProtocolId});
 
         //writer.writeObjectEndPop();
