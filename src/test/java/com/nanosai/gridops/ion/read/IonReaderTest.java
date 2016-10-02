@@ -65,6 +65,8 @@ public class IonReaderTest {
         writer.writeUtf8("abc");
         writer.writeInt64(123);
 
+        memoryBlock.writeIndex = writer.destIndex;
+
         IonReader ionReader = new IonReader().setSource(memoryBlock);
 
         assertTrue(ionReader.hasNext());
