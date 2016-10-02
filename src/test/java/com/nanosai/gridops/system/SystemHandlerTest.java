@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
 /**
  * Created by jjenkov on 24-09-2016.
  */
-public class SystemTest {
+public class SystemHandlerTest {
 
 
     @Test
@@ -30,12 +30,12 @@ public class SystemTest {
             }
         };
 
-        System system = new System(new byte[]{0}, protocolHandler0, protocolHandler1);
+        SystemHandler systemHandler = new SystemHandler(new byte[]{0}, protocolHandler0, protocolHandler1);
 
-        assertSame(protocolHandler0, system.findProtocolHandler(0));
-        assertSame(protocolHandler1, system.findProtocolHandler(1));
+        assertSame(protocolHandler0, systemHandler.findProtocolHandler(0));
+        assertSame(protocolHandler1, systemHandler.findProtocolHandler(1));
 
-        assertNull(system.findProtocolHandler(2));
+        assertNull(systemHandler.findProtocolHandler(2));
     }
 
     @Test
@@ -43,7 +43,7 @@ public class SystemTest {
         ProtocolHandlerMock protocolHandlerMock = new ProtocolHandlerMock(0);
         assertFalse(protocolHandlerMock.handleMessageCalled);
 
-        System system = new System(new byte[]{0}, protocolHandlerMock);
+        SystemHandler systemHandler = new SystemHandler(new byte[]{0}, protocolHandlerMock);
 
         MemoryAllocator memoryAllocator = GridOps.memoryAllocator(1024 * 1024, 1024);
         MemoryBlock memoryBlock     = memoryAllocator.getMemoryBlock().allocate(1024);
@@ -55,7 +55,7 @@ public class SystemTest {
         reader.setSource(memoryBlock.memoryAllocator.data, memoryBlock.startIndex, memoryBlock.lengthWritten());
         reader.nextParse();
 
-        system.handleMessage(reader, memoryBlock);
+        systemHandler.handleMessage(reader, memoryBlock);
         assertTrue(protocolHandlerMock.handleMessageCalled);
 
         writeMessage((byte) 123, memoryBlock);
@@ -63,7 +63,7 @@ public class SystemTest {
         reader.nextParse();
         protocolHandlerMock.handleMessageCalled = false;
 
-        system.handleMessage(reader, memoryBlock);
+        systemHandler.handleMessage(reader, memoryBlock);
         assertFalse(protocolHandlerMock.handleMessageCalled);
     }
 

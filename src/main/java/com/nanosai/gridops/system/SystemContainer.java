@@ -10,12 +10,12 @@ import com.nanosai.gridops.mem.MemoryBlock;
  */
 public class SystemContainer {
 
-    private System[] systems = null;
+    private SystemHandler[] systemHandlers = null;
 
     private IonReader reader         = new IonReader();
 
-    public SystemContainer(System ... systems) {
-        this.systems = systems;
+    public SystemContainer(SystemHandler... systemHandlers) {
+        this.systemHandlers = systemHandlers;
     }
 
     public void handleMessage(MemoryBlock message){
@@ -42,11 +42,11 @@ public class SystemContainer {
         reader.nextParse();
         if(reader.fieldType == IonFieldTypes.BYTES){
 
-            System system = findSystem(reader.source, reader.index, reader.fieldLength);
+            SystemHandler systemHandler = findSystem(reader.source, reader.index, reader.fieldLength);
 
-            if(system != null){
+            if(systemHandler != null){
                 reader.nextParse();
-                system.handleMessage(reader, message);
+                systemHandler.handleMessage(reader, message);
                 return;
             }
         }
@@ -59,10 +59,10 @@ public class SystemContainer {
      * @param systemId The message type to find the message handler for.
      * @return The message handler matching the given message type, or null if no message handler found.
      */
-    public System findSystem(byte[] systemId, int offset, int length){
-        for(int i=0; i<systems.length; i++){
-            if(systems[i].systemIdEquals(systemId, offset, length)){
-                return systems[i];
+    public SystemHandler findSystem(byte[] systemId, int offset, int length){
+        for(int i = 0; i< systemHandlers.length; i++){
+            if(systemHandlers[i].systemIdEquals(systemId, offset, length)){
+                return systemHandlers[i];
             }
         }
         return null;

@@ -13,29 +13,29 @@ import static org.junit.Assert.*;
 /**
  * Created by jjenkov on 24-09-2016.
  */
-public class SystemContainerTest {
+public class SystemHandlerContainerTest {
 
 
     @Test
     public void testFindSystem() {
 
-        System system0 = new System(new byte[]{0}) {
+        SystemHandler systemHandler0 = new SystemHandler(new byte[]{0}) {
             @Override
             public void handleMessage(IonReader reader, MemoryBlock message) {
             }
         };
 
-        System system1 = new System(new byte[]{1}) {
+        SystemHandler systemHandler1 = new SystemHandler(new byte[]{1}) {
             @Override
             public void handleMessage(IonReader reader, MemoryBlock message) {
             }
         };
 
         SystemContainer systemContainer = new SystemContainer(
-                system0, system1);
+                systemHandler0, systemHandler1);
 
-        assertSame(system0, systemContainer.findSystem(new byte[]{0}, 0, 1));
-        assertSame(system1, systemContainer.findSystem(new byte[]{1}, 0, 1));
+        assertSame(systemHandler0, systemContainer.findSystem(new byte[]{0}, 0, 1));
+        assertSame(systemHandler1, systemContainer.findSystem(new byte[]{1}, 0, 1));
 
         assertNull(systemContainer.findSystem(new byte[]{2}, 0, 1));
     }
@@ -44,7 +44,7 @@ public class SystemContainerTest {
     @Test
     public void testHandleMessage() {
         byte systemId = 0;
-        SystemMock system0 = new SystemMock(new byte[]{systemId});
+        SystemHandlerMock system0 = new SystemHandlerMock(new byte[]{systemId});
         assertFalse(system0.handleMessageCalled);
 
         SystemContainer systemContainer = new SystemContainer(system0);

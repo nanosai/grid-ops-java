@@ -8,14 +8,14 @@ import com.nanosai.gridops.mem.MemoryBlock;
 /**
  * Created by jjenkov on 23-09-2016.
  */
-public class System {
+public class SystemHandler {
 
     public byte[] systemId = null;
 
     private ProtocolHandler[] protocolHandlers = null;
 
 
-    public System(byte[] systemId, ProtocolHandler ... protocolHandlers) {
+    public SystemHandler(byte[] systemId, ProtocolHandler ... protocolHandlers) {
         this.systemId = systemId;
         this.protocolHandlers = protocolHandlers;
     }

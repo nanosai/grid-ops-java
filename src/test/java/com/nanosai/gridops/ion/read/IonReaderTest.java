@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
 
 
 /**
-    This class tests the IapNavigator, but uses the IapGenerator in the tests, so IapGenerator is also tested implicitly.
+    This class tests the IonReader, but uses the IonWriter in the tests, so IonWriter is also tested implicitly.
  */
 public class IonReaderTest {
 
