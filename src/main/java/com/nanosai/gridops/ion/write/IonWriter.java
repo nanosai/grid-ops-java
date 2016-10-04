@@ -21,7 +21,7 @@ public class IonWriter {
     public int    destIndex = 0;
 
     private int[] complexFieldStack = null; //used to store start indexes of complex fields that can contain nested fields.
-    private int   complexFieldStackIndex = 0;
+    private int   complexFieldStackIndex = -1; //start at -1 - will be incremented before first use.
 
     public IonWriter() {
     }
@@ -396,7 +396,7 @@ public class IonWriter {
     }
 
     public void writeObjectBeginPush(int lengthLength){
-        this.complexFieldStack[this.complexFieldStackIndex++] = this.destIndex;
+        this.complexFieldStack[++this.complexFieldStackIndex] = this.destIndex;
         this.dest[this.destIndex++] = (byte) (255 & ((IonFieldTypes.OBJECT << 4) | lengthLength));
         this.destIndex += lengthLength;
     }
