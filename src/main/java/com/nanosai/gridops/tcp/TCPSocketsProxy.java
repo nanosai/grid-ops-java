@@ -4,6 +4,7 @@ import com.nanosai.gridops.mem.MemoryAllocator;
 import com.nanosai.gridops.mem.MemoryBlock;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -103,6 +104,17 @@ public class TCPSocketsProxy {
 
        this.newSocketsTemp.clear();
     }
+
+
+    public TCPSocket addInboundSocket(String host, int tcpPort) throws IOException {
+        return addInboundSocket(new InetSocketAddress(host, tcpPort));
+    }
+
+    public TCPSocket addInboundSocket(InetSocketAddress address) throws IOException {
+        SocketChannel socketChannel = SocketChannel.open(address);
+        return addInboundSocket(socketChannel);
+    }
+
 
     public TCPSocket addInboundSocket(SocketChannel newSocket) throws IOException {
 
