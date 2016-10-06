@@ -157,6 +157,11 @@ public class GridOps {
             return this;
         }
 
+        public TCPSocketsProxyBuilder tcpServer(TCPServer tcpServer){
+            newSocketsQueue(tcpServer.getSocketQueue());
+            return this;
+        }
+
 
 
         public TCPSocketsProxy build() throws IOException {

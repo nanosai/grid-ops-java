@@ -47,12 +47,14 @@ public class IonWriter {
         return this;
     }
 
-    public void setOffset(int offset){
+    public IonWriter setOffset(int offset){
         this.destIndex = offset;
+        return this;
     }
 
-    public void setComplexFieldStack(int[] stack){
+    public IonWriter setComplexFieldStack(int[] stack){
         this.complexFieldStack = stack;
+        return this;
     }
 
     /*
