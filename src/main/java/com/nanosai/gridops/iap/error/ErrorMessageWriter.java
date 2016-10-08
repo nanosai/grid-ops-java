@@ -10,13 +10,13 @@ import com.nanosai.gridops.mem.MemoryBlock;
  */
 public class ErrorMessageWriter {
 
-    private static final byte[] semanticProtocolIdKeyValue      = new byte[] {IapMessageKeys.SEMANTIC_PROTOCOL_ID_KEY_VALUE};
+    private static final byte[] semanticProtocolIdKeyValue      = new byte[] {IapMessageKeys.SEMANTIC_PROTOCOL_ID};
     private static final byte[] errorCodeSemanticProtocolId     = new byte[] {IapSemanticProtocolIds.ERROR_PROTOCOL_ID};
 
-    private static final byte[] semanticProtocolVersionKeyValue = new byte[] {IapMessageKeys.SEMANTIC_PROTOCOL_VERSION_KEY_VALUE};
+    private static final byte[] semanticProtocolVersionKeyValue = new byte[] {IapMessageKeys.SEMANTIC_PROTOCOL_VERSION};
     private static final byte[] semanticProtocolVersion         = new byte[] {0};
 
-    private static final byte[] messageTypeKeyValue             = new byte[] {IapMessageKeys.MESSAGE_TYPE_KEY_VALUE};
+    private static final byte[] messageTypeKeyValue             = new byte[] {IapMessageKeys.MESSAGE_TYPE};
 
     private static final byte[] errorCodeKeyValue               = new byte[] {10};
     private static final byte[] errorMessageKeyValue            = new byte[] {11};
