@@ -8,17 +8,17 @@ import com.nanosai.gridops.mem.MemoryBlock;
 /**
  * Created by jjenkov on 23-09-2016.
  */
-public class ProtocolHandler {
+public class ProtocolReactor {
 
     //consider using a byte[] instad - for more complex protocol names than numbers.
     public int protocolId = 0;
 
-    private MessageHandler[] messageHandlers = null;
+    private MessageReactor[] messageReactors = null;
 
 
-    public ProtocolHandler(int protocolId, MessageHandler ... messageHandlers) {
+    public ProtocolReactor(int protocolId, MessageReactor... messageReactors) {
         this.protocolId = protocolId;
-        this.messageHandlers = messageHandlers;
+        this.messageReactors = messageReactors;
     }
 
     public void handleMessage(IonReader reader, MemoryBlock message){
@@ -27,7 +27,7 @@ public class ProtocolHandler {
                 reader.nextParse();
                 int messageType = (int) reader.readInt64();
 
-                MessageHandler messageHandlerForMessageType =
+                MessageReactor messageHandlerForMessageType =
                         findMessageHandler(messageType);
 
                 if(messageHandlerForMessageType != null){
@@ -46,10 +46,10 @@ public class ProtocolHandler {
      * @param messageType The message type to find the message handler for.
      * @return The message handler matching the given message type, or null if no message handler found.
      */
-    protected MessageHandler findMessageHandler(int messageType){
-        for(int i=0; i<messageHandlers.length; i++){
-            if(messageType == messageHandlers[i].messageType){
-                return messageHandlers[i];
+    protected MessageReactor findMessageHandler(int messageType){
+        for(int i = 0; i< messageReactors.length; i++){
+            if(messageType == messageReactors[i].messageType){
+                return messageReactors[i];
             }
         }
         return null;
@@ -57,6 +57,6 @@ public class ProtocolHandler {
 
 
     private boolean isMessageTypeKey(IonReader reader) {
-        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.MESSAGE_TYPE_KEY_VALUE;
+        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.MESSAGE_TYPE;
     }
 }

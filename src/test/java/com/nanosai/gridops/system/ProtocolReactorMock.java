@@ -6,17 +6,17 @@ import com.nanosai.gridops.mem.MemoryBlock;
 /**
  * Created by jjenkov on 25-09-2016.
  */
-public class ProtocolHandlerMock extends ProtocolHandler {
+public class ProtocolReactorMock extends ProtocolReactor {
 
     public boolean handleMessageCalled = false;
 
 
-    public ProtocolHandlerMock(int protocolId){
-        super(protocolId, new MessageHandler[0]);
+    public ProtocolReactorMock(int protocolId){
+        super(protocolId, new MessageReactor[0]);
     }
 
-    public ProtocolHandlerMock(int protocolId, MessageHandler ... messageHandlers) {
-        super(protocolId, messageHandlers);
+    public ProtocolReactorMock(int protocolId, MessageReactor... messageReactors) {
+        super(protocolId, messageReactors);
     }
 
 

@@ -6,16 +6,16 @@ import com.nanosai.gridops.mem.MemoryBlock;
 /**
  * Created by jjenkov on 25-09-2016.
  */
-public class SystemHandlerMock extends SystemHandler {
+public class SystemReactorMock extends SystemReactor {
 
     public boolean handleMessageCalled = false;
 
-    public SystemHandlerMock(byte[] systemId){
-        super(systemId, new ProtocolHandler[0]);
+    public SystemReactorMock(byte[] systemId){
+        super(systemId, new ProtocolReactor[0]);
     }
 
-    public SystemHandlerMock(byte[] systemId, ProtocolHandler... protocolHandlers) {
-        super(systemId, protocolHandlers);
+    public SystemReactorMock(byte[] systemId, ProtocolReactor... protocolReactors) {
+        super(systemId, protocolReactors);
     }
 
     @Override

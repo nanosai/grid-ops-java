@@ -10,12 +10,12 @@ import com.nanosai.gridops.mem.MemoryBlock;
  */
 public class SystemContainer {
 
-    private SystemHandler[] systemHandlers = null;
+    private SystemReactor[] systemReactors = null;
 
     private IonReader reader         = new IonReader();
 
-    public SystemContainer(SystemHandler... systemHandlers) {
-        this.systemHandlers = systemHandlers;
+    public SystemContainer(SystemReactor... systemReactors) {
+        this.systemReactors = systemReactors;
     }
 
     public void handleMessage(MemoryBlock message){
@@ -42,7 +42,7 @@ public class SystemContainer {
         reader.nextParse();
         if(reader.fieldType == IonFieldTypes.BYTES){
 
-            SystemHandler systemHandler = findSystem(reader.source, reader.index, reader.fieldLength);
+            SystemReactor systemHandler = findSystem(reader.source, reader.index, reader.fieldLength);
 
             if(systemHandler != null){
                 reader.nextParse();
@@ -59,16 +59,16 @@ public class SystemContainer {
      * @param systemId The message type to find the message handler for.
      * @return The message handler matching the given message type, or null if no message handler found.
      */
-    public SystemHandler findSystem(byte[] systemId, int offset, int length){
-        for(int i = 0; i< systemHandlers.length; i++){
-            if(systemHandlers[i].systemIdEquals(systemId, offset, length)){
-                return systemHandlers[i];
+    public SystemReactor findSystem(byte[] systemId, int offset, int length){
+        for(int i = 0; i< systemReactors.length; i++){
+            if(systemReactors[i].systemIdEquals(systemId, offset, length)){
+                return systemReactors[i];
             }
         }
         return null;
     }
 
     private boolean isSystemIDKey() {
-        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.SYSTEM_ID_KEY_VALUE;
+        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.RECEIVER_SYSTEM_ID;
     }
 }

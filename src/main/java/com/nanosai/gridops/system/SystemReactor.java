@@ -8,16 +8,16 @@ import com.nanosai.gridops.mem.MemoryBlock;
 /**
  * Created by jjenkov on 23-09-2016.
  */
-public class SystemHandler {
+public class SystemReactor {
 
     public byte[] systemId = null;
 
-    private ProtocolHandler[] protocolHandlers = null;
+    private ProtocolReactor[] protocolReactors = null;
 
 
-    public SystemHandler(byte[] systemId, ProtocolHandler ... protocolHandlers) {
+    public SystemReactor(byte[] systemId, ProtocolReactor... protocolReactors) {
         this.systemId = systemId;
-        this.protocolHandlers = protocolHandlers;
+        this.protocolReactors = protocolReactors;
     }
 
 
@@ -27,10 +27,10 @@ public class SystemHandler {
                 reader.nextParse();
                 int semanticProtocolId = (int) reader.readInt64();
 
-                ProtocolHandler protocolHandler = findProtocolHandler(semanticProtocolId);
+                ProtocolReactor protocolReactor = findProtocolHandler(semanticProtocolId);
 
-                if(protocolHandler != null){
-                    protocolHandler.handleMessage(reader, message);
+                if(protocolReactor != null){
+                    protocolReactor.handleMessage(reader, message);
                 }
             }
         }
@@ -43,10 +43,10 @@ public class SystemHandler {
      * @param protocolId The message type to find the message handler for.
      * @return The message handler matching the given message type, or null if no message handler found.
      */
-    public ProtocolHandler findProtocolHandler(int protocolId){
-        for(int i=0; i<protocolHandlers.length; i++){
-            if(protocolId == protocolHandlers[i].protocolId){
-                return protocolHandlers[i];
+    public ProtocolReactor findProtocolHandler(int protocolId){
+        for(int i = 0; i< protocolReactors.length; i++){
+            if(protocolId == protocolReactors[i].protocolId){
+                return protocolReactors[i];
             }
         }
         return null;
@@ -54,7 +54,7 @@ public class SystemHandler {
 
 
     private boolean isSemanticProtocolIDKey(IonReader reader) {
-        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.SEMANTIC_PROTOCOL_ID_KEY_VALUE;
+        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.SEMANTIC_PROTOCOL_ID;
     }
 
     public boolean systemIdEquals(byte[] otherId, int offset, int otherIdLength){

@@ -13,19 +13,19 @@ import static org.junit.Assert.*;
 /**
  * Created by jjenkov on 24-09-2016.
  */
-public class SystemHandlerContainerTest {
+public class SystemReactorContainerTest {
 
 
     @Test
     public void testFindSystem() {
 
-        SystemHandler systemHandler0 = new SystemHandler(new byte[]{0}) {
+        SystemReactor systemHandler0 = new SystemReactor(new byte[]{0}) {
             @Override
             public void handleMessage(IonReader reader, MemoryBlock message) {
             }
         };
 
-        SystemHandler systemHandler1 = new SystemHandler(new byte[]{1}) {
+        SystemReactor systemHandler1 = new SystemReactor(new byte[]{1}) {
             @Override
             public void handleMessage(IonReader reader, MemoryBlock message) {
             }
@@ -44,7 +44,7 @@ public class SystemHandlerContainerTest {
     @Test
     public void testHandleMessage() {
         byte systemId = 0;
-        SystemHandlerMock system0 = new SystemHandlerMock(new byte[]{systemId});
+        SystemReactorMock system0 = new SystemReactorMock(new byte[]{systemId});
         assertFalse(system0.handleMessageCalled);
 
         SystemContainer systemContainer = new SystemContainer(system0);
@@ -71,7 +71,7 @@ public class SystemHandlerContainerTest {
         writer.setComplexFieldStack(new int[16]);
         writer.writeObjectBeginPush(2);
 
-        writer.writeKeyShort(new byte[]{IapMessageKeys.SYSTEM_ID_KEY_VALUE});
+        writer.writeKeyShort(new byte[]{IapMessageKeys.RECEIVER_SYSTEM_ID});
         writer.writeBytes(new byte[]{systemId});
 
         writer.writeObjectEndPop();

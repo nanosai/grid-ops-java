@@ -6,12 +6,12 @@ import com.nanosai.gridops.mem.MemoryBlock;
 /**
  * Created by jjenkov on 25-09-2016.
  */
-public class MessageHandlerMock extends MessageHandler {
+public class MessageReactorMock extends MessageReactor {
 
     boolean handleMessageCalled = false;
 
 
-    public MessageHandlerMock(int messageType) {
+    public MessageReactorMock(int messageType) {
         super(messageType);
     }
 

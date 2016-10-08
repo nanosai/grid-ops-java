@@ -6,11 +6,11 @@ import com.nanosai.gridops.mem.MemoryBlock;
 /**
  * Created by jjenkov on 23-09-2016.
  */
-public abstract class MessageHandler {
+public abstract class MessageReactor {
 
     public int messageType = 0;
 
-    public MessageHandler(int messageType) {
+    public MessageReactor(int messageType) {
         this.messageType = messageType;
     }
 

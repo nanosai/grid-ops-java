@@ -13,38 +13,38 @@ import static org.junit.Assert.*;
 /**
  * Created by jjenkov on 24-09-2016.
  */
-public class ProtocolHandlerTest {
+public class ProtocolReactorTest {
 
 
     @Test
     public void testFindMessageHandler() {
 
-        MessageHandler messageHandler0 = new MessageHandler(0) {
+        MessageReactor messageReactor0 = new MessageReactor(0) {
             @Override
             public void handleMessage(IonReader reader, MemoryBlock message) {
             }
         };
 
-        MessageHandler messageHandler1 = new MessageHandler(1) {
+        MessageReactor messageReactor1 = new MessageReactor(1) {
             @Override
             public void handleMessage(IonReader reader, MemoryBlock message) {
             }
         };
 
-        ProtocolHandler protocolHandler = new ProtocolHandler(0, messageHandler0, messageHandler1);
+        ProtocolReactor protocolReactor = new ProtocolReactor(0, messageReactor0, messageReactor1);
 
-        assertSame(messageHandler0, protocolHandler.findMessageHandler(0));
-        assertSame(messageHandler1, protocolHandler.findMessageHandler(1));
+        assertSame(messageReactor0, protocolReactor.findMessageHandler(0));
+        assertSame(messageReactor1, protocolReactor.findMessageHandler(1));
 
-        assertNull(protocolHandler.findMessageHandler(2));
+        assertNull(protocolReactor.findMessageHandler(2));
     }
 
     @Test
     public void testHandleMessage() {
-        MessageHandlerMock messageHandlerMock = new MessageHandlerMock(0);
+        MessageReactorMock messageHandlerMock = new MessageReactorMock(0);
         assertFalse(messageHandlerMock.handleMessageCalled);
 
-        ProtocolHandler protocolHandler = new ProtocolHandler(0, messageHandlerMock);
+        ProtocolReactor protocolReactor = new ProtocolReactor(0, messageHandlerMock);
 
         MemoryAllocator memoryAllocator = GridOps.memoryAllocator(1024 * 1024, 1024);
         MemoryBlock memoryBlock     = memoryAllocator.getMemoryBlock().allocate(1024);
@@ -56,7 +56,7 @@ public class ProtocolHandlerTest {
         reader.setSource(memoryBlock.memoryAllocator.data, memoryBlock.startIndex, memoryBlock.lengthWritten());
         reader.nextParse();
 
-        protocolHandler.handleMessage(reader, memoryBlock);
+        protocolReactor.handleMessage(reader, memoryBlock);
         assertTrue(messageHandlerMock.handleMessageCalled);
 
         writeMessage((byte) 123, memoryBlock);
@@ -64,7 +64,7 @@ public class ProtocolHandlerTest {
         reader.nextParse();
 
         messageHandlerMock.handleMessageCalled = false;
-        protocolHandler.handleMessage(reader, memoryBlock);
+        protocolReactor.handleMessage(reader, memoryBlock);
 
         assertFalse(messageHandlerMock.handleMessageCalled);
 
@@ -78,7 +78,7 @@ public class ProtocolHandlerTest {
         writer.setComplexFieldStack(new int[16]);
         //writer.writeObjectBeginPush(2);
 
-        writer.writeKeyShort(new byte[]{IapMessageKeys.MESSAGE_TYPE_KEY_VALUE});
+        writer.writeKeyShort(new byte[]{IapMessageKeys.MESSAGE_TYPE});
         writer.writeBytes   (new byte[]{messageType});
 
         //writer.writeObjectEndPop();

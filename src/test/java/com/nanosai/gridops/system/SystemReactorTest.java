@@ -13,37 +13,37 @@ import static org.junit.Assert.*;
 /**
  * Created by jjenkov on 24-09-2016.
  */
-public class SystemHandlerTest {
+public class SystemReactorTest {
 
 
     @Test
     public void testFindProtocolHandler() {
-        ProtocolHandler protocolHandler0 = new ProtocolHandler(0) {
+        ProtocolReactor protocolReactor0 = new ProtocolReactor(0) {
             @Override
             public void handleMessage(IonReader reader, MemoryBlock message) {
             }
         };
 
-        ProtocolHandler protocolHandler1 = new ProtocolHandler(1) {
+        ProtocolReactor protocolReactor1 = new ProtocolReactor(1) {
             @Override
             public void handleMessage(IonReader reader, MemoryBlock message) {
             }
         };
 
-        SystemHandler systemHandler = new SystemHandler(new byte[]{0}, protocolHandler0, protocolHandler1);
+        SystemReactor systemHandler = new SystemReactor(new byte[]{0}, protocolReactor0, protocolReactor1);
 
-        assertSame(protocolHandler0, systemHandler.findProtocolHandler(0));
-        assertSame(protocolHandler1, systemHandler.findProtocolHandler(1));
+        assertSame(protocolReactor0, systemHandler.findProtocolHandler(0));
+        assertSame(protocolReactor1, systemHandler.findProtocolHandler(1));
 
         assertNull(systemHandler.findProtocolHandler(2));
     }
 
     @Test
     public void testHandleMessage(){
-        ProtocolHandlerMock protocolHandlerMock = new ProtocolHandlerMock(0);
+        ProtocolReactorMock protocolHandlerMock = new ProtocolReactorMock(0);
         assertFalse(protocolHandlerMock.handleMessageCalled);
 
-        SystemHandler systemHandler = new SystemHandler(new byte[]{0}, protocolHandlerMock);
+        SystemReactor systemHandler = new SystemReactor(new byte[]{0}, protocolHandlerMock);
 
         MemoryAllocator memoryAllocator = GridOps.memoryAllocator(1024 * 1024, 1024);
         MemoryBlock memoryBlock     = memoryAllocator.getMemoryBlock().allocate(1024);
@@ -74,7 +74,7 @@ public class SystemHandlerTest {
         writer.setComplexFieldStack(new int[16]);
         //writer.writeObjectBeginPush(2);
 
-        writer.writeKeyShort(new byte[]{IapMessageKeys.SEMANTIC_PROTOCOL_ID_KEY_VALUE});
+        writer.writeKeyShort(new byte[]{IapMessageKeys.SEMANTIC_PROTOCOL_ID});
         writer.writeBytes(new byte[]{semanticProtocolId});
 
         //writer.writeObjectEndPop();
