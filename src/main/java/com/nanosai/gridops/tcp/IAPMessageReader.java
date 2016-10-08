@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 /**
  * Created by jjenkov on 27-10-2015.
  */
-public class IAPMessageReader implements IMessageReader {
+public class IapMessageReader implements IMessageReader {
     public static final int INVALID_IAP_MESSAGE_NOT_ION_OBJECT  = -1;
     public static final int INVALID_IAP_MESSAGE_TOO_BIG_MESSAGE = -2;
 

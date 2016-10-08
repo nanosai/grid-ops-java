@@ -3,7 +3,6 @@ package com.nanosai.gridops;
 import com.nanosai.gridops.ion.read.IIonObjectReaderConfigurator;
 import com.nanosai.gridops.ion.read.IonObjectReader;
 import com.nanosai.gridops.ion.read.IonReader;
-import com.nanosai.gridops.ion.write.IIonObjectWriterConfigurator;
 import com.nanosai.gridops.ion.write.IonObjectWriter;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.mem.IMemoryBlockFactory;
@@ -77,15 +76,15 @@ public class GridOps {
             return this;
         }
 
-        public TCPServer build() {
+        public TcpServer build() {
             if(this.newSocketsQueue == null) {
                 this.newSocketsQueue = new ArrayBlockingQueue(this.newSocketQueueCapacity);
             }
-            return new TCPServer(this.tcpPort, this.newSocketsQueue);
+            return new TcpServer(this.tcpPort, this.newSocketsQueue);
         }
 
-        public TCPServer buildAndStart() {
-            TCPServer tcpServer = build();
+        public TcpServer buildAndStart() {
+            TcpServer tcpServer = build();
             new Thread(tcpServer).start();
             return tcpServer;
         }
@@ -157,14 +156,14 @@ public class GridOps {
             return this;
         }
 
-        public TCPSocketsProxyBuilder tcpServer(TCPServer tcpServer){
+        public TCPSocketsProxyBuilder tcpServer(TcpServer tcpServer){
             newSocketsQueue(tcpServer.getSocketQueue());
             return this;
         }
 
 
 
-        public TCPSocketsProxy build() throws IOException {
+        public TcpSocketsProxy build() throws IOException {
             /*
             if(this.newSocketsQueue == null){
                 throw new RuntimeException("The newSocketsQueue must not be null");
@@ -172,7 +171,7 @@ public class GridOps {
             */
 
             if(this.incomingMessageMemoryBlockFactory == null){
-                this.incomingMessageMemoryBlockFactory = (allocator) -> new TCPMessage(allocator);
+                this.incomingMessageMemoryBlockFactory = (allocator) -> new TcpMessage(allocator);
             }
 
             if(this.incomingMessageMemoryAllocator == null){
@@ -182,7 +181,7 @@ public class GridOps {
             }
 
             if(this.outgoingMessageMemoryBlockFactory == null){
-                this.outgoingMessageMemoryBlockFactory = (allocator) -> new TCPMessage(allocator);
+                this.outgoingMessageMemoryBlockFactory = (allocator) -> new TcpMessage(allocator);
             }
 
             if(this.outgoingMessageMemoryAllocator == null){
@@ -192,10 +191,10 @@ public class GridOps {
             }
 
             if(this.messageReaderFactory == null){
-                this.messageReaderFactory = new IAPMessageReaderFactory();
+                this.messageReaderFactory = new IapMessageReaderFactory();
             }
 
-            return new TCPSocketsProxy(
+            return new TcpSocketsProxy(
                     this.newSocketsQueue,
                     this.messageReaderFactory,
                     this.incomingMessageMemoryAllocator,

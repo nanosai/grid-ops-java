@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 /**
  * Created by jjenkov on 08-09-2016.
  */
-public class TCPSocketMock extends TCPSocket {
+public class TcpSocketMock extends TcpSocket {
 
     /* Read related variables */
     public byte[] byteSource = null;
@@ -33,7 +33,7 @@ public class TCPSocketMock extends TCPSocket {
 
 
 
-    public TCPSocketMock(TCPSocketPool tcpSocketPool) {
+    public TcpSocketMock(TcpSocketPool tcpSocketPool) {
         super(tcpSocketPool);
     }
 

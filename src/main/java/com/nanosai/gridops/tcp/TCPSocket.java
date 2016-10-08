@@ -11,9 +11,9 @@ import java.nio.channels.SocketChannel;
 /**
  * Created by jjenkov on 27-10-2015.
  */
-public class TCPSocket {
+public class TcpSocket {
 
-    private TCPSocketPool tcpSocketPool = null;
+    private TcpSocketPool tcpSocketPool = null;
 
     public SocketChannel    socketChannel = null;
     public long             socketId = 0;
@@ -34,14 +34,14 @@ public class TCPSocket {
     private Queue writeQueue   = new Queue(16);
 
 
-    public TCPSocket(TCPSocketPool tcpSocketPool) {
+    public TcpSocket(TcpSocketPool tcpSocketPool) {
         this.tcpSocketPool = tcpSocketPool;
     }
 
 
     public int readMessages(ByteBuffer tempBuffer, MemoryBlock[] messageDestination, int messageDestinationOffset) throws IOException {
         if(this.state != 0) {
-            return 0; //TCPSocket is in an invalid state - no more messages can be read from it.
+            return 0; //TcpSocket is in an invalid state - no more messages can be read from it.
         }
 
         tempBuffer.clear();
@@ -63,7 +63,7 @@ public class TCPSocket {
             }
 
             for(int i=messageDestinationOffset, n = messageDestinationOffset+messagesRead; i < n; i++){
-                TCPMessage tcpMessage = (TCPMessage) messageDestination[i];
+                TcpMessage tcpMessage = (TcpMessage) messageDestination[i];
                 tcpMessage.socketId    = this.socketId;
                 tcpMessage.tcpSocket   = this;
             }
@@ -126,7 +126,7 @@ public class TCPSocket {
     }
 
 
-    public boolean write(ByteBuffer byteBuffer, TCPMessage message) throws IOException {
+    public boolean write(ByteBuffer byteBuffer, TcpMessage message) throws IOException {
         byteBuffer.clear();
 
         //todo make some calculations to limit the size of data written to that of the ByteBuffer.capacity()
@@ -146,7 +146,7 @@ public class TCPSocket {
 
 
     public void writeQueued(ByteBuffer byteBuffer) throws IOException {
-        TCPMessage messageInProgress = (TCPMessage) this.writeQueue.peek();
+        TcpMessage messageInProgress = (TcpMessage) this.writeQueue.peek();
 
         boolean canWriteMoreToSocketNow = true;
 
@@ -157,7 +157,7 @@ public class TCPSocket {
                 this.writeQueue.take();     // remove this message from queue
                 messageInProgress.free();   // free the memory allocated to this message
 
-                messageInProgress = (TCPMessage) this.writeQueue.peek();  // take next message in queue, if any.
+                messageInProgress = (TcpMessage) this.writeQueue.peek();  // take next message in queue, if any.
             }
         }
     }
@@ -178,7 +178,7 @@ public class TCPSocket {
 
 
     /**
-     * Closes the TCPSocket + underlying SocketChannel, and frees up all queued inbound and outbound
+     * Closes the TcpSocket + underlying SocketChannel, and frees up all queued inbound and outbound
      * messages.
      *
      * todo maybe split into three methods: close() + free() + closeAndFree()
@@ -191,7 +191,7 @@ public class TCPSocket {
 
         if(this.writeQueue != null){
             while(this.writeQueue.available() > 0){
-                TCPMessage queuedOutboundMessage = (TCPMessage) writeQueue.take();
+                TcpMessage queuedOutboundMessage = (TcpMessage) writeQueue.take();
                 queuedOutboundMessage.free();
             }
         }

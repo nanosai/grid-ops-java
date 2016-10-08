@@ -14,7 +14,7 @@ import java.util.concurrent.BlockingQueue;
  *
  * Created by jjenkov on 27-08-2015.
  */
-public class TCPServer implements Runnable {
+public class TcpServer implements Runnable {
 
     private static final int MAX_QUEUED_SOCKETS = 1024;
 
@@ -26,7 +26,7 @@ public class TCPServer implements Runnable {
 
     private boolean isStopped = false;   //todo analyze if this could be done with a volatile variable instead.
 
-    public TCPServer(int tcpPort, BlockingQueue socketQueue){
+    public TcpServer(int tcpPort, BlockingQueue socketQueue){
         this.tcpPort     = tcpPort;
         this.socketQueue = socketQueue;
     }

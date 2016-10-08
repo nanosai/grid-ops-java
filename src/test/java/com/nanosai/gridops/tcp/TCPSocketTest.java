@@ -12,25 +12,25 @@ import static org.junit.Assert.*;
 /**
  * Created by jjenkov on 08-09-2016.
  */
-public class TCPSocketTest {
+public class TcpSocketTest {
 
 
     @Test
     public void testInstantiation() {
-        TCPSocketPool tcpSocketPool = new TCPSocketPool(10);
+        TcpSocketPool tcpSocketPool = new TcpSocketPool(10);
 
-        TCPSocket tcpSocket = tcpSocketPool.getTCPSocket();
+        TcpSocket tcpSocket = tcpSocketPool.getTCPSocket();
     }
 
 
     @Test
     public void testRead_singleMessage_oneByteAtATime() throws IOException {
-        TCPSocketPool tcpSocketPool = new TCPSocketPool(10);
+        TcpSocketPool tcpSocketPool = new TcpSocketPool(10);
         MemoryAllocator memoryAllocator = new MemoryAllocator(
-                new byte[1024 * 1024], new long[1024], (allocator) -> new TCPMessage(allocator));
+                new byte[1024 * 1024], new long[1024], (allocator) -> new TcpMessage(allocator));
 
-        TCPSocketMock tcpSocket = new TCPSocketMock(tcpSocketPool);
-        tcpSocket.messageReader = new IAPMessageReader();
+        TcpSocketMock tcpSocket = new TcpSocketMock(tcpSocketPool);
+        tcpSocket.messageReader = new IapMessageReader();
         tcpSocket.messageReader.init(memoryAllocator);
 
         tcpSocket.byteSource = new byte[1024];
@@ -62,12 +62,12 @@ public class TCPSocketTest {
 
     @Test
     public void testRead_singleMessage_twoBytesAtATime() throws IOException {
-        TCPSocketPool tcpSocketPool = new TCPSocketPool(10);
+        TcpSocketPool tcpSocketPool = new TcpSocketPool(10);
         MemoryAllocator memoryAllocator = new MemoryAllocator(
-                new byte[1024 * 1024], new long[1024], (allocator) -> new TCPMessage(allocator));
+                new byte[1024 * 1024], new long[1024], (allocator) -> new TcpMessage(allocator));
 
-        TCPSocketMock tcpSocket = new TCPSocketMock(tcpSocketPool);
-        tcpSocket.messageReader = new IAPMessageReader();
+        TcpSocketMock tcpSocket = new TcpSocketMock(tcpSocketPool);
+        tcpSocket.messageReader = new IapMessageReader();
         tcpSocket.messageReader.init(memoryAllocator);
 
         tcpSocket.byteSource = new byte[1024];
@@ -93,12 +93,12 @@ public class TCPSocketTest {
 
     @Test
     public void testRead_singleMessage_threeBytesAtATime() throws IOException {
-        TCPSocketPool tcpSocketPool = new TCPSocketPool(10);
+        TcpSocketPool tcpSocketPool = new TcpSocketPool(10);
         MemoryAllocator memoryAllocator = new MemoryAllocator(
-                new byte[1024 * 1024], new long[1024], (allocator) -> new TCPMessage(allocator));
+                new byte[1024 * 1024], new long[1024], (allocator) -> new TcpMessage(allocator));
 
-        TCPSocketMock tcpSocket = new TCPSocketMock(tcpSocketPool);
-        tcpSocket.messageReader = new IAPMessageReader();
+        TcpSocketMock tcpSocket = new TcpSocketMock(tcpSocketPool);
+        tcpSocket.messageReader = new IapMessageReader();
         tcpSocket.messageReader.init(memoryAllocator);
 
         tcpSocket.byteSource = new byte[1024];
@@ -124,18 +124,18 @@ public class TCPSocketTest {
     @Test
     public void testWrite_singleMessage() throws IOException {
         MemoryAllocator memoryAllocator = new MemoryAllocator(
-                new byte[1024 * 1024], new long[1024], (allocator) -> new TCPMessage(allocator));
+                new byte[1024 * 1024], new long[1024], (allocator) -> new TcpMessage(allocator));
 
-        TCPSocketPool tcpSocketPool = new TCPSocketPool(10);
+        TcpSocketPool tcpSocketPool = new TcpSocketPool(10);
 
-        TCPSocketMock tcpSocket = new TCPSocketMock(tcpSocketPool);
+        TcpSocketMock tcpSocket = new TcpSocketMock(tcpSocketPool);
         tcpSocket.writeWindowSize = 10;
 
         tcpSocket.byteDest = new byte[1024];
 
         ByteBuffer    buffer       = ByteBuffer.allocate(1024 * 1024);
 
-        TCPMessage tcpMessage = (TCPMessage) memoryAllocator.getMemoryBlock();
+        TcpMessage tcpMessage = (TcpMessage) memoryAllocator.getMemoryBlock();
         tcpMessage.allocate(1024);
 
         writeDataToMessage(tcpMessage);
@@ -153,13 +153,13 @@ public class TCPSocketTest {
 
     }
 
-    private void assertFullMessageWritten(TCPSocketMock tcpSocket, int offset) {
+    private void assertFullMessageWritten(TcpSocketMock tcpSocket, int offset) {
         for(int i=0; i<100; i++){
             assertEquals((byte) i, tcpSocket.byteDest[offset + i]);
         }
     }
 
-    private void writeDataToMessage(TCPMessage tcpMessage) {
+    private void writeDataToMessage(TcpMessage tcpMessage) {
         for(int i=0; i < 100; i++){
             tcpMessage.memoryAllocator.data[tcpMessage.startIndex + i] = (byte) i;
         }
@@ -169,11 +169,11 @@ public class TCPSocketTest {
     @Test
     public void testWriteEnqueued() throws IOException {
         MemoryAllocator memoryAllocator = new MemoryAllocator(
-                new byte[1024 * 1024], new long[1024], (allocator) -> new TCPMessage(allocator));
+                new byte[1024 * 1024], new long[1024], (allocator) -> new TcpMessage(allocator));
 
-        TCPSocketPool tcpSocketPool = new TCPSocketPool(10);
+        TcpSocketPool tcpSocketPool = new TcpSocketPool(10);
 
-        TCPSocketMock tcpSocket = new TCPSocketMock(tcpSocketPool);
+        TcpSocketMock tcpSocket = new TcpSocketMock(tcpSocketPool);
         tcpSocket.writeWindowSize = 10;
 
         assertTrue(tcpSocket.isEmpty());
@@ -181,7 +181,7 @@ public class TCPSocketTest {
         tcpSocket.byteDest = new byte[1024];
 
         ByteBuffer    buffer       = ByteBuffer.allocate(1024 * 1024);
-        TCPMessage tcpMessage = (TCPMessage) memoryAllocator.getMemoryBlock();
+        TcpMessage tcpMessage = (TcpMessage) memoryAllocator.getMemoryBlock();
         tcpMessage.allocate(1024);
 
         writeDataToMessage(tcpMessage);
@@ -202,12 +202,12 @@ public class TCPSocketTest {
 
         //test with 2 enqueued messages
         //tcpMessage was freed after writing, so we need to allocate it again
-        tcpMessage = (TCPMessage) memoryAllocator.getMemoryBlock();
+        tcpMessage = (TcpMessage) memoryAllocator.getMemoryBlock();
         tcpMessage.allocate(1024);
         writeDataToMessage(tcpMessage);
         tcpSocket.enqueue(tcpMessage);
 
-        TCPMessage tcpMessage2 = (TCPMessage) memoryAllocator.getMemoryBlock();
+        TcpMessage tcpMessage2 = (TcpMessage) memoryAllocator.getMemoryBlock();
         tcpMessage2.allocate(1024);
         writeDataToMessage(tcpMessage2);
         tcpSocket.enqueue(tcpMessage2);
@@ -230,7 +230,7 @@ public class TCPSocketTest {
         // test with 1 enqueued message, and a write cap which imitates that only part of the message can be
         // written to the underlying socket, and verity that half the message is written, and that the other half
         // can be written later, and the queue emptied.
-        tcpMessage = (TCPMessage) memoryAllocator.getMemoryBlock();
+        tcpMessage = (TcpMessage) memoryAllocator.getMemoryBlock();
         tcpMessage.allocate(1024);
         writeDataToMessage(tcpMessage);
 

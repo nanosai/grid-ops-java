@@ -9,13 +9,13 @@ import static org.junit.Assert.*;
 /**
  * Created by jjenkov on 07-09-2016.
  */
-public class TCPSocketPoolTest {
+public class TcpSocketPoolTest {
 
     @Test
     public void testGetTCPSocket_andFree() throws IOException {
-        TCPSocketPool tcpSocketPool = new TCPSocketPool(10);
+        TcpSocketPool tcpSocketPool = new TcpSocketPool(10);
 
-        TCPSocket tcpSocket = tcpSocketPool.getTCPSocket();
+        TcpSocket tcpSocket = tcpSocketPool.getTCPSocket();
 
         assertNotNull(tcpSocket);
         assertEquals(0, tcpSocketPool.freePooledTCPSocketCount());
@@ -23,12 +23,12 @@ public class TCPSocketPoolTest {
         tcpSocketPool.free(tcpSocket);
         assertEquals(1, tcpSocketPool.freePooledTCPSocketCount());
 
-        TCPSocket tcpSocket2 = tcpSocketPool.getTCPSocket();
+        TcpSocket tcpSocket2 = tcpSocketPool.getTCPSocket();
 
         assertSame(tcpSocket, tcpSocket2);
         assertEquals(0, tcpSocketPool.freePooledTCPSocketCount());
 
-        TCPSocket tcpSocket3 = tcpSocketPool.getTCPSocket();
+        TcpSocket tcpSocket3 = tcpSocketPool.getTCPSocket();
 
         assertNotSame(tcpSocket2, tcpSocket3);
         assertEquals(0, tcpSocketPool.freePooledTCPSocketCount());

@@ -8,13 +8,13 @@ import com.nanosai.gridops.mem.MemoryBlock;
  * Created by jjenkov on 26-05-2016.
  */
 
-public class TCPMessage extends MemoryBlock {
+public class TcpMessage extends MemoryBlock {
 
     public long socketId = 0;
 
-    public TCPSocket tcpSocket = null;
+    public TcpSocket tcpSocket = null;
 
-    public TCPMessage(MemoryAllocator memoryAllocator) {
+    public TcpMessage(MemoryAllocator memoryAllocator) {
         super(memoryAllocator);
     }
 

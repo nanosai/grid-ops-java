@@ -15,13 +15,13 @@ import java.util.concurrent.BlockingQueue;
 /**
  * Created by jjenkov on 06-05-2016.
  */
-public class TCPSocketsProxy {
+public class TcpSocketsProxy {
 
     // **************************
     // Get new sockets oriented variables.
     // **************************
     private BlockingQueue<SocketChannel> socketQueue    = null;
-    private Map<Long, TCPSocket>         socketMap      = new HashMap<>(); //todo replace with faster Long, Object map.
+    private Map<Long, TcpSocket>         socketMap      = new HashMap<>(); //todo replace with faster Long, Object map.
     private List<SocketChannel>          newSocketsTemp = new ArrayList<SocketChannel>();
 
     private long nextSocketId = 1;
@@ -36,10 +36,10 @@ public class TCPSocketsProxy {
     private Selector        readSelector = null;
     private ByteBuffer      readBuffer   = null;
 
-    private TCPSocketPool tcpObjectPool       = new TCPSocketPool(1024);  //todo make size configurable.
+    private TcpSocketPool tcpObjectPool       = new TcpSocketPool(1024);  //todo make size configurable.
     private MemoryAllocator readMemoryAllocator = null;
 
-    private TCPSocket[] readySocketsTemp = new TCPSocket[128]; //todo maybe change later to TCPSocketProxy - if that class is added.
+    private TcpSocket[] readySocketsTemp = new TcpSocket[128]; //todo maybe change later to TCPSocketProxy - if that class is added.
 
 
 
@@ -49,7 +49,7 @@ public class TCPSocketsProxy {
     private Selector   writeSelector   = null;
     private ByteBuffer writeByteBuffer = null;
 
-    private List<TCPSocket> nonEmptyToEmptySockets = new ArrayList<>();
+    private List<TcpSocket> nonEmptyToEmptySockets = new ArrayList<>();
 
     private MemoryAllocator writeMemoryAllocator = null;
 
@@ -58,10 +58,10 @@ public class TCPSocketsProxy {
     // ***************************
     // TCP Socket close oriented variables.
     // ***************************
-    private List<TCPSocket> socketsToBeClosed = new ArrayList<>();
+    private List<TcpSocket> socketsToBeClosed = new ArrayList<>();
 
 
-    public TCPSocketsProxy(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory,
+    public TcpSocketsProxy(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory,
                            MemoryAllocator inboundMessageAllocator, MemoryAllocator outboundMessageAllocator) throws IOException {
         this.socketQueue          = socketQueue;
         this.messageReaderFactory = messageReaderFactory;
@@ -70,14 +70,14 @@ public class TCPSocketsProxy {
         init();
     }
 
-    public TCPSocketsProxy(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory) throws IOException {
+    public TcpSocketsProxy(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory) throws IOException {
         this(socketQueue,
              messageReaderFactory,
              new MemoryAllocator(new byte[36 * 1024 * 1024], new long[10240],
-                    (allocator) -> new TCPMessage(allocator) )
+                    (allocator) -> new TcpMessage(allocator) )
              ,
              new MemoryAllocator(new byte[36 * 1024 * 1024], new long[10240],
-                     (allocator) -> new TCPMessage(allocator) )
+                     (allocator) -> new TcpMessage(allocator) )
              );
     }
 
@@ -106,22 +106,22 @@ public class TCPSocketsProxy {
     }
 
 
-    public TCPSocket addInboundSocket(String host, int tcpPort) throws IOException {
+    public TcpSocket addInboundSocket(String host, int tcpPort) throws IOException {
         return addInboundSocket(new InetSocketAddress(host, tcpPort));
     }
 
-    public TCPSocket addInboundSocket(InetSocketAddress address) throws IOException {
+    public TcpSocket addInboundSocket(InetSocketAddress address) throws IOException {
         SocketChannel socketChannel = SocketChannel.open(address);
         return addInboundSocket(socketChannel);
     }
 
 
-    public TCPSocket addInboundSocket(SocketChannel newSocket) throws IOException {
+    public TcpSocket addInboundSocket(SocketChannel newSocket) throws IOException {
 
         newSocket.configureBlocking(false);
 
-        //todo pool some of these objects - IAPMessageReader etc.
-        TCPSocket tcpSocket     = this.tcpObjectPool.getTCPSocket();
+        //todo pool some of these objects - IapMessageReader etc.
+        TcpSocket tcpSocket     = this.tcpObjectPool.getTCPSocket();
         tcpSocket.socketId      = this.nextSocketId++;
         tcpSocket.socketChannel = newSocket;
         tcpSocket.messageReader = this.messageReaderFactory.createMessageReader();
@@ -138,7 +138,7 @@ public class TCPSocketsProxy {
         return tcpSocket;
     }
 
-    public int selectReadReadySockets(TCPSocket[] readyTcpSocket, int limit) throws IOException {
+    public int selectReadReadySockets(TcpSocket[] readyTcpSocket, int limit) throws IOException {
         int readReady = this.readSelector.selectNow();
 
         int readyIndex = 0;
@@ -148,7 +148,7 @@ public class TCPSocketsProxy {
                 SelectionKey selectionKey = iterator.next();
 
                 if(selectionKey.channel().isOpen()){
-                    readyTcpSocket[readyIndex++] = (TCPSocket) selectionKey.attachment();
+                    readyTcpSocket[readyIndex++] = (TcpSocket) selectionKey.attachment();
                 }
                 iterator.remove();
             }
@@ -162,11 +162,11 @@ public class TCPSocketsProxy {
         return read(msgDest, this.readySocketsTemp, ready);
     }
 
-    protected int read(MemoryBlock[] msgDest, TCPSocket[] readReadySockets, int readReadySocketCount) throws IOException {
+    protected int read(MemoryBlock[] msgDest, TcpSocket[] readReadySockets, int readReadySocketCount) throws IOException {
 
         int receivedMessageCount = 0;
         for(int i=0; i<readReadySocketCount; i++){
-            TCPSocket tcpSocket = readReadySockets[i];
+            TcpSocket tcpSocket = readReadySockets[i];
 
             receivedMessageCount += tcpSocket.readMessages(this.readBuffer, msgDest, receivedMessageCount);
 
@@ -211,7 +211,7 @@ public class TCPSocketsProxy {
             while(keyIterator.hasNext()){
                 SelectionKey key = keyIterator.next();
 
-                TCPSocket socket = (TCPSocket) key.attachment();
+                TcpSocket socket = (TcpSocket) key.attachment();
 
                 socket.writeQueued(this.writeByteBuffer);
 
@@ -241,7 +241,7 @@ public class TCPSocketsProxy {
 
 
         for(int i=0, n=nonEmptyToEmptySockets.size(); i<n; i++){
-            TCPSocket tcpSocket = nonEmptyToEmptySockets.get(i);
+            TcpSocket tcpSocket = nonEmptyToEmptySockets.get(i);
             if(tcpSocket.isEmpty()){
                 SelectionKey key = tcpSocket.socketChannel.keyFor(this.writeSelector);
                 if(key != null){
@@ -256,23 +256,23 @@ public class TCPSocketsProxy {
 
 
 
-    public TCPMessage getWriteMemoryBlock() {
-        return (TCPMessage) this.writeMemoryAllocator.getMemoryBlock();
+    public TcpMessage getWriteMemoryBlock() {
+        return (TcpMessage) this.writeMemoryAllocator.getMemoryBlock();
     }
 
-    public TCPMessage allocateWriteMemoryBlock(int lengthToAllocate) {
-        return (TCPMessage) getWriteMemoryBlock().allocate(lengthToAllocate);
+    public TcpMessage allocateWriteMemoryBlock(int lengthToAllocate) {
+        return (TcpMessage) getWriteMemoryBlock().allocate(lengthToAllocate);
     }
 
-    public TCPSocket getTCPSocket(long socketId) {
+    public TcpSocket getTCPSocket(long socketId) {
         return this.socketMap.get(socketId);
     }
 
-    public void enqueue(TCPMessage tcpMessage) throws IOException {
+    public void enqueue(TcpMessage tcpMessage) throws IOException {
         enqueue(tcpMessage.tcpSocket, tcpMessage);
     }
 
-    public void enqueue(TCPSocket tcpSocket, TCPMessage message) throws IOException {
+    public void enqueue(TcpSocket tcpSocket, TcpMessage message) throws IOException {
         if(tcpSocket.isEmpty()){
             //attempt to write message immediately instead of first queueing up the message.
             tcpSocket.write(this.writeByteBuffer, message);
@@ -295,19 +295,19 @@ public class TCPSocketsProxy {
     }
 
 
-    public List<TCPSocket> getSocketsToBeClosed() {
+    public List<TcpSocket> getSocketsToBeClosed() {
         return socketsToBeClosed;
     }
 
     public void cleanupSockets() {
         for(int i=0, n=this.socketsToBeClosed.size(); i < n; i++){
-            TCPSocket tcpSocket = this.socketsToBeClosed.get(i);
+            TcpSocket tcpSocket = this.socketsToBeClosed.get(i);
 
-            //System.out.println("Closing TCPSocket");
+            //System.out.println("Closing TcpSocket");
             try {
                 tcpSocket.closeAndFree();
             } catch (IOException e) {
-                System.out.println("Error closing TCPSocket:");
+                System.out.println("Error closing TcpSocket:");
                 e.printStackTrace();
             }
         }
