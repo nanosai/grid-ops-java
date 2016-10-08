@@ -21,13 +21,13 @@ public class SystemReactorContainerTest {
 
         SystemReactor systemHandler0 = new SystemReactor(new byte[]{0}) {
             @Override
-            public void handleMessage(IonReader reader, MemoryBlock message) {
+            public void react(IonReader reader, MemoryBlock message) {
             }
         };
 
         SystemReactor systemHandler1 = new SystemReactor(new byte[]{1}) {
             @Override
-            public void handleMessage(IonReader reader, MemoryBlock message) {
+            public void react(IonReader reader, MemoryBlock message) {
             }
         };
 
@@ -53,14 +53,14 @@ public class SystemReactorContainerTest {
         MemoryBlock memoryBlock     = memoryAllocator.getMemoryBlock().allocate(1024);
 
         writeMessage(systemId, memoryBlock);
-        systemContainer.handleMessage(memoryBlock);
+        systemContainer.react(memoryBlock);
         assertTrue(system0.handleMessageCalled);
 
         system0.handleMessageCalled = false;
         byte unknownSystemId = (byte) 123;
         writeMessage(unknownSystemId, memoryBlock);
 
-        systemContainer.handleMessage(memoryBlock);
+        systemContainer.react(memoryBlock);
         assertFalse(system0.handleMessageCalled);
 
     }

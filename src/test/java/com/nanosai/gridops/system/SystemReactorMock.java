@@ -19,7 +19,7 @@ public class SystemReactorMock extends SystemReactor {
     }
 
     @Override
-    public void handleMessage(IonReader reader, MemoryBlock message) {
+    public void react(IonReader reader, MemoryBlock message) {
         this.handleMessageCalled = true;
     }
 

@@ -21,13 +21,13 @@ public class ProtocolReactorTest {
 
         MessageReactor messageReactor0 = new MessageReactor(0) {
             @Override
-            public void handleMessage(IonReader reader, MemoryBlock message) {
+            public void react(IonReader reader, MemoryBlock message) {
             }
         };
 
         MessageReactor messageReactor1 = new MessageReactor(1) {
             @Override
-            public void handleMessage(IonReader reader, MemoryBlock message) {
+            public void react(IonReader reader, MemoryBlock message) {
             }
         };
 
@@ -56,7 +56,7 @@ public class ProtocolReactorTest {
         reader.setSource(memoryBlock.memoryAllocator.data, memoryBlock.startIndex, memoryBlock.lengthWritten());
         reader.nextParse();
 
-        protocolReactor.handleMessage(reader, memoryBlock);
+        protocolReactor.react(reader, memoryBlock);
         assertTrue(messageHandlerMock.handleMessageCalled);
 
         writeMessage((byte) 123, memoryBlock);
@@ -64,7 +64,7 @@ public class ProtocolReactorTest {
         reader.nextParse();
 
         messageHandlerMock.handleMessageCalled = false;
-        protocolReactor.handleMessage(reader, memoryBlock);
+        protocolReactor.react(reader, memoryBlock);
 
         assertFalse(messageHandlerMock.handleMessageCalled);
 

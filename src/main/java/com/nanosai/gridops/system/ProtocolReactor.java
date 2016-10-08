@@ -21,7 +21,7 @@ public class ProtocolReactor {
         this.messageReactors = messageReactors;
     }
 
-    public void handleMessage(IonReader reader, MemoryBlock message){
+    public void react(IonReader reader, MemoryBlock message){
         if(reader.fieldType == IonFieldTypes.KEY_SHORT){
             if(isMessageTypeKey(reader)){
                 reader.nextParse();
@@ -32,7 +32,7 @@ public class ProtocolReactor {
 
                 if(messageHandlerForMessageType != null){
                     reader.nextParse();
-                    messageHandlerForMessageType.handleMessage(reader, message);
+                    messageHandlerForMessageType.react(reader, message);
                 }
             }
         }

@@ -21,7 +21,7 @@ public class SystemReactor {
     }
 
 
-    public void handleMessage(IonReader reader, MemoryBlock message){
+    public void react(IonReader reader, MemoryBlock message){
         if(reader.fieldType == IonFieldTypes.KEY_SHORT){
             if(isSemanticProtocolIDKey(reader)){
                 reader.nextParse();
@@ -30,7 +30,7 @@ public class SystemReactor {
                 ProtocolReactor protocolReactor = findProtocolHandler(semanticProtocolId);
 
                 if(protocolReactor != null){
-                    protocolReactor.handleMessage(reader, message);
+                    protocolReactor.react(reader, message);
                 }
             }
         }

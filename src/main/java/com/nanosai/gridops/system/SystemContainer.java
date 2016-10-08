@@ -18,7 +18,7 @@ public class SystemContainer {
         this.systemReactors = systemReactors;
     }
 
-    public void handleMessage(MemoryBlock message){
+    public void react(MemoryBlock message){
         reader.setSource(message.memoryAllocator.data, message.startIndex, message.writeIndex);
 
         reader.nextParse(); //go to first ION field in message.
@@ -46,7 +46,7 @@ public class SystemContainer {
 
             if(systemHandler != null){
                 reader.nextParse();
-                systemHandler.handleMessage(reader, message);
+                systemHandler.react(reader, message);
                 return;
             }
         }

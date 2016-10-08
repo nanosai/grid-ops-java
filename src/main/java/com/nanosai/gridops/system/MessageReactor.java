@@ -14,6 +14,6 @@ public abstract class MessageReactor {
         this.messageType = messageType;
     }
 
-    public abstract void handleMessage(IonReader reader, MemoryBlock message);
+    public abstract void react(IonReader reader, MemoryBlock message);
 
 }

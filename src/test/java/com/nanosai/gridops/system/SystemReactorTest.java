@@ -20,13 +20,13 @@ public class SystemReactorTest {
     public void testFindProtocolHandler() {
         ProtocolReactor protocolReactor0 = new ProtocolReactor(0) {
             @Override
-            public void handleMessage(IonReader reader, MemoryBlock message) {
+            public void react(IonReader reader, MemoryBlock message) {
             }
         };
 
         ProtocolReactor protocolReactor1 = new ProtocolReactor(1) {
             @Override
-            public void handleMessage(IonReader reader, MemoryBlock message) {
+            public void react(IonReader reader, MemoryBlock message) {
             }
         };
 
@@ -55,7 +55,7 @@ public class SystemReactorTest {
         reader.setSource(memoryBlock.memoryAllocator.data, memoryBlock.startIndex, memoryBlock.lengthWritten());
         reader.nextParse();
 
-        systemHandler.handleMessage(reader, memoryBlock);
+        systemHandler.react(reader, memoryBlock);
         assertTrue(protocolHandlerMock.handleMessageCalled);
 
         writeMessage((byte) 123, memoryBlock);
@@ -63,7 +63,7 @@ public class SystemReactorTest {
         reader.nextParse();
         protocolHandlerMock.handleMessageCalled = false;
 
-        systemHandler.handleMessage(reader, memoryBlock);
+        systemHandler.react(reader, memoryBlock);
         assertFalse(protocolHandlerMock.handleMessageCalled);
     }
 
