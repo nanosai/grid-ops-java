@@ -15,10 +15,10 @@ import java.util.concurrent.BlockingQueue;
 /**
  * Created by jjenkov on 06-05-2016.
  */
-public class TcpSocketsProxy {
+public class TcpSocketsPort {
 
     // **************************
-    // Get new sockets oriented variables.
+    // socket management related variables.
     // **************************
     private BlockingQueue<SocketChannel> socketQueue    = null;
     private Map<Long, TcpSocket>         socketMap      = new HashMap<>(); //todo replace with faster Long, Object map.
@@ -61,8 +61,8 @@ public class TcpSocketsProxy {
     private List<TcpSocket> socketsToBeClosed = new ArrayList<>();
 
 
-    public TcpSocketsProxy(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory,
-                           MemoryAllocator inboundMessageAllocator, MemoryAllocator outboundMessageAllocator) throws IOException {
+    public TcpSocketsPort(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory,
+                          MemoryAllocator inboundMessageAllocator, MemoryAllocator outboundMessageAllocator) throws IOException {
         this.socketQueue          = socketQueue;
         this.messageReaderFactory = messageReaderFactory;
         this.readMemoryAllocator  = inboundMessageAllocator;
@@ -70,7 +70,7 @@ public class TcpSocketsProxy {
         init();
     }
 
-    public TcpSocketsProxy(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory) throws IOException {
+    public TcpSocketsPort(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory) throws IOException {
         this(socketQueue,
              messageReaderFactory,
              new MemoryAllocator(new byte[36 * 1024 * 1024], new long[10240],
@@ -93,30 +93,30 @@ public class TcpSocketsProxy {
 
 
 
-    public void drainSocketQueue() throws IOException {
+    public void addSocketsFromSocketQueue() throws IOException {
         socketQueue.drainTo(this.newSocketsTemp);
 
         for(int i=0; i<this.newSocketsTemp.size(); i++){
             SocketChannel newSocket = this.newSocketsTemp.get(i);
 
-            addInboundSocket(newSocket);
+            addSocket(newSocket);
        }
 
        this.newSocketsTemp.clear();
     }
 
 
-    public TcpSocket addInboundSocket(String host, int tcpPort) throws IOException {
-        return addInboundSocket(new InetSocketAddress(host, tcpPort));
+    public TcpSocket addSocket(String host, int tcpPort) throws IOException {
+        return addSocket(new InetSocketAddress(host, tcpPort));
     }
 
-    public TcpSocket addInboundSocket(InetSocketAddress address) throws IOException {
+    public TcpSocket addSocket(InetSocketAddress address) throws IOException {
         SocketChannel socketChannel = SocketChannel.open(address);
-        return addInboundSocket(socketChannel);
+        return addSocket(socketChannel);
     }
 
 
-    public TcpSocket addInboundSocket(SocketChannel newSocket) throws IOException {
+    public TcpSocket addSocket(SocketChannel newSocket) throws IOException {
 
         newSocket.configureBlocking(false);
 
@@ -138,7 +138,7 @@ public class TcpSocketsProxy {
         return tcpSocket;
     }
 
-    public int selectReadReadySockets(TcpSocket[] readyTcpSocket, int limit) throws IOException {
+    protected int selectReadReadySockets(TcpSocket[] readyTcpSocket, int limit) throws IOException {
         int readReady = this.readSelector.selectNow();
 
         int readyIndex = 0;

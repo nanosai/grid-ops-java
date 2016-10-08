@@ -39,8 +39,8 @@ public class GridOps {
         return new IonObjectWriter(targetClass);
     }
 
-    public static TCPServerBuilder tcpServerBuilder() {
-        return new TCPServerBuilder();
+    public static TcpServerBuilder tcpServerBuilder() {
+        return new TcpServerBuilder();
     }
 
     public static MemoryAllocator memoryAllocator(int sizeInBytes, int maxFreeBlocks){
@@ -51,27 +51,27 @@ public class GridOps {
         return new MemoryAllocator(new byte[sizeInBytes], new long[maxFreeBlocks], memoryBlockFactory);
     }
 
-    public static TCPSocketsProxyBuilder tcpSocketsProxyBuilder() {
-        return new TCPSocketsProxyBuilder();
+    public static TcpSocketsPortBuilder tcpSocketsPortBuilder() {
+        return new TcpSocketsPortBuilder();
     }
 
 
-    public static class TCPServerBuilder {
+    public static class TcpServerBuilder {
         private int tcpPort = 1111;
         private int newSocketQueueCapacity = 1024;
         private BlockingQueue newSocketsQueue = null;
 
-        public TCPServerBuilder tcpPort(int tcpPort){
+        public TcpServerBuilder tcpPort(int tcpPort){
             this.tcpPort = tcpPort;
             return this;
         }
 
-        public TCPServerBuilder newSocketQueueCapacity(int capacity){
+        public TcpServerBuilder newSocketQueueCapacity(int capacity){
             this.newSocketQueueCapacity = capacity;
             return this;
         }
 
-        public TCPServerBuilder newSocketQueue(BlockingQueue newSocketsQueue){
+        public TcpServerBuilder newSocketQueue(BlockingQueue newSocketsQueue){
             this.newSocketsQueue = newSocketsQueue;
             return this;
         }
@@ -91,7 +91,7 @@ public class GridOps {
     }
 
 
-    public static class TCPSocketsProxyBuilder {
+    public static class TcpSocketsPortBuilder {
         private int incomingMessageBufferSize = 16 * 1024 * 1024;
         private int incomingMessageBufferFreeBlockMaxCount = 128 * 1024;
         private IMemoryBlockFactory incomingMessageMemoryBlockFactory = null;
@@ -106,64 +106,64 @@ public class GridOps {
 
         private BlockingQueue newSocketsQueue = null;
 
-        public TCPSocketsProxyBuilder incomingMessageBufferSize(int incomingMessageBufferSize) {
+        public TcpSocketsPortBuilder incomingMessageBufferSize(int incomingMessageBufferSize) {
             this.incomingMessageBufferSize = incomingMessageBufferSize;
             return this;
         }
 
-        public TCPSocketsProxyBuilder incomingMessageBufferFreeBlockMaxCount(int incomingMessageBufferFreeBlockMaxCount) {
+        public TcpSocketsPortBuilder incomingMessageBufferFreeBlockMaxCount(int incomingMessageBufferFreeBlockMaxCount) {
             this.incomingMessageBufferFreeBlockMaxCount = incomingMessageBufferFreeBlockMaxCount;
             return this;
         }
 
-        public TCPSocketsProxyBuilder incomingMessageMemoryBlockFactory(IMemoryBlockFactory incomingMessageMemoryBlockFactory) {
+        public TcpSocketsPortBuilder incomingMessageMemoryBlockFactory(IMemoryBlockFactory incomingMessageMemoryBlockFactory) {
             this.incomingMessageMemoryBlockFactory = incomingMessageMemoryBlockFactory;
             return this;
         }
 
-        public TCPSocketsProxyBuilder incomingMessageMemoryAllocator(MemoryAllocator incomingMessageMemoryAllocator) {
+        public TcpSocketsPortBuilder incomingMessageMemoryAllocator(MemoryAllocator incomingMessageMemoryAllocator) {
             this.incomingMessageMemoryAllocator = incomingMessageMemoryAllocator;
             return this;
         }
 
-        public TCPSocketsProxyBuilder setMessageReaderFactory(IMessageReaderFactory messageReaderFactory) {
+        public TcpSocketsPortBuilder setMessageReaderFactory(IMessageReaderFactory messageReaderFactory) {
             this.messageReaderFactory = messageReaderFactory;
             return this;
         }
 
-        public TCPSocketsProxyBuilder outgoingMessageBufferSize(int outgoingMessageBufferSize) {
+        public TcpSocketsPortBuilder outgoingMessageBufferSize(int outgoingMessageBufferSize) {
             this.outgoingMessageBufferSize = outgoingMessageBufferSize;
             return this;
         }
 
-        public TCPSocketsProxyBuilder outgoingMessageBufferFreeBlockMaxCount(int outgoingMessageBufferFreeBlockMaxCount) {
+        public TcpSocketsPortBuilder outgoingMessageBufferFreeBlockMaxCount(int outgoingMessageBufferFreeBlockMaxCount) {
             this.outgoingMessageBufferFreeBlockMaxCount = outgoingMessageBufferFreeBlockMaxCount;
             return this;
         }
 
-        public TCPSocketsProxyBuilder outgoingMessageMemoryBlockFactory(IMemoryBlockFactory outgoingMessageMemoryBlockFactory) {
+        public TcpSocketsPortBuilder outgoingMessageMemoryBlockFactory(IMemoryBlockFactory outgoingMessageMemoryBlockFactory) {
             this.outgoingMessageMemoryBlockFactory = outgoingMessageMemoryBlockFactory;
             return this;
         }
 
-        public TCPSocketsProxyBuilder outgoingMessageMemoryAllocator(MemoryAllocator outgoingMessageMemoryAllocator) {
+        public TcpSocketsPortBuilder outgoingMessageMemoryAllocator(MemoryAllocator outgoingMessageMemoryAllocator) {
             this.outgoingMessageMemoryAllocator = outgoingMessageMemoryAllocator;
             return this;
         }
 
-        public TCPSocketsProxyBuilder newSocketsQueue(BlockingQueue blockingQueue) {
+        public TcpSocketsPortBuilder newSocketsQueue(BlockingQueue blockingQueue) {
             this.newSocketsQueue = blockingQueue;
             return this;
         }
 
-        public TCPSocketsProxyBuilder tcpServer(TcpServer tcpServer){
+        public TcpSocketsPortBuilder tcpServer(TcpServer tcpServer){
             newSocketsQueue(tcpServer.getSocketQueue());
             return this;
         }
 
 
 
-        public TcpSocketsProxy build() throws IOException {
+        public TcpSocketsPort build() throws IOException {
             /*
             if(this.newSocketsQueue == null){
                 throw new RuntimeException("The newSocketsQueue must not be null");
@@ -194,7 +194,7 @@ public class GridOps {
                 this.messageReaderFactory = new IapMessageReaderFactory();
             }
 
-            return new TcpSocketsProxy(
+            return new TcpSocketsPort(
                     this.newSocketsQueue,
                     this.messageReaderFactory,
                     this.incomingMessageMemoryAllocator,

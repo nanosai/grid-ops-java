@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Created by jjenkov on 10-09-2016.
  */
-public class TcpSocketsProxyTest {
+public class TcpSocketsPortTest {
 
     public void testConstructors(){
 
@@ -28,7 +28,7 @@ public class TcpSocketsProxyTest {
         MemoryAllocator writeMemoryAllocator = new MemoryAllocator(
                 new byte[1024 * 1024], new long[1024], (allocator) -> new TcpMessage(allocator));
 
-        TcpSocketsProxy proxy = new TcpSocketsProxy(blockingQueue, messageReaderFactory,
+        TcpSocketsPort proxy = new TcpSocketsPort(blockingQueue, messageReaderFactory,
                 readMemoryAllocator, writeMemoryAllocator);
 
 
