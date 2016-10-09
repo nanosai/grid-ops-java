@@ -1,7 +1,10 @@
 package com.nanosai.gridops.system;
 
 import com.nanosai.gridops.GridOps;
+import com.nanosai.gridops.iap.IapMessage;
 import com.nanosai.gridops.iap.IapMessageKeys;
+import com.nanosai.gridops.iap.IapMessageReader;
+import com.nanosai.gridops.iap.IapMessageWriter;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.mem.MemoryAllocator;
@@ -19,52 +22,57 @@ public class ProtocolReactorTest {
     @Test
     public void testFindMessageHandler() {
 
-        MessageReactor messageReactor0 = new MessageReactor(0) {
+        MessageReactor messageReactor0 = new MessageReactor(new  byte[]{0}) {
             @Override
-            public void react(IonReader reader, MemoryBlock message) {
+            public void react(IonReader reader, IapMessage message) {
             }
         };
 
-        MessageReactor messageReactor1 = new MessageReactor(1) {
+        MessageReactor messageReactor1 = new MessageReactor(new byte[]{1}) {
             @Override
-            public void react(IonReader reader, MemoryBlock message) {
+            public void react(IonReader reader, IapMessage message) {
             }
         };
 
-        ProtocolReactor protocolReactor = new ProtocolReactor(0, messageReactor0, messageReactor1);
+        ProtocolReactor protocolReactor = new ProtocolReactor(new byte[]{0}, messageReactor0, messageReactor1);
 
-        assertSame(messageReactor0, protocolReactor.findMessageHandler(0));
-        assertSame(messageReactor1, protocolReactor.findMessageHandler(1));
+        assertSame(messageReactor0, protocolReactor.findMessageReactor(new byte[]{0}, 0, 1));
+        assertSame(messageReactor1, protocolReactor.findMessageReactor(new byte[]{1}, 0, 1));
 
-        assertNull(protocolReactor.findMessageHandler(2));
+        assertNull(protocolReactor.findMessageReactor(new byte[]{2}, 0, 1));
     }
 
     @Test
-    public void testHandleMessage() {
-        MessageReactorMock messageHandlerMock = new MessageReactorMock(0);
+    public void testReact() {
+        MessageReactorMock messageHandlerMock = new MessageReactorMock(new byte[]{0});
         assertFalse(messageHandlerMock.handleMessageCalled);
 
-        ProtocolReactor protocolReactor = new ProtocolReactor(0, messageHandlerMock);
+        ProtocolReactor protocolReactor = new ProtocolReactor(new byte[]{0}, messageHandlerMock);
 
-        MemoryAllocator memoryAllocator = GridOps.memoryAllocator(1024 * 1024, 1024);
-        MemoryBlock memoryBlock     = memoryAllocator.getMemoryBlock().allocate(1024);
+        byte[] dest = new byte[128];
 
-        byte messageType = 0;
-        writeMessage(messageType, memoryBlock);
+        byte[] messageType = new byte[]{0};
+        int length = writeMessage(messageType, dest);
 
         IonReader reader = new IonReader();
-        reader.setSource(memoryBlock.memoryAllocator.data, memoryBlock.startIndex, memoryBlock.lengthWritten());
+        reader.setSource(dest, 0, length);
         reader.nextParse();
 
-        protocolReactor.react(reader, memoryBlock);
+        IapMessage message = new IapMessage();
+        message.data = dest;
+        IapMessageReader.read(reader, message);
+
+        protocolReactor.react(reader, message);
         assertTrue(messageHandlerMock.handleMessageCalled);
 
-        writeMessage((byte) 123, memoryBlock);
-        reader.setSource(memoryBlock.memoryAllocator.data, memoryBlock.startIndex, memoryBlock.lengthWritten());
+        length = writeMessage(new byte[]{123}, dest);
+        reader.setSource(dest, 0, length);
         reader.nextParse();
 
+        IapMessageReader.read(reader, message);
+
         messageHandlerMock.handleMessageCalled = false;
-        protocolReactor.react(reader, memoryBlock);
+        protocolReactor.react(reader, message);
 
         assertFalse(messageHandlerMock.handleMessageCalled);
 
@@ -72,18 +80,20 @@ public class ProtocolReactorTest {
     }
 
 
-    private void writeMessage(byte messageType, MemoryBlock memoryBlock) {
+    private int writeMessage(byte[] messageType, byte[] dest) {
         IonWriter writer = new IonWriter();
-        writer.setDestination(memoryBlock.memoryAllocator.data, memoryBlock.startIndex);
+        writer.setDestination(dest, 0);
         writer.setComplexFieldStack(new int[16]);
         //writer.writeObjectBeginPush(2);
 
-        writer.writeKeyShort(new byte[]{IapMessageKeys.MESSAGE_TYPE});
-        writer.writeBytes   (new byte[]{messageType});
+        IapMessageWriter.writeMessageType(writer, messageType);
+
+        //writer.writeKeyShort(new byte[]{IapMessageKeys.MESSAGE_TYPE});
+        //writer.writeBytes   (new byte[]{messageType});
 
         //writer.writeObjectEndPop();
 
-        memoryBlock.writeIndex = writer.destIndex;
+        return writer.destIndex;
     }
 
 }

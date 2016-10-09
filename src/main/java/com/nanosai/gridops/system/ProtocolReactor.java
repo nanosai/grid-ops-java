@@ -1,5 +1,6 @@
 package com.nanosai.gridops.system;
 
+import com.nanosai.gridops.iap.IapMessage;
 import com.nanosai.gridops.iap.IapMessageKeys;
 import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.ion.read.IonReader;
@@ -11,32 +12,23 @@ import com.nanosai.gridops.mem.MemoryBlock;
 public class ProtocolReactor {
 
     //consider using a byte[] instad - for more complex protocol names than numbers.
-    public int protocolId = 0;
+    public byte[] protocolId = null;
 
     private MessageReactor[] messageReactors = null;
 
 
-    public ProtocolReactor(int protocolId, MessageReactor... messageReactors) {
+    public ProtocolReactor(byte[] protocolId, MessageReactor... messageReactors) {
         this.protocolId = protocolId;
         this.messageReactors = messageReactors;
     }
 
-    public void react(IonReader reader, MemoryBlock message){
-        if(reader.fieldType == IonFieldTypes.KEY_SHORT){
-            if(isMessageTypeKey(reader)){
-                reader.nextParse();
-                int messageType = (int) reader.readInt64();
-
-                MessageReactor messageHandlerForMessageType =
-                        findMessageHandler(messageType);
-
-                if(messageHandlerForMessageType != null){
-                    reader.nextParse();
-                    messageHandlerForMessageType.react(reader, message);
-                }
+    public void react(IonReader reader, IapMessage message){
+        if(message.messageTypeLength > 0){
+            MessageReactor messageReactor = findMessageReactor(message.data, message.messageTypeOffset, message.messageTypeLength);
+            if(messageReactor != null){
+                messageReactor.react(reader, message);
             }
         }
-
     }
 
     /**
@@ -46,9 +38,10 @@ public class ProtocolReactor {
      * @param messageType The message type to find the message handler for.
      * @return The message handler matching the given message type, or null if no message handler found.
      */
-    protected MessageReactor findMessageHandler(int messageType){
+    protected MessageReactor findMessageReactor(byte[] messageType, int offset, int length){
         for(int i = 0; i< messageReactors.length; i++){
-            if(messageType == messageReactors[i].messageType){
+            if(SystemUtil.equals(messageType, offset, length,
+                    messageReactors[i].messageType, 0, messageReactors[i].messageType.length)){
                 return messageReactors[i];
             }
         }
@@ -56,7 +49,4 @@ public class ProtocolReactor {
     }
 
 
-    private boolean isMessageTypeKey(IonReader reader) {
-        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.MESSAGE_TYPE;
-    }
 }

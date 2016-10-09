@@ -1,7 +1,10 @@
 package com.nanosai.gridops.system;
 
 import com.nanosai.gridops.GridOps;
+import com.nanosai.gridops.iap.IapMessage;
 import com.nanosai.gridops.iap.IapMessageKeys;
+import com.nanosai.gridops.iap.IapMessageReader;
+import com.nanosai.gridops.iap.IapMessageWriter;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.mem.MemoryAllocator;
@@ -18,68 +21,72 @@ public class SystemReactorTest {
 
     @Test
     public void testFindProtocolHandler() {
-        ProtocolReactor protocolReactor0 = new ProtocolReactor(0) {
+        ProtocolReactor protocolReactor0 = new ProtocolReactor(new byte[]{0}) {
             @Override
-            public void react(IonReader reader, MemoryBlock message) {
+            public void react(IonReader reader, IapMessage message) {
             }
         };
 
-        ProtocolReactor protocolReactor1 = new ProtocolReactor(1) {
+        ProtocolReactor protocolReactor1 = new ProtocolReactor(new byte[]{1}) {
             @Override
-            public void react(IonReader reader, MemoryBlock message) {
+            public void react(IonReader reader, IapMessage message) {
             }
         };
 
         SystemReactor systemHandler = new SystemReactor(new byte[]{0}, protocolReactor0, protocolReactor1);
 
-        assertSame(protocolReactor0, systemHandler.findProtocolHandler(0));
-        assertSame(protocolReactor1, systemHandler.findProtocolHandler(1));
+        assertSame(protocolReactor0, systemHandler.findProtocolReactor(new byte[]{0}, 0, 1));
+        assertSame(protocolReactor1, systemHandler.findProtocolReactor(new byte[]{1}, 0, 1));
 
-        assertNull(systemHandler.findProtocolHandler(2));
+        assertNull(systemHandler.findProtocolReactor(new byte[]{2}, 0, 1));
     }
 
     @Test
-    public void testHandleMessage(){
-        ProtocolReactorMock protocolHandlerMock = new ProtocolReactorMock(0);
+    public void testReact(){
+        ProtocolReactorMock protocolHandlerMock = new ProtocolReactorMock(new byte[]{2});
         assertFalse(protocolHandlerMock.handleMessageCalled);
 
         SystemReactor systemHandler = new SystemReactor(new byte[]{0}, protocolHandlerMock);
 
-        MemoryAllocator memoryAllocator = GridOps.memoryAllocator(1024 * 1024, 1024);
-        MemoryBlock memoryBlock     = memoryAllocator.getMemoryBlock().allocate(1024);
+        byte[] dest = new byte[128];
 
-        byte semanticProtocolId = 0;
-        writeMessage(semanticProtocolId, memoryBlock);
+        int length = writeMessage(new byte[]{2}, dest);
 
         IonReader reader = new IonReader();
-        reader.setSource(memoryBlock.memoryAllocator.data, memoryBlock.startIndex, memoryBlock.lengthWritten());
+        reader.setSource(dest, 0, length);
         reader.nextParse();
 
-        systemHandler.react(reader, memoryBlock);
+        IapMessage message = new IapMessage();
+        message.data = dest;
+        IapMessageReader.read(reader, message);
+
+        systemHandler.react(reader, message);
         assertTrue(protocolHandlerMock.handleMessageCalled);
 
-        writeMessage((byte) 123, memoryBlock);
-        reader.setSource(memoryBlock.memoryAllocator.data, memoryBlock.startIndex, memoryBlock.lengthWritten());
+        length = writeMessage(new byte[]{123}, dest);
+        reader.setSource(dest, 0, length);
         reader.nextParse();
         protocolHandlerMock.handleMessageCalled = false;
 
-        systemHandler.react(reader, memoryBlock);
+        systemHandler.react(reader, message);
         assertFalse(protocolHandlerMock.handleMessageCalled);
     }
 
 
-    private void writeMessage(byte semanticProtocolId, MemoryBlock memoryBlock) {
+    private int writeMessage(byte[] semanticProtocolId, byte[] dest) {
         IonWriter writer = new IonWriter();
-        writer.setDestination(memoryBlock.memoryAllocator.data, memoryBlock.startIndex);
+        writer.setDestination(dest, 0);
         writer.setComplexFieldStack(new int[16]);
         //writer.writeObjectBeginPush(2);
 
-        writer.writeKeyShort(new byte[]{IapMessageKeys.SEMANTIC_PROTOCOL_ID});
-        writer.writeBytes(new byte[]{semanticProtocolId});
+        IapMessageWriter.writeSemanticProtocolId(writer, semanticProtocolId);
+
+        //writer.writeKeyShort(new byte[]{IapMessageKeys.SEMANTIC_PROTOCOL_ID});
+        //writer.writeBytes(new byte[]{semanticProtocolId});
 
         //writer.writeObjectEndPop();
 
-        memoryBlock.writeIndex = writer.destIndex;
+        return writer.destIndex;
     }
 
 }

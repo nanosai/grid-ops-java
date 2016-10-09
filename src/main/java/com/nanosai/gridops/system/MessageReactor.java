@@ -1,19 +1,19 @@
 package com.nanosai.gridops.system;
 
+import com.nanosai.gridops.iap.IapMessage;
 import com.nanosai.gridops.ion.read.IonReader;
-import com.nanosai.gridops.mem.MemoryBlock;
 
 /**
  * Created by jjenkov on 23-09-2016.
  */
 public abstract class MessageReactor {
 
-    public int messageType = 0;
+    public byte[] messageType = null;
 
-    public MessageReactor(int messageType) {
+    public MessageReactor(byte[] messageType) {
         this.messageType = messageType;
     }
 
-    public abstract void react(IonReader reader, MemoryBlock message);
+    public abstract void react(IonReader reader, IapMessage message);
 
 }
