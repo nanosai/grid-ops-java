@@ -10,7 +10,7 @@ We are working on a set of tutorials for Grid Ops - Java. They are not finished 
 you can start getting a feeling for what using Grid Ops will look like, and what you
 can do with it. You can find the Grid Ops tutorials here:
 
-[Grid Ops - Java, Tutoriaols] (http://tutorials.jenkov.com/grid-ops-java/index.html)
+[Grid Ops - Java, Tutorials] (http://tutorials.jenkov.com/grid-ops-java/index.html)
 
 ## Grid Ops - Java, Examples
 We have a separate project showing examples of how to use Grid Ops Java
