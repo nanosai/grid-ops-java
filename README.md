@@ -5,7 +5,14 @@ distributed systems in general, and a set of commonly used distributed
 systems infrastructure services. We want your distributed systems to
 get up and running as quickly as possible.
 
-## Grid Ops - Java Examples
+## Grid Ops - Java, Tutorials
+We are working on a set of tutorials for Grid Ops - Java. They are not finished yet, but 
+you can start getting a feeling for what using Grid Ops will look like, and what you
+can do with it. You can find the Grid Ops tutorials here:
+
+[Grid Ops - Java, Tutoriaols] (http://tutorials.jenkov.com/grid-ops-java/index.html)
+
+## Grid Ops - Java, Examples
 We have a separate project showing examples of how to use Grid Ops Java
 here: [Grid Ops Java Examples] (https://github.com/nanosai/grid-ops-java-examples)
 
