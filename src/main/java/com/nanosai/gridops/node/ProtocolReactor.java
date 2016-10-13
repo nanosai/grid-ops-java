@@ -1,10 +1,7 @@
-package com.nanosai.gridops.system;
+package com.nanosai.gridops.node;
 
 import com.nanosai.gridops.iap.IapMessage;
-import com.nanosai.gridops.iap.IapMessageKeys;
-import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.ion.read.IonReader;
-import com.nanosai.gridops.mem.MemoryBlock;
 
 /**
  * Created by jjenkov on 23-09-2016.
@@ -40,7 +37,7 @@ public class ProtocolReactor {
      */
     protected MessageReactor findMessageReactor(byte[] messageType, int offset, int length){
         for(int i = 0; i< messageReactors.length; i++){
-            if(SystemUtil.equals(messageType, offset, length,
+            if(NodeUtil.equals(messageType, offset, length,
                     messageReactors[i].messageType, 0, messageReactors[i].messageType.length)){
                 return messageReactors[i];
             }

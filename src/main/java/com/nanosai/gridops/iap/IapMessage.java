@@ -9,8 +9,8 @@ public class IapMessage {
     public byte[] data = null;
 
     // receiver system id
-    public int receiverSystemIdOffset = 0;
-    public int receiverSystemIdLength = 0;
+    public int receiverNodeIdOffset = 0;
+    public int receiverNodeIdLength = 0;
 
     // semantic protocol id
     public int semanticProtocolIdOffset = 0;

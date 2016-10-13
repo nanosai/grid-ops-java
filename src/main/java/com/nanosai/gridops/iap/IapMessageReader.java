@@ -13,8 +13,8 @@ public class IapMessageReader {
 
         // assume IonReader is already pointing to the first ION field inside the ION Object field
 
-        // read receiver system id
-        readReceiverSystemId(reader, message);
+        // read receiver node id
+        readReceiverNodeId(reader, message);
 
         // read semantic protocol id
         readSemanticProtocolId(reader, message);
@@ -38,14 +38,14 @@ public class IapMessageReader {
      * @param reader
      * @param message
      */
-    private static void readReceiverSystemId(IonReader reader, IapMessage message) {
+    private static void readReceiverNodeId(IonReader reader, IapMessage message) {
         if(reader.fieldType == IonFieldTypes.KEY_SHORT){
             if(isSystemIdKey(reader)) {
                 reader.nextParse();
 
                 if(reader.fieldType == IonFieldTypes.BYTES){
-                    message.receiverSystemIdOffset = reader.index;
-                    message.receiverSystemIdLength = reader.fieldLength;
+                    message.receiverNodeIdOffset = reader.index;
+                    message.receiverNodeIdLength = reader.fieldLength;
                 }
                 reader.nextParse(); //move to next field after receiver system id.
             }
@@ -113,11 +113,11 @@ public class IapMessageReader {
     }
 
     private static boolean isSystemIdKey(IonReader reader) {
-        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.RECEIVER_SYSTEM_ID;
+        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.RECEIVER_NODE_ID;
     }
 
     private static boolean isSystemIdCodeKey(IonReader reader) {
-        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.RECEIVER_SYSTEM_ID_CODE;
+        return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.RECEIVER_NODE_ID_CODE;
     }
 
     private static boolean isSemanticProtoocolIdKey(IonReader reader) {

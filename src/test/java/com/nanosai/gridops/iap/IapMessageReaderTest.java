@@ -33,9 +33,9 @@ public class IapMessageReaderTest {
 
         IapMessageReader.read(reader, message);
 
-        assertEquals(4, message.receiverSystemIdOffset);
-        assertEquals(1, message.receiverSystemIdLength);
-        assertEquals(0, message.data[message.receiverSystemIdOffset]);
+        assertEquals(4, message.receiverNodeIdOffset);
+        assertEquals(1, message.receiverNodeIdLength);
+        assertEquals(0, message.data[message.receiverNodeIdOffset]);
 
         assertEquals(9, message.semanticProtocolIdOffset);
         assertEquals(1, message.semanticProtocolIdLength);
@@ -70,8 +70,8 @@ public class IapMessageReaderTest {
 
         IapMessageReader.read(reader, message);
 
-        assertEquals(0, message.receiverSystemIdOffset);
-        assertEquals(0, message.receiverSystemIdLength);
+        assertEquals(0, message.receiverNodeIdOffset);
+        assertEquals(0, message.receiverNodeIdLength);
 
         assertEquals(4, message.semanticProtocolIdOffset);
         assertEquals(1, message.semanticProtocolIdLength);
@@ -103,8 +103,8 @@ public class IapMessageReaderTest {
 
         IapMessageReader.read(reader, message);
 
-        assertEquals(0, message.receiverSystemIdOffset);
-        assertEquals(0, message.receiverSystemIdLength);
+        assertEquals(0, message.receiverNodeIdOffset);
+        assertEquals(0, message.receiverNodeIdLength);
 
         assertEquals(0, message.semanticProtocolIdOffset);
         assertEquals(0, message.semanticProtocolIdLength);

@@ -5,8 +5,8 @@ package com.nanosai.gridops.iap;
  */
 public class IapMessageKeys {
 
-    public static final int RECEIVER_SYSTEM_ID             = 0;
-    public static final int RECEIVER_SYSTEM_ID_CODE        = 1;
+    public static final int RECEIVER_NODE_ID = 0;
+    public static final int RECEIVER_NODE_ID_CODE = 1;
     public static final int SEMANTIC_PROTOCOL_ID           = 2;
     public static final int SEMANTIC_PROTOCOL_ID_CODE      = 3;
     public static final int SEMANTIC_PROTOCOL_VERSION      = 4;

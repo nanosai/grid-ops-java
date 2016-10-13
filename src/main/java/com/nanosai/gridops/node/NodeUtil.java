@@ -1,9 +1,9 @@
-package com.nanosai.gridops.system;
+package com.nanosai.gridops.node;
 
 /**
  * Various utilities which could be located somewhere else, but are located here for now.
  */
-public class SystemUtil {
+public class NodeUtil {
 
 
     static boolean equals(byte[] data1, int offset1, int length1, byte[] data2, int offset2, int length2) {

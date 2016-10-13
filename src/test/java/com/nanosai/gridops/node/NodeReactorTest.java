@@ -1,14 +1,10 @@
-package com.nanosai.gridops.system;
+package com.nanosai.gridops.node;
 
-import com.nanosai.gridops.GridOps;
 import com.nanosai.gridops.iap.IapMessage;
-import com.nanosai.gridops.iap.IapMessageKeys;
 import com.nanosai.gridops.iap.IapMessageReader;
 import com.nanosai.gridops.iap.IapMessageWriter;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
-import com.nanosai.gridops.mem.MemoryAllocator;
-import com.nanosai.gridops.mem.MemoryBlock;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -16,7 +12,7 @@ import static org.junit.Assert.*;
 /**
  * Created by jjenkov on 24-09-2016.
  */
-public class SystemReactorTest {
+public class NodeReactorTest {
 
 
     @Test
@@ -33,7 +29,7 @@ public class SystemReactorTest {
             }
         };
 
-        SystemReactor systemHandler = new SystemReactor(new byte[]{0}, protocolReactor0, protocolReactor1);
+        NodeReactor systemHandler = new NodeReactor(new byte[]{0}, protocolReactor0, protocolReactor1);
 
         assertSame(protocolReactor0, systemHandler.findProtocolReactor(new byte[]{0}, 0, 1));
         assertSame(protocolReactor1, systemHandler.findProtocolReactor(new byte[]{1}, 0, 1));
@@ -46,7 +42,7 @@ public class SystemReactorTest {
         ProtocolReactorMock protocolHandlerMock = new ProtocolReactorMock(new byte[]{2});
         assertFalse(protocolHandlerMock.handleMessageCalled);
 
-        SystemReactor systemHandler = new SystemReactor(new byte[]{0}, protocolHandlerMock);
+        NodeReactor systemHandler = new NodeReactor(new byte[]{0}, protocolHandlerMock);
 
         byte[] dest = new byte[128];
 

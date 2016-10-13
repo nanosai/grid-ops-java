@@ -1,4 +1,4 @@
-package com.nanosai.gridops.system;
+package com.nanosai.gridops.node;
 
 import com.nanosai.gridops.iap.IapMessage;
 import com.nanosai.gridops.ion.read.IonReader;
@@ -6,14 +6,14 @@ import com.nanosai.gridops.ion.read.IonReader;
 /**
  * Created by jjenkov on 23-09-2016.
  */
-public class SystemReactor {
+public class NodeReactor {
 
     public byte[] systemId = null;
 
     private ProtocolReactor[] protocolReactors = null;
 
 
-    public SystemReactor(byte[] systemId, ProtocolReactor... protocolReactors) {
+    public NodeReactor(byte[] systemId, ProtocolReactor... protocolReactors) {
         this.systemId = systemId;
         this.protocolReactors = protocolReactors;
     }
@@ -40,7 +40,7 @@ public class SystemReactor {
      */
     public ProtocolReactor findProtocolReactor(byte[] protocolId, int offset, int length){
         for(int i = 0; i< protocolReactors.length; i++){
-            if(SystemUtil.equals(protocolId, offset, length,
+            if(NodeUtil.equals(protocolId, offset, length,
                     protocolReactors[i].protocolId, 0, protocolReactors[i].protocolId.length)){
                 return protocolReactors[i];
             }

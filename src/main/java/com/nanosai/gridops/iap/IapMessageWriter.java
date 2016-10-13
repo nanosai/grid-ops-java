@@ -7,8 +7,8 @@ import com.nanosai.gridops.ion.write.IonWriter;
  */
 public class IapMessageWriter {
 
-    private static final byte[] receiverSystemIdKey            = new byte[] {IapMessageKeys.RECEIVER_SYSTEM_ID};
-    private static final byte[] receiverSystemIdCodeKey        = new byte[] {IapMessageKeys.RECEIVER_SYSTEM_ID_CODE};
+    private static final byte[] receiverNodeIdKey              = new byte[] {IapMessageKeys.RECEIVER_NODE_ID};
+    private static final byte[] receiverNodeIdCodeKey          = new byte[] {IapMessageKeys.RECEIVER_NODE_ID_CODE};
     private static final byte[] semanticProtocolIdKey          = new byte[] {IapMessageKeys.SEMANTIC_PROTOCOL_ID};
     private static final byte[] semanticProtocolIdCodeKey      = new byte[] {IapMessageKeys.SEMANTIC_PROTOCOL_ID_CODE};
     private static final byte[] semanticProtocolVersionKey     = new byte[] {IapMessageKeys.SEMANTIC_PROTOCOL_VERSION};
@@ -19,7 +19,7 @@ public class IapMessageWriter {
     public static void writeMessageFields(IonWriter writer, int receiverSystemIdCode,
                                           int semanticProtocolIdCode, int semanticProtocolVersionCode,
                                           int messageTypeCode){
-        writeReceiverSystemIdCode       (writer, receiverSystemIdCode);
+        writeReceiverNodeIdCode(writer, receiverSystemIdCode);
         writeSemanticProtocolIdCode     (writer, semanticProtocolIdCode);
         writeSemanticProtocolVersionCode(writer, semanticProtocolVersionCode);
         writeMessageTypeCode            (writer, messageTypeCode);
@@ -28,19 +28,19 @@ public class IapMessageWriter {
     public static void writeMessageFields(IonWriter writer, byte[] receiverSystemId,
                                           byte[] semanticProtocolId, byte[] semanticProtocolVersion,
                                           byte[] messageType){
-        writeReceiverSystemId       (writer, receiverSystemId);
+        writeReceiverNodeId(writer, receiverSystemId);
         writeSemanticProtocolId     (writer, semanticProtocolId);
         writeSemanticProtocolVersion(writer, semanticProtocolVersion);
         writeMessageType            (writer, messageType);
     }
 
-    public static void writeReceiverSystemIdCode(IonWriter writer, int receiverSystemIdCode){
-        writer.writeKeyShort(receiverSystemIdCodeKey);
+    public static void writeReceiverNodeIdCode(IonWriter writer, int receiverSystemIdCode){
+        writer.writeKeyShort(receiverNodeIdCodeKey);
         writer.writeInt64   (receiverSystemIdCode);
     }
 
-    public static void writeReceiverSystemId(IonWriter writer, byte[] receiverSystemId){
-        writer.writeKeyShort(receiverSystemIdKey);
+    public static void writeReceiverNodeId(IonWriter writer, byte[] receiverSystemId){
+        writer.writeKeyShort(receiverNodeIdKey);
         writer.writeBytes   (receiverSystemId);
     }
 

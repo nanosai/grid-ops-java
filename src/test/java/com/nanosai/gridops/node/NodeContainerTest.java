@@ -1,14 +1,10 @@
-package com.nanosai.gridops.system;
+package com.nanosai.gridops.node;
 
-import com.nanosai.gridops.GridOps;
 import com.nanosai.gridops.iap.IapMessage;
-import com.nanosai.gridops.iap.IapMessageKeys;
 import com.nanosai.gridops.iap.IapMessageReader;
 import com.nanosai.gridops.iap.IapMessageWriter;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
-import com.nanosai.gridops.mem.MemoryAllocator;
-import com.nanosai.gridops.mem.MemoryBlock;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -16,41 +12,41 @@ import static org.junit.Assert.*;
 /**
  * Created by jjenkov on 24-09-2016.
  */
-public class SystemContainerTest {
+public class NodeContainerTest {
 
 
     @Test
-    public void testFindSystem() {
+    public void testFindNode() {
 
-        SystemReactor systemHandler0 = new SystemReactor(new byte[]{0}) {
+        NodeReactor systemHandler0 = new NodeReactor(new byte[]{0}) {
             @Override
             public void react(IonReader reader, IapMessage message) {
             }
         };
 
-        SystemReactor systemHandler1 = new SystemReactor(new byte[]{1}) {
+        NodeReactor systemHandler1 = new NodeReactor(new byte[]{1}) {
             @Override
             public void react(IonReader reader, IapMessage message) {
             }
         };
 
-        SystemContainer systemContainer = new SystemContainer(
+        NodeContainer systemContainer = new NodeContainer(
                 systemHandler0, systemHandler1);
 
-        assertSame(systemHandler0, systemContainer.findSystemReactor(new byte[]{0}, 0, 1));
-        assertSame(systemHandler1, systemContainer.findSystemReactor(new byte[]{1}, 0, 1));
+        assertSame(systemHandler0, systemContainer.findNodeReactor(new byte[]{0}, 0, 1));
+        assertSame(systemHandler1, systemContainer.findNodeReactor(new byte[]{1}, 0, 1));
 
-        assertNull(systemContainer.findSystemReactor(new byte[]{2}, 0, 1));
+        assertNull(systemContainer.findNodeReactor(new byte[]{2}, 0, 1));
     }
 
 
     @Test
     public void testReact() {
         byte[] systemId = new byte[]{0};
-        SystemReactorMock system0 = new SystemReactorMock(systemId);
+        NodeReactorMock system0 = new NodeReactorMock(systemId);
         assertFalse(system0.handleMessageCalled);
 
-        SystemContainer systemContainer = new SystemContainer(system0);
+        NodeContainer systemContainer = new NodeContainer(system0);
 
         byte[] dest = new byte[1024];
 
@@ -67,8 +63,8 @@ public class SystemContainerTest {
         assertTrue(system0.handleMessageCalled);
 
         system0.handleMessageCalled = false;
-        byte[] unknownSystemId = new byte[]{123};
-        writeMessage(unknownSystemId, dest);
+        byte[] unknownNodeId = new byte[]{123};
+        writeMessage(unknownNodeId, dest);
 
         systemContainer.react(reader, message);
         assertFalse(system0.handleMessageCalled);
@@ -81,7 +77,7 @@ public class SystemContainerTest {
         writer.setComplexFieldStack(new int[16]);
         //writer.writeObjectBeginPush(2);
 
-        IapMessageWriter.writeReceiverSystemId(writer, systemId);
+        IapMessageWriter.writeReceiverNodeId(writer, systemId);
 
         //writer.writeObjectEndPop();
         return writer.destIndex;

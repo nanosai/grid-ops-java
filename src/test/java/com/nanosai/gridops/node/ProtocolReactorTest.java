@@ -1,14 +1,10 @@
-package com.nanosai.gridops.system;
+package com.nanosai.gridops.node;
 
-import com.nanosai.gridops.GridOps;
 import com.nanosai.gridops.iap.IapMessage;
-import com.nanosai.gridops.iap.IapMessageKeys;
 import com.nanosai.gridops.iap.IapMessageReader;
 import com.nanosai.gridops.iap.IapMessageWriter;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
-import com.nanosai.gridops.mem.MemoryAllocator;
-import com.nanosai.gridops.mem.MemoryBlock;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
