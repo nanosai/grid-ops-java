@@ -7,6 +7,10 @@ import com.nanosai.gridops.ion.write.IonObjectWriter;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.mem.IMemoryBlockFactory;
 import com.nanosai.gridops.mem.MemoryAllocator;
+import com.nanosai.gridops.node.MessageReactor;
+import com.nanosai.gridops.node.NodeContainer;
+import com.nanosai.gridops.node.NodeReactor;
+import com.nanosai.gridops.node.ProtocolReactor;
 import com.nanosai.gridops.tcp.*;
 
 import java.io.IOException;
@@ -202,6 +206,23 @@ public class GridOps {
                     );
         }
     }
+
+
+    // NodeContainer
+    public static NodeContainer nodeContainer(NodeReactor ... nodeReactors) {
+        return new NodeContainer(nodeReactors);
+    }
+
+    // NodeReactor
+    public static NodeReactor nodeReactor(byte[] nodeId, ProtocolReactor ... protocolReactors) {
+        return new NodeReactor(nodeId, protocolReactors);
+    }
+
+    // ProtocolReactor
+    public ProtocolReactor protocolReactor(byte[] protocolId, MessageReactor... messageReactors){
+        return new ProtocolReactor(protocolId, messageReactors);
+    }
+
 
 
 

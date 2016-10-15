@@ -13,8 +13,9 @@ public class NodeReactor {
     private ProtocolReactor[] protocolReactors = null;
 
 
-    public NodeReactor(byte[] systemId, ProtocolReactor... protocolReactors) {
-        this.systemId = systemId;
+
+    public NodeReactor(byte[] nodeId, ProtocolReactor... protocolReactors) {
+        this.systemId = nodeId;
         this.protocolReactors = protocolReactors;
     }
 
