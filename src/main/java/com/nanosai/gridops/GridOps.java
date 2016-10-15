@@ -7,6 +7,7 @@ import com.nanosai.gridops.ion.write.IonObjectWriter;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.mem.IMemoryBlockFactory;
 import com.nanosai.gridops.mem.MemoryAllocator;
+import com.nanosai.gridops.mem.MemoryBlock;
 import com.nanosai.gridops.node.MessageReactor;
 import com.nanosai.gridops.node.NodeContainer;
 import com.nanosai.gridops.node.NodeReactor;
@@ -27,8 +28,24 @@ public class GridOps {
         return new IonReader();
     }
 
+    public static IonReader ionReader(byte[] source, int offset, int length){
+        return ionReader().setSource(source, offset, length);
+    }
+
+    public static IonReader ionReader(MemoryBlock source){
+        return ionReader().setSource(source);
+    }
+
     public static IonWriter ionWriter() {
         return new IonWriter();
+    }
+
+    public static IonWriter ionWriter(byte[] destination, int offset) {
+        return ionWriter().setDestination(destination, offset);
+    }
+
+    public static IonWriter ionWriter(MemoryBlock memoryBlock){
+        return ionWriter().setDestination(memoryBlock);
     }
 
     public static IonObjectReader ionObjectReader(Class targetClass){
