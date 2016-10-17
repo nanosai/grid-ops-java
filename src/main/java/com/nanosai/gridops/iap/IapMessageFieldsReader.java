@@ -6,24 +6,24 @@ import com.nanosai.gridops.ion.read.IonReader;
 /**
  * Created by jjenkov on 09-10-2016.
  */
-public class IapMessageReader {
+public class IapMessageFieldsReader {
 
 
-    public static void read(IonReader reader, IapMessageFields message) {
+    public static void read(IonReader reader, IapMessageFields iapMessageFields) {
 
         // assume IonReader is already pointing to the first ION field inside the ION Object field
 
         // read receiver node id
-        readReceiverNodeId(reader, message);
+        readReceiverNodeId(reader, iapMessageFields);
 
         // read semantic protocol id
-        readSemanticProtocolId(reader, message);
+        readSemanticProtocolId(reader, iapMessageFields);
 
         // read semantic protocol version
-        readSemanticProtocolVersion(reader, message);
+        readSemanticProtocolVersion(reader, iapMessageFields);
 
         // read message type
-        readMessageType(reader, message);
+        readMessageType(reader, iapMessageFields);
 
 
         // read message id
@@ -36,16 +36,16 @@ public class IapMessageReader {
      * Reads the receiver system id from the IonReader - if present (is optional).
      *
      * @param reader
-     * @param message
+     * @param iapMessageFields
      */
-    private static void readReceiverNodeId(IonReader reader, IapMessageFields message) {
+    private static void readReceiverNodeId(IonReader reader, IapMessageFields iapMessageFields) {
         if(reader.fieldType == IonFieldTypes.KEY_SHORT){
             if(isSystemIdKey(reader)) {
                 reader.nextParse();
 
                 if(reader.fieldType == IonFieldTypes.BYTES){
-                    message.receiverNodeIdOffset = reader.index;
-                    message.receiverNodeIdLength = reader.fieldLength;
+                    iapMessageFields.receiverNodeIdOffset = reader.index;
+                    iapMessageFields.receiverNodeIdLength = reader.fieldLength;
                 }
                 reader.nextParse(); //move to next field after receiver system id.
             }
@@ -56,16 +56,16 @@ public class IapMessageReader {
      * Reads the semantic protocol id from the IonReader - if present (is optional).
      *
      * @param reader
-     * @param message
+     * @param iapMessageFields
      */
-    private static void readSemanticProtocolId(IonReader reader, IapMessageFields message) {
+    private static void readSemanticProtocolId(IonReader reader, IapMessageFields iapMessageFields) {
         if(reader.fieldType == IonFieldTypes.KEY_SHORT){
             if(isSemanticProtoocolIdKey(reader)) {
                 reader.nextParse();
 
                 if(reader.fieldType == IonFieldTypes.BYTES){
-                    message.semanticProtocolIdOffset = reader.index;
-                    message.semanticProtocolIdLength = reader.fieldLength;
+                    iapMessageFields.semanticProtocolIdOffset = reader.index;
+                    iapMessageFields.semanticProtocolIdLength = reader.fieldLength;
                 }
                 reader.nextParse(); //move to next field after semantic protocol id.
             }
@@ -76,16 +76,16 @@ public class IapMessageReader {
      * Reads the semantic protocol version from the IonReader - if present (is optional).
      *
      * @param reader
-     * @param message
+     * @param iapMessageFields
      */
-    private static void readSemanticProtocolVersion(IonReader reader, IapMessageFields message) {
+    private static void readSemanticProtocolVersion(IonReader reader, IapMessageFields iapMessageFields) {
         if(reader.fieldType == IonFieldTypes.KEY_SHORT){
             if(isSemanticProtoocolVersionKey(reader)) {
                 reader.nextParse();
 
                 if(reader.fieldType == IonFieldTypes.BYTES){
-                    message.semanticProtocolVersionOffset = reader.index;
-                    message.semanticProtocolVersionLength = reader.fieldLength;
+                    iapMessageFields.semanticProtocolVersionOffset = reader.index;
+                    iapMessageFields.semanticProtocolVersionLength = reader.fieldLength;
                 }
                 reader.nextParse(); //move to next field after semantic protocol version.
             }
@@ -96,16 +96,16 @@ public class IapMessageReader {
      * Reads the message type from the IonReader - if present (is optional).
      *
      * @param reader
-     * @param message
+     * @param iapMessageFields
      */
-    private static void readMessageType(IonReader reader, IapMessageFields message) {
+    private static void readMessageType(IonReader reader, IapMessageFields iapMessageFields) {
         if(reader.fieldType == IonFieldTypes.KEY_SHORT){
             if(isMessageTypeKey(reader)) {
                 reader.nextParse();
 
                 if(reader.fieldType == IonFieldTypes.BYTES){
-                    message.messageTypeOffset = reader.index;
-                    message.messageTypeLength = reader.fieldLength;
+                    iapMessageFields.messageTypeOffset = reader.index;
+                    iapMessageFields.messageTypeLength = reader.fieldLength;
                 }
                 reader.nextParse(); //move to next field after message type version.
             }

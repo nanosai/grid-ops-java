@@ -121,7 +121,7 @@ public class TcpSocketsPort {
 
         newSocket.configureBlocking(false);
 
-        //todo pool some of these objects - IapMessageReader etc.
+        //todo pool some of these objects - IapMessageFieldsReader etc.
         TcpSocket tcpSocket     = this.tcpObjectPool.getTCPSocket();
         tcpSocket.socketId      = this.nextSocketId++;
         tcpSocket.socketChannel = newSocket;

@@ -1,10 +1,11 @@
 package com.nanosai.gridops.node;
 
 import com.nanosai.gridops.iap.IapMessageFields;
-import com.nanosai.gridops.iap.IapMessageReader;
+import com.nanosai.gridops.iap.IapMessageFieldsReader;
 import com.nanosai.gridops.iap.IapMessageWriter;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
+import com.nanosai.gridops.tcp.TcpSocketsPort;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -19,13 +20,13 @@ public class NodeReactorTest {
     public void testFindProtocolHandler() {
         ProtocolReactor protocolReactor0 = new ProtocolReactor(new byte[]{0}) {
             @Override
-            public void react(IonReader reader, IapMessageFields message) {
+            public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
             }
         };
 
         ProtocolReactor protocolReactor1 = new ProtocolReactor(new byte[]{1}) {
             @Override
-            public void react(IonReader reader, IapMessageFields message) {
+            public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
             }
         };
 
@@ -54,9 +55,9 @@ public class NodeReactorTest {
 
         IapMessageFields message = new IapMessageFields();
         message.data = dest;
-        IapMessageReader.read(reader, message);
+        IapMessageFieldsReader.read(reader, message);
 
-        systemHandler.react(reader, message);
+        systemHandler.react(reader, message, tcpSocketsPort);
         assertTrue(protocolHandlerMock.handleMessageCalled);
 
         length = writeMessage(new byte[]{123}, dest);
@@ -64,7 +65,7 @@ public class NodeReactorTest {
         reader.nextParse();
         protocolHandlerMock.handleMessageCalled = false;
 
-        systemHandler.react(reader, message);
+        systemHandler.react(reader, message, tcpSocketsPort);
         assertFalse(protocolHandlerMock.handleMessageCalled);
     }
 

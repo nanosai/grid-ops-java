@@ -31,7 +31,7 @@ public class IapMessageFieldsReaderTest {
         reader.setSource(dest, 0, writer.destIndex);
         reader.nextParse();
 
-        IapMessageReader.read(reader, message);
+        IapMessageFieldsReader.read(reader, message);
 
         assertEquals(4, message.receiverNodeIdOffset);
         assertEquals(1, message.receiverNodeIdLength);
@@ -68,7 +68,7 @@ public class IapMessageFieldsReaderTest {
         reader.setSource(dest, 0, writer.destIndex);
         reader.nextParse();
 
-        IapMessageReader.read(reader, message);
+        IapMessageFieldsReader.read(reader, message);
 
         assertEquals(0, message.receiverNodeIdOffset);
         assertEquals(0, message.receiverNodeIdLength);
@@ -101,7 +101,7 @@ public class IapMessageFieldsReaderTest {
         reader.setSource(dest, 0, writer.destIndex);
         reader.nextParse();
 
-        IapMessageReader.read(reader, message);
+        IapMessageFieldsReader.read(reader, message);
 
         assertEquals(0, message.receiverNodeIdOffset);
         assertEquals(0, message.receiverNodeIdLength);

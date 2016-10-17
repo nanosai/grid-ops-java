@@ -2,6 +2,7 @@ package com.nanosai.gridops.node;
 
 import com.nanosai.gridops.iap.IapMessageFields;
 import com.nanosai.gridops.ion.read.IonReader;
+import com.nanosai.gridops.tcp.TcpSocketsPort;
 
 /**
  * Created by jjenkov on 22-09-2016.
@@ -10,18 +11,17 @@ public class NodeContainer {
 
     private NodeReactor[] nodeReactors = null;
 
-    private IonReader reader         = new IonReader();
 
     public NodeContainer(NodeReactor... nodeReactors) {
         this.nodeReactors = nodeReactors;
     }
 
-    public void react(IonReader reader, IapMessageFields message) {
+    public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
         if(message.receiverNodeIdLength > 0){
             NodeReactor nodeReactor = findNodeReactor(message.data, message.receiverNodeIdOffset, message.receiverNodeIdLength);
 
             if(nodeReactor != null){
-                nodeReactor.react(reader, message);
+                nodeReactor.react(reader, message, tcpSocketsPort);
             }
         }
     }

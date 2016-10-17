@@ -1,5 +1,6 @@
 package com.nanosai.gridops;
 
+import com.nanosai.gridops.host.Host;
 import com.nanosai.gridops.ion.read.IIonObjectReaderConfigurator;
 import com.nanosai.gridops.ion.read.IonObjectReader;
 import com.nanosai.gridops.ion.read.IonReader;
@@ -240,6 +241,9 @@ public class GridOps {
         return new ProtocolReactor(protocolId, messageReactors);
     }
 
+    public Host host(TcpSocketsPort tcpSocketsPort, NodeContainer nodeContainer){
+        return new Host(tcpSocketsPort, nodeContainer);
+    }
 
 
 

@@ -1,10 +1,11 @@
 package com.nanosai.gridops.node;
 
 import com.nanosai.gridops.iap.IapMessageFields;
-import com.nanosai.gridops.iap.IapMessageReader;
+import com.nanosai.gridops.iap.IapMessageFieldsReader;
 import com.nanosai.gridops.iap.IapMessageWriter;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
+import com.nanosai.gridops.tcp.TcpSocketsPort;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -20,13 +21,13 @@ public class ProtocolReactorTest {
 
         MessageReactor messageReactor0 = new MessageReactor(new  byte[]{0}) {
             @Override
-            public void react(IonReader reader, IapMessageFields message) {
+            public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
             }
         };
 
         MessageReactor messageReactor1 = new MessageReactor(new byte[]{1}) {
             @Override
-            public void react(IonReader reader, IapMessageFields message) {
+            public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
             }
         };
 
@@ -56,19 +57,19 @@ public class ProtocolReactorTest {
 
         IapMessageFields message = new IapMessageFields();
         message.data = dest;
-        IapMessageReader.read(reader, message);
+        IapMessageFieldsReader.read(reader, message);
 
-        protocolReactor.react(reader, message);
+        protocolReactor.react(reader, message, tcpSocketsPort);
         assertTrue(messageHandlerMock.handleMessageCalled);
 
         length = writeMessage(new byte[]{123}, dest);
         reader.setSource(dest, 0, length);
         reader.nextParse();
 
-        IapMessageReader.read(reader, message);
+        IapMessageFieldsReader.read(reader, message);
 
         messageHandlerMock.handleMessageCalled = false;
-        protocolReactor.react(reader, message);
+        protocolReactor.react(reader, message, tcpSocketsPort);
 
         assertFalse(messageHandlerMock.handleMessageCalled);
 
