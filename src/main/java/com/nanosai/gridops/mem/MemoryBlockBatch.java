@@ -1,7 +1,7 @@
 package com.nanosai.gridops.mem;
 
 /**
- * Created by jjenkov on 17-10-2016.
+ * Represents a batch of MemoryBlock instances - typically read in from a TcpSocket.
  */
 public class MemoryBlockBatch {
 
