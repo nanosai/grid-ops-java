@@ -3,6 +3,7 @@ package com.nanosai.gridops.tcp;
 
 import com.nanosai.gridops.mem.MemoryAllocator;
 import com.nanosai.gridops.mem.MemoryBlock;
+import com.nanosai.gridops.mem.MemoryBlockBatch;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -55,10 +56,9 @@ public interface IMessageReader {
      *                    continue reading from there on.
      *
      * @param dest        The Object array into which fully read messages will be inserted.
-     * @param destOffset  The offset into the destination array from which the IMessageReader can write messages.
      * @return
      * @throws IOException
      */
-    public int read(ByteBuffer byteBuffer, MemoryBlock[] dest, int destOffset) throws IOException;
+    public int read(ByteBuffer byteBuffer, MemoryBlockBatch dest) throws IOException;
 
 }

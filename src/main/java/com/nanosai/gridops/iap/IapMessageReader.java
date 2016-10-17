@@ -9,7 +9,7 @@ import com.nanosai.gridops.ion.read.IonReader;
 public class IapMessageReader {
 
 
-    public static void read(IonReader reader, IapMessage message) {
+    public static void read(IonReader reader, IapMessageFields message) {
 
         // assume IonReader is already pointing to the first ION field inside the ION Object field
 
@@ -38,7 +38,7 @@ public class IapMessageReader {
      * @param reader
      * @param message
      */
-    private static void readReceiverNodeId(IonReader reader, IapMessage message) {
+    private static void readReceiverNodeId(IonReader reader, IapMessageFields message) {
         if(reader.fieldType == IonFieldTypes.KEY_SHORT){
             if(isSystemIdKey(reader)) {
                 reader.nextParse();
@@ -58,7 +58,7 @@ public class IapMessageReader {
      * @param reader
      * @param message
      */
-    private static void readSemanticProtocolId(IonReader reader, IapMessage message) {
+    private static void readSemanticProtocolId(IonReader reader, IapMessageFields message) {
         if(reader.fieldType == IonFieldTypes.KEY_SHORT){
             if(isSemanticProtoocolIdKey(reader)) {
                 reader.nextParse();
@@ -78,7 +78,7 @@ public class IapMessageReader {
      * @param reader
      * @param message
      */
-    private static void readSemanticProtocolVersion(IonReader reader, IapMessage message) {
+    private static void readSemanticProtocolVersion(IonReader reader, IapMessageFields message) {
         if(reader.fieldType == IonFieldTypes.KEY_SHORT){
             if(isSemanticProtoocolVersionKey(reader)) {
                 reader.nextParse();
@@ -98,7 +98,7 @@ public class IapMessageReader {
      * @param reader
      * @param message
      */
-    private static void readMessageType(IonReader reader, IapMessage message) {
+    private static void readMessageType(IonReader reader, IapMessageFields message) {
         if(reader.fieldType == IonFieldTypes.KEY_SHORT){
             if(isMessageTypeKey(reader)) {
                 reader.nextParse();

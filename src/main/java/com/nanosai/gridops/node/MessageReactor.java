@@ -1,6 +1,6 @@
 package com.nanosai.gridops.node;
 
-import com.nanosai.gridops.iap.IapMessage;
+import com.nanosai.gridops.iap.IapMessageFields;
 import com.nanosai.gridops.ion.read.IonReader;
 
 /**
@@ -14,6 +14,6 @@ public abstract class MessageReactor {
         this.messageType = messageType;
     }
 
-    public abstract void react(IonReader reader, IapMessage message);
+    public abstract void react(IonReader reader, IapMessageFields message);
 
 }

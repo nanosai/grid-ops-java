@@ -1,6 +1,6 @@
 package com.nanosai.gridops.node;
 
-import com.nanosai.gridops.iap.IapMessage;
+import com.nanosai.gridops.iap.IapMessageFields;
 import com.nanosai.gridops.ion.read.IonReader;
 
 /**
@@ -16,7 +16,7 @@ public class NodeContainer {
         this.nodeReactors = nodeReactors;
     }
 
-    public void react(IonReader reader, IapMessage message) {
+    public void react(IonReader reader, IapMessageFields message) {
         if(message.receiverNodeIdLength > 0){
             NodeReactor nodeReactor = findNodeReactor(message.data, message.receiverNodeIdOffset, message.receiverNodeIdLength);
 

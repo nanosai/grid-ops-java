@@ -3,6 +3,7 @@ package com.nanosai.gridops.tcp;
 import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.mem.MemoryAllocator;
 import com.nanosai.gridops.mem.MemoryBlock;
+import com.nanosai.gridops.mem.MemoryBlockBatch;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -50,8 +51,8 @@ public class IapMessageReader implements IMessageReader {
     }
 
     @Override
-    public int read(ByteBuffer byteBuffer, MemoryBlock[] dest, int destOffset) throws IOException {
-        int startDestOffset = destOffset;
+    public int read(ByteBuffer byteBuffer, MemoryBlockBatch dest) throws IOException {
+        int startDestCount = dest.count;
         while(byteBuffer.hasRemaining()){
             switch(this.readStatus){
                 case STATUS_NOTHING_READ:  {
@@ -62,7 +63,7 @@ public class IapMessageReader implements IMessageReader {
 
                     if(fieldType != IonFieldTypes.OBJECT){
                         this.validityState = INVALID_IAP_MESSAGE_NOT_ION_OBJECT;
-                        return destOffset - startDestOffset; //return how many valid messages were read.
+                        return dest.count - startDestCount; //return how many valid messages were read.
                     }
 
                     lengthLength = leadByte & 15;
@@ -90,7 +91,7 @@ public class IapMessageReader implements IMessageReader {
 
                         if(this.length > MAX_MESSAGE_SIZE){
                             this.validityState = INVALID_IAP_MESSAGE_TOO_BIG_MESSAGE;
-                            return destOffset - startDestOffset; //return how many valid messages were read.
+                            return dest.count - startDestCount; //return how many valid messages were read.
                         }
 
                         this.currentMemoryBlock.allocate(1 + this.lengthBytesRead + this.length);  //allocate space for the message.
@@ -112,7 +113,7 @@ public class IapMessageReader implements IMessageReader {
                     this.valueBytesRead += valueBytesToRead;
 
                     if(this.valueBytesRead == this.length){
-                        dest[destOffset++] = this.currentMemoryBlock;
+                        dest.add(this.currentMemoryBlock);
                         this.readStatus = STATUS_NOTHING_READ;
                         this.currentMemoryBlock = null; //necessary, to avoid a MemoryBlock being freed twice (when read and processed, and in dispose() method of this class).
                         this.length = 0;
@@ -122,7 +123,7 @@ public class IapMessageReader implements IMessageReader {
                 }
             }
         }
-        return destOffset - startDestOffset; //return next free slot in dest array
+        return dest.count - startDestCount; //return next free slot in dest array
     }
 
     @Override

@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Created by jjenkov on 09-10-2016.
  */
-public class IapMessageReaderTest {
+public class IapMessageFieldsReaderTest {
 
     byte[] receiverSystemId        = new byte[] { 0 };
     byte[] semanticProtocolId      = new byte[] { 1 };
@@ -24,7 +24,7 @@ public class IapMessageReaderTest {
 
         IapMessageWriter.writeMessageFields(writer, receiverSystemId, semanticProtocolId, semanticProtocolVersion, messageType);
 
-        IapMessage message = new IapMessage();
+        IapMessageFields message = new IapMessageFields();
         message.data = dest;
 
         IonReader reader = new IonReader();
@@ -61,7 +61,7 @@ public class IapMessageReaderTest {
         IapMessageWriter.writeSemanticProtocolId(writer, semanticProtocolId);
         IapMessageWriter.writeMessageType       (writer, messageType);
 
-        IapMessage message = new IapMessage();
+        IapMessageFields message = new IapMessageFields();
         message.data = dest;
 
         IonReader reader = new IonReader();
@@ -94,7 +94,7 @@ public class IapMessageReaderTest {
         //IapMessageWriter.writeSemanticProtocolId(writer, semanticProtocolId);
         //IapMessageWriter.writeMessageType       (writer, messageType);
 
-        IapMessage message = new IapMessage();
+        IapMessageFields message = new IapMessageFields();
         message.data = dest;
 
         IonReader reader = new IonReader();

@@ -2,6 +2,7 @@ package com.nanosai.gridops.tcp;
 
 import com.nanosai.gridops.mem.MemoryAllocator;
 import com.nanosai.gridops.mem.MemoryBlock;
+import com.nanosai.gridops.mem.MemoryBlockBatch;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -156,19 +157,19 @@ public class TcpSocketsPort {
         return readyIndex;
     }
 
-    public int read(MemoryBlock[] msgDest) throws IOException {
+    public int read(MemoryBlockBatch msgDest) throws IOException {
         int ready = selectReadReadySockets(this.readySocketsTemp, this.readySocketsTemp.length);
 
         return read(msgDest, this.readySocketsTemp, ready);
     }
 
-    protected int read(MemoryBlock[] msgDest, TcpSocket[] readReadySockets, int readReadySocketCount) throws IOException {
+    protected int read(MemoryBlockBatch msgDest, TcpSocket[] readReadySockets, int readReadySocketCount) throws IOException {
 
         int receivedMessageCount = 0;
         for(int i=0; i<readReadySocketCount; i++){
             TcpSocket tcpSocket = readReadySockets[i];
 
-            receivedMessageCount += tcpSocket.readMessages(this.readBuffer, msgDest, receivedMessageCount);
+            receivedMessageCount += tcpSocket.readMessages(this.readBuffer, msgDest);
 
             if(tcpSocket.endOfStreamReached || tcpSocket.state != 0){
                 tcpSocket.readSelectorSelectionKey.cancel();

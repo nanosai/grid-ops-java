@@ -3,7 +3,7 @@ package com.nanosai.gridops.iap;
 /**
  * Created by jjenkov on 09-10-2016.
  */
-public class IapMessage {
+public class IapMessageFields {
 
     //underlying byte array containing the data
     public byte[] data = null;

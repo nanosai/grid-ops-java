@@ -1,6 +1,6 @@
 package com.nanosai.gridops.node;
 
-import com.nanosai.gridops.iap.IapMessage;
+import com.nanosai.gridops.iap.IapMessageFields;
 import com.nanosai.gridops.iap.IapMessageReader;
 import com.nanosai.gridops.iap.IapMessageWriter;
 import com.nanosai.gridops.ion.read.IonReader;
@@ -19,13 +19,13 @@ public class NodeReactorTest {
     public void testFindProtocolHandler() {
         ProtocolReactor protocolReactor0 = new ProtocolReactor(new byte[]{0}) {
             @Override
-            public void react(IonReader reader, IapMessage message) {
+            public void react(IonReader reader, IapMessageFields message) {
             }
         };
 
         ProtocolReactor protocolReactor1 = new ProtocolReactor(new byte[]{1}) {
             @Override
-            public void react(IonReader reader, IapMessage message) {
+            public void react(IonReader reader, IapMessageFields message) {
             }
         };
 
@@ -52,7 +52,7 @@ public class NodeReactorTest {
         reader.setSource(dest, 0, length);
         reader.nextParse();
 
-        IapMessage message = new IapMessage();
+        IapMessageFields message = new IapMessageFields();
         message.data = dest;
         IapMessageReader.read(reader, message);
 

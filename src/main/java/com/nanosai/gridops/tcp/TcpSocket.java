@@ -2,6 +2,7 @@ package com.nanosai.gridops.tcp;
 
 
 import com.nanosai.gridops.mem.MemoryBlock;
+import com.nanosai.gridops.mem.MemoryBlockBatch;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -39,7 +40,7 @@ public class TcpSocket {
     }
 
 
-    public int readMessages(ByteBuffer tempBuffer, MemoryBlock[] messageDestination, int messageDestinationOffset) throws IOException {
+    public int readMessages(ByteBuffer tempBuffer, MemoryBlockBatch messageDestination) throws IOException {
         if(this.state != 0) {
             return 0; //TcpSocket is in an invalid state - no more messages can be read from it.
         }
@@ -52,8 +53,7 @@ public class TcpSocket {
         if(totalBytesRead > 0){
             tempBuffer.flip();
 
-            //todo if more than messageDestination.length messages are written into messageDestination, this will result in an IndexOutOfBoundsException.
-            messagesRead = this.messageReader.read(tempBuffer, messageDestination, messageDestinationOffset);
+            messagesRead = this.messageReader.read(tempBuffer, messageDestination);
 
             if(this.messageReader.state() != 0){
                 // continue processing the valid messages received in the for loop below - but by setting state to
@@ -62,8 +62,8 @@ public class TcpSocket {
                 this.state = this.messageReader.state();
             }
 
-            for(int i=messageDestinationOffset, n = messageDestinationOffset+messagesRead; i < n; i++){
-                TcpMessage tcpMessage = (TcpMessage) messageDestination[i];
+            for(int i=messageDestination.count - messagesRead, n = messageDestination.count; i < n; i++){
+                TcpMessage tcpMessage = (TcpMessage) messageDestination.blocks[i];
                 tcpMessage.socketId    = this.socketId;
                 tcpMessage.tcpSocket   = this;
             }

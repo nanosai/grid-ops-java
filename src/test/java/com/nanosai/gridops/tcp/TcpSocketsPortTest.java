@@ -2,6 +2,7 @@ package com.nanosai.gridops.tcp;
 
 import com.nanosai.gridops.mem.MemoryAllocator;
 import com.nanosai.gridops.mem.MemoryBlock;
+import com.nanosai.gridops.mem.MemoryBlockBatch;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -32,7 +33,7 @@ public class TcpSocketsPortTest {
                 readMemoryAllocator, writeMemoryAllocator);
 
 
-        MemoryBlock[] dest          = new MemoryBlock[128];
+        MemoryBlockBatch dest          = new MemoryBlockBatch(128);
         TcpSocket[]   readySockets  = new TcpSocket[128];
         TcpSocketPool tcpSocketPool = new TcpSocketPool(1024);
 

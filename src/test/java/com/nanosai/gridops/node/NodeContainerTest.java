@@ -1,6 +1,6 @@
 package com.nanosai.gridops.node;
 
-import com.nanosai.gridops.iap.IapMessage;
+import com.nanosai.gridops.iap.IapMessageFields;
 import com.nanosai.gridops.iap.IapMessageReader;
 import com.nanosai.gridops.iap.IapMessageWriter;
 import com.nanosai.gridops.ion.read.IonReader;
@@ -20,13 +20,13 @@ public class NodeContainerTest {
 
         NodeReactor systemHandler0 = new NodeReactor(new byte[]{0}) {
             @Override
-            public void react(IonReader reader, IapMessage message) {
+            public void react(IonReader reader, IapMessageFields message) {
             }
         };
 
         NodeReactor systemHandler1 = new NodeReactor(new byte[]{1}) {
             @Override
-            public void react(IonReader reader, IapMessage message) {
+            public void react(IonReader reader, IapMessageFields message) {
             }
         };
 
@@ -55,7 +55,7 @@ public class NodeContainerTest {
         reader.setSource(dest, 0, length);
         reader.nextParse();
 
-        IapMessage message = new IapMessage();
+        IapMessageFields message = new IapMessageFields();
         message.data = dest;
         IapMessageReader.read(reader, message);
 

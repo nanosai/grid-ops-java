@@ -1,6 +1,6 @@
 package com.nanosai.gridops.node;
 
-import com.nanosai.gridops.iap.IapMessage;
+import com.nanosai.gridops.iap.IapMessageFields;
 import com.nanosai.gridops.ion.read.IonReader;
 
 /**
@@ -20,7 +20,7 @@ public class NodeReactor {
     }
 
 
-    public void react(IonReader reader, IapMessage message) {
+    public void react(IonReader reader, IapMessageFields message) {
         if(message.semanticProtocolIdLength > 0){
             ProtocolReactor protocolReactor =
                     findProtocolReactor(message.data, message.semanticProtocolIdOffset, message.semanticProtocolIdLength);
