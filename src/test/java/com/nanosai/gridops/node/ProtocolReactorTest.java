@@ -2,7 +2,7 @@ package com.nanosai.gridops.node;
 
 import com.nanosai.gridops.iap.IapMessageFields;
 import com.nanosai.gridops.iap.IapMessageFieldsReader;
-import com.nanosai.gridops.iap.IapMessageWriter;
+import com.nanosai.gridops.iap.IapMessageFieldsWriter;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.tcp.TcpSocketsPort;
@@ -48,6 +48,8 @@ public class ProtocolReactorTest {
 
         byte[] dest = new byte[128];
 
+        TcpSocketsPort tcpSocketsPort = null;
+
         byte[] messageType = new byte[]{0};
         int length = writeMessage(messageType, dest);
 
@@ -83,7 +85,7 @@ public class ProtocolReactorTest {
         writer.setComplexFieldStack(new int[16]);
         //writer.writeObjectBeginPush(2);
 
-        IapMessageWriter.writeMessageType(writer, messageType);
+        IapMessageFieldsWriter.writeMessageType(writer, messageType);
 
         //writer.writeKeyShort(new byte[]{IapMessageKeys.MESSAGE_TYPE});
         //writer.writeBytes   (new byte[]{messageType});

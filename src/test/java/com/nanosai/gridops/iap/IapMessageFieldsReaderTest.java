@@ -22,7 +22,7 @@ public class IapMessageFieldsReaderTest {
 
         IonWriter writer = new IonWriter().setDestination(dest, 0);
 
-        IapMessageWriter.writeMessageFields(writer, receiverSystemId, semanticProtocolId, semanticProtocolVersion, messageType);
+        IapMessageFieldsWriter.writeMessageFields(writer, receiverSystemId, semanticProtocolId, semanticProtocolVersion, messageType);
 
         IapMessageFields message = new IapMessageFields();
         message.data = dest;
@@ -58,8 +58,8 @@ public class IapMessageFieldsReaderTest {
 
         IonWriter writer = new IonWriter().setDestination(dest, 0);
 
-        IapMessageWriter.writeSemanticProtocolId(writer, semanticProtocolId);
-        IapMessageWriter.writeMessageType       (writer, messageType);
+        IapMessageFieldsWriter.writeSemanticProtocolId(writer, semanticProtocolId);
+        IapMessageFieldsWriter.writeMessageType       (writer, messageType);
 
         IapMessageFields message = new IapMessageFields();
         message.data = dest;
@@ -91,8 +91,8 @@ public class IapMessageFieldsReaderTest {
 
         IonWriter writer = new IonWriter().setDestination(dest, 0);
 
-        //IapMessageWriter.writeSemanticProtocolId(writer, semanticProtocolId);
-        //IapMessageWriter.writeMessageType       (writer, messageType);
+        //IapMessageFieldsWriter.writeSemanticProtocolId(writer, semanticProtocolId);
+        //IapMessageFieldsWriter.writeMessageType       (writer, messageType);
 
         IapMessageFields message = new IapMessageFields();
         message.data = dest;

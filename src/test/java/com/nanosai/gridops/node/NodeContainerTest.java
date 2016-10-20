@@ -2,7 +2,7 @@ package com.nanosai.gridops.node;
 
 import com.nanosai.gridops.iap.IapMessageFields;
 import com.nanosai.gridops.iap.IapMessageFieldsReader;
-import com.nanosai.gridops.iap.IapMessageWriter;
+import com.nanosai.gridops.iap.IapMessageFieldsWriter;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.tcp.TcpSocketsPort;
@@ -47,6 +47,8 @@ public class NodeContainerTest {
         NodeReactorMock system0 = new NodeReactorMock(systemId);
         assertFalse(system0.handleMessageCalled);
 
+        TcpSocketsPort tcpSocketsPort = null;
+
         NodeContainer systemContainer = new NodeContainer(system0);
 
         byte[] dest = new byte[1024];
@@ -78,7 +80,7 @@ public class NodeContainerTest {
         writer.setComplexFieldStack(new int[16]);
         //writer.writeObjectBeginPush(2);
 
-        IapMessageWriter.writeReceiverNodeId(writer, systemId);
+        IapMessageFieldsWriter.writeReceiverNodeId(writer, systemId);
 
         //writer.writeObjectEndPop();
         return writer.destIndex;

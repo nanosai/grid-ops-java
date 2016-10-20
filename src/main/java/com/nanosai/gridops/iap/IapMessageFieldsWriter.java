@@ -5,7 +5,7 @@ import com.nanosai.gridops.ion.write.IonWriter;
 /**
  * Created by jjenkov on 02-10-2016.
  */
-public class IapMessageWriter {
+public class IapMessageFieldsWriter {
 
     private static final byte[] receiverNodeIdKey              = new byte[] {IapMessageKeys.RECEIVER_NODE_ID};
     private static final byte[] receiverNodeIdCodeKey          = new byte[] {IapMessageKeys.RECEIVER_NODE_ID_CODE};

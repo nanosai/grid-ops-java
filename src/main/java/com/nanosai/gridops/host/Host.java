@@ -41,6 +41,12 @@ public class Host implements Runnable {
         while(! isStopped() ){
 
             try {
+                this.tcpSocketsPort.addSocketsFromSocketQueue();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            try {
                 this.tcpSocketsPort.read(memoryBlockBatch);
             } catch(IOException e) {
                 e.printStackTrace(); //should an IOException ever escape out here?
@@ -48,6 +54,11 @@ public class Host implements Runnable {
 
             for(int i=0; i<memoryBlockBatch.count; i++){
                 reader.setSource(memoryBlockBatch.blocks[i]);
+
+                //move inside ION object to first field inside.
+                reader.nextParse();
+                reader.moveInto();
+                reader.nextParse();
 
                 IapMessageFieldsReader.read(reader, messageFields);
 

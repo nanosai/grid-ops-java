@@ -237,12 +237,41 @@ public class GridOps {
     }
 
     // ProtocolReactor
-    public ProtocolReactor protocolReactor(byte[] protocolId, MessageReactor... messageReactors){
+    public static ProtocolReactor protocolReactor(byte[] protocolId, MessageReactor... messageReactors){
         return new ProtocolReactor(protocolId, messageReactors);
     }
 
-    public Host host(TcpSocketsPort tcpSocketsPort, NodeContainer nodeContainer){
-        return new Host(tcpSocketsPort, nodeContainer);
+
+    public static HostBuilder hostBuilder() {
+        return new HostBuilder();
+    }
+
+    public static class HostBuilder {
+
+        private TcpSocketsPort tcpSocketsPort;
+        private NodeContainer  nodeContainer;
+
+        public HostBuilder tcpSocketsPort(TcpSocketsPort port){
+            this.tcpSocketsPort = port;
+            return this;
+        }
+
+        public HostBuilder nodeContainer(NodeContainer nodeContainer){
+            this.nodeContainer = nodeContainer;
+            return this;
+        }
+
+        public Host build() {
+            return new Host(this.tcpSocketsPort, this.nodeContainer);
+        }
+
+        public Host buildAndStart() {
+            Host host = build();
+            new Thread(host).start();
+            return host;
+        }
+
+
     }
 
 

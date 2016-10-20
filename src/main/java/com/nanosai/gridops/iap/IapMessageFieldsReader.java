@@ -10,6 +10,7 @@ public class IapMessageFieldsReader {
 
 
     public static void read(IonReader reader, IapMessageFields iapMessageFields) {
+        iapMessageFields.data = reader.source;
 
         // assume IonReader is already pointing to the first ION field inside the ION Object field
 
