@@ -3,15 +3,12 @@ package com.nanosai.gridops.examples;
 import com.nanosai.gridops.GridOps;
 import com.nanosai.gridops.iap.IapMessageFieldsWriter;
 import com.nanosai.gridops.ion.write.IonWriter;
-import com.nanosai.gridops.mem.MemoryBlock;
 import com.nanosai.gridops.mem.MemoryBlockBatch;
 import com.nanosai.gridops.tcp.TcpMessage;
 import com.nanosai.gridops.tcp.TcpSocket;
 import com.nanosai.gridops.tcp.TcpSocketsPort;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.channels.SocketChannel;
 
 /**
  * Created by jjenkov on 03-09-2016.
@@ -24,8 +21,7 @@ public class TcpClientExample {
 
         TcpSocket tcpSocket = socketsProxy.addSocket("localhost", 1111);
 
-        IonWriter ionWriter = new IonWriter();
-        ionWriter.setComplexFieldStack(new int[2]);
+        IonWriter ionWriter = GridOps.ionWriter().setNestedFieldStack(new int[2]);
 
         MemoryBlockBatch responses = new MemoryBlockBatch(10);
 
@@ -38,8 +34,6 @@ public class TcpClientExample {
             System.out.println("Sending message");
             socketsProxy.enqueue(request);
 
-            // make sure all written messages are flushed out - although a single call to writeToSockets()
-            // does not guarantee that.
             socketsProxy.writeToSockets();
 
             sleep(100);
@@ -69,7 +63,6 @@ public class TcpClientExample {
     private static void generateIAPMessage(TcpMessage request, IonWriter ionWriter) {
         ionWriter.setDestination(request);
 
-        int startIndex = ionWriter.destIndex;
         ionWriter.writeObjectBeginPush(1);
 
         byte[] receiverNodeId = new byte[]{33};
@@ -78,8 +71,8 @@ public class TcpClientExample {
         byte[] protocolId = new byte[]{22};
         IapMessageFieldsWriter.writeSemanticProtocolId(ionWriter, protocolId);
 
-        //byte[] protocolVersion = new byte[] {1};
-        //IapMessageFieldsWriter.writeSemanticProtocolVersion(ionWriter, protocolVersion);
+        byte[] protocolVersion = new byte[] {0};
+        IapMessageFieldsWriter.writeSemanticProtocolVersion(ionWriter, protocolVersion);
 
         byte[] messageType = new byte[]{11};
         IapMessageFieldsWriter.writeMessageType(ionWriter, messageType);

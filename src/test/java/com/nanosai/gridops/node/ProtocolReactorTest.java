@@ -31,7 +31,7 @@ public class ProtocolReactorTest {
             }
         };
 
-        ProtocolReactor protocolReactor = new ProtocolReactor(new byte[]{0}, messageReactor0, messageReactor1);
+        ProtocolReactor protocolReactor = new ProtocolReactor(new byte[]{0}, new byte[]{0}, messageReactor0, messageReactor1);
 
         assertSame(messageReactor0, protocolReactor.findMessageReactor(new byte[]{0}, 0, 1));
         assertSame(messageReactor1, protocolReactor.findMessageReactor(new byte[]{1}, 0, 1));
@@ -44,7 +44,7 @@ public class ProtocolReactorTest {
         MessageReactorMock messageHandlerMock = new MessageReactorMock(new byte[]{0});
         assertFalse(messageHandlerMock.handleMessageCalled);
 
-        ProtocolReactor protocolReactor = new ProtocolReactor(new byte[]{0}, messageHandlerMock);
+        ProtocolReactor protocolReactor = new ProtocolReactor(new byte[]{0}, new byte[]{0}, messageHandlerMock);
 
         byte[] dest = new byte[128];
 
@@ -82,7 +82,7 @@ public class ProtocolReactorTest {
     private int writeMessage(byte[] messageType, byte[] dest) {
         IonWriter writer = new IonWriter();
         writer.setDestination(dest, 0);
-        writer.setComplexFieldStack(new int[16]);
+        writer.setNestedFieldStack(new int[16]);
         //writer.writeObjectBeginPush(2);
 
         IapMessageFieldsWriter.writeMessageType(writer, messageType);

@@ -17,31 +17,6 @@ public class NodeContainerTest {
 
 
     @Test
-    public void testFindNode() {
-
-        NodeReactor systemHandler0 = new NodeReactor(new byte[]{0}) {
-            @Override
-            public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
-            }
-        };
-
-        NodeReactor systemHandler1 = new NodeReactor(new byte[]{1}) {
-            @Override
-            public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
-            }
-        };
-
-        NodeContainer systemContainer = new NodeContainer(
-                systemHandler0, systemHandler1);
-
-        assertSame(systemHandler0, systemContainer.findNodeReactor(new byte[]{0}, 0, 1));
-        assertSame(systemHandler1, systemContainer.findNodeReactor(new byte[]{1}, 0, 1));
-
-        assertNull(systemContainer.findNodeReactor(new byte[]{2}, 0, 1));
-    }
-
-
-    @Test
     public void testReact() {
         byte[] systemId = new byte[]{0};
         NodeReactorMock system0 = new NodeReactorMock(systemId);
@@ -77,7 +52,7 @@ public class NodeContainerTest {
     private int writeMessage(byte[] systemId, byte[] dest) {
         IonWriter writer = new IonWriter();
         writer.setDestination(dest, 0);
-        writer.setComplexFieldStack(new int[16]);
+        writer.setNestedFieldStack(new int[16]);
         //writer.writeObjectBeginPush(2);
 
         IapMessageFieldsWriter.writeReceiverNodeId(writer, systemId);

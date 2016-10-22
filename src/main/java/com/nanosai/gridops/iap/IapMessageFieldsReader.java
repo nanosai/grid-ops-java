@@ -41,7 +41,7 @@ public class IapMessageFieldsReader {
      */
     private static void readReceiverNodeId(IonReader reader, IapMessageFields iapMessageFields) {
         if(reader.fieldType == IonFieldTypes.KEY_SHORT){
-            if(isSystemIdKey(reader)) {
+            if(isReceiverNodeIdKey(reader)) {
                 reader.nextParse();
 
                 if(reader.fieldType == IonFieldTypes.BYTES){
@@ -113,11 +113,11 @@ public class IapMessageFieldsReader {
         }
     }
 
-    private static boolean isSystemIdKey(IonReader reader) {
+    private static boolean isReceiverNodeIdKey(IonReader reader) {
         return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.RECEIVER_NODE_ID;
     }
 
-    private static boolean isSystemIdCodeKey(IonReader reader) {
+    private static boolean isReceiverNodeIdCodeKey(IonReader reader) {
         return reader.fieldLength == 1 && reader.source[reader.index] == IapMessageKeys.RECEIVER_NODE_ID_CODE;
     }
 

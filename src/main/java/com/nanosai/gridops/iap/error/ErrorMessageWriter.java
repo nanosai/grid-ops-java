@@ -26,7 +26,7 @@ public class ErrorMessageWriter {
 
     public ErrorMessageWriter() {
         this.writer = new IonWriter();
-        this.writer.setComplexFieldStack(new int[2]);
+        this.writer.setNestedFieldStack(new int[2]);
 
     }
 

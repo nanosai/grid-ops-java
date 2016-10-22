@@ -9,26 +9,26 @@ import com.nanosai.gridops.tcp.TcpSocketsPort;
  */
 public class NodeReactor {
 
-    public byte[] systemId = null;
+    public byte[] nodeId = null;
 
     private ProtocolReactor[] protocolReactors = null;
 
 
 
     public NodeReactor(byte[] nodeId, ProtocolReactor... protocolReactors) {
-        this.systemId = nodeId;
+        this.nodeId = nodeId;
         this.protocolReactors = protocolReactors;
     }
 
 
     public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
         if(message.semanticProtocolIdLength > 0){
-            ProtocolReactor protocolReactor =
-                    findProtocolReactor(message.data, message.semanticProtocolIdOffset, message.semanticProtocolIdLength);
 
+            ProtocolReactor protocolReactor = findProtocolReactor(message);
             if(protocolReactor != null){
                 protocolReactor.react(reader, message, tcpSocketsPort);
             }
+
         }
     }
 
@@ -37,17 +37,19 @@ public class NodeReactor {
      * Finds the message handler matching the given message type. If no message handler found
      * for the given message type, null is returned.
      *
-     * @param protocolId The message type to find the message handler for.
+     * @param messageFields The IapMessageMessageFields containing the semantic protocol id and version to find the protocol reactor for.
      * @return The message handler matching the given message type, or null if no message handler found.
      */
-    public ProtocolReactor findProtocolReactor(byte[] protocolId, int offset, int length){
+    public ProtocolReactor findProtocolReactor(IapMessageFields messageFields){
         for(int i = 0; i< protocolReactors.length; i++){
-            if(NodeUtil.equals(protocolId, offset, length,
-                    protocolReactors[i].protocolId, 0, protocolReactors[i].protocolId.length)){
+            if(messageFields.equalsSemanticProtocolId     ( protocolReactors[i].protocolId) &&
+               messageFields.equalsSemanticProtocolVersion( protocolReactors[i].protocolVersion)){
                 return protocolReactors[i];
             }
         }
         return null;
     }
+
+
 
 }

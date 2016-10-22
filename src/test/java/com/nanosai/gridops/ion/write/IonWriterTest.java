@@ -203,7 +203,7 @@ public class IonWriterTest {
 
         IonWriter writer = new IonWriter();
         writer.setDestination(dest, 0);
-        writer.setComplexFieldStack(new int[16]);
+        writer.setNestedFieldStack(new int[16]);
 
         writer.writeObjectBeginPush(2);
         writer.writeInt64(1234);

@@ -12,12 +12,12 @@ public class ProtocolReactorMock extends ProtocolReactor {
     public boolean handleMessageCalled = false;
 
 
-    public ProtocolReactorMock(byte[] protocolId){
-        super(protocolId, new MessageReactor[0]);
+    public ProtocolReactorMock(byte[] protocolId, byte[] protocolVersion){
+        super(protocolId, protocolVersion, new MessageReactor[0]);
     }
 
-    public ProtocolReactorMock(byte[] protocolId, MessageReactor... messageReactors) {
-        super(protocolId, messageReactors);
+    public ProtocolReactorMock(byte[] protocolId, byte[] protocolVersion, MessageReactor... messageReactors) {
+        super(protocolId, protocolVersion, messageReactors);
     }
 
 

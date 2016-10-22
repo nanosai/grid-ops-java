@@ -237,8 +237,8 @@ public class GridOps {
     }
 
     // ProtocolReactor
-    public static ProtocolReactor protocolReactor(byte[] protocolId, MessageReactor... messageReactors){
-        return new ProtocolReactor(protocolId, messageReactors);
+    public static ProtocolReactor protocolReactor(byte[] protocolId, byte[] protocolVersion, MessageReactor... messageReactors){
+        return new ProtocolReactor(protocolId, protocolVersion, messageReactors);
     }
 
 

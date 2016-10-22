@@ -9,14 +9,15 @@ import com.nanosai.gridops.tcp.TcpSocketsPort;
  */
 public class ProtocolReactor {
 
-    //consider using a byte[] instad - for more complex protocol names than numbers.
-    public byte[] protocolId = null;
+    public byte[] protocolId;
+    public byte[] protocolVersion;
 
     private MessageReactor[] messageReactors = null;
 
 
-    public ProtocolReactor(byte[] protocolId, MessageReactor... messageReactors) {
+    public ProtocolReactor(byte[] protocolId, byte[] protocolVersion, MessageReactor... messageReactors) {
         this.protocolId = protocolId;
+        this.protocolVersion = protocolVersion;
         this.messageReactors = messageReactors;
     }
 

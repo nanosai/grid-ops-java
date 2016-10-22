@@ -18,7 +18,7 @@ public class NodeContainer {
 
     public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
         if(message.receiverNodeIdLength > 0){
-            NodeReactor nodeReactor = findNodeReactor(message.data, message.receiverNodeIdOffset, message.receiverNodeIdLength);
+            NodeReactor nodeReactor = findNodeReactor(message);
 
             if(nodeReactor != null){
                 nodeReactor.react(reader, message, tcpSocketsPort);
@@ -30,12 +30,12 @@ public class NodeContainer {
      * Finds the message handler matching the given message type. If no message handler found
      * for the given message type, null is returned.
      *
-     * @param systemId The message type to find the message handler for.
-     * @return The message handler matching the given message type, or null if no message handler found.
+     * @param messageFields The message fields containing the receiver node id to find the node reactor for.
+     * @return The node reactor matching the given receiver node id, or null if no node reactor found.
      */
-    public NodeReactor findNodeReactor(byte[] systemId, int offset, int length){
+    public NodeReactor findNodeReactor(IapMessageFields messageFields){
         for(int i = 0; i< nodeReactors.length; i++){
-            if(NodeUtil.equals(systemId, offset, length, nodeReactors[i].systemId, 0, nodeReactors[i].systemId.length)){
+            if(messageFields.equalsReceiverNodeId( this.nodeReactors[i].nodeId)){
                 return nodeReactors[i];
             }
         }

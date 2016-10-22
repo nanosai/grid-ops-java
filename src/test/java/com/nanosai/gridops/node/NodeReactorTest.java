@@ -17,30 +17,8 @@ public class NodeReactorTest {
 
 
     @Test
-    public void testFindProtocolHandler() {
-        ProtocolReactor protocolReactor0 = new ProtocolReactor(new byte[]{0}) {
-            @Override
-            public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
-            }
-        };
-
-        ProtocolReactor protocolReactor1 = new ProtocolReactor(new byte[]{1}) {
-            @Override
-            public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
-            }
-        };
-
-        NodeReactor systemHandler = new NodeReactor(new byte[]{0}, protocolReactor0, protocolReactor1);
-
-        assertSame(protocolReactor0, systemHandler.findProtocolReactor(new byte[]{0}, 0, 1));
-        assertSame(protocolReactor1, systemHandler.findProtocolReactor(new byte[]{1}, 0, 1));
-
-        assertNull(systemHandler.findProtocolReactor(new byte[]{2}, 0, 1));
-    }
-
-    @Test
     public void testReact(){
-        ProtocolReactorMock protocolHandlerMock = new ProtocolReactorMock(new byte[]{2});
+        ProtocolReactorMock protocolHandlerMock = new ProtocolReactorMock(new byte[]{2}, new byte[]{0});
         assertFalse(protocolHandlerMock.handleMessageCalled);
 
         TcpSocketsPort tcpSocketsPort = null;
@@ -48,7 +26,7 @@ public class NodeReactorTest {
 
         byte[] dest = new byte[128];
 
-        int length = writeMessage(new byte[]{2}, dest);
+        int length = writeMessage(new byte[]{2}, new byte[]{0}, dest);
 
         IonReader reader = new IonReader();
         reader.setSource(dest, 0, length);
@@ -61,7 +39,15 @@ public class NodeReactorTest {
         systemHandler.react(reader, message, tcpSocketsPort);
         assertTrue(protocolHandlerMock.handleMessageCalled);
 
-        length = writeMessage(new byte[]{123}, dest);
+        length = writeMessage(new byte[]{123}, new byte[]{0}, dest);
+        reader.setSource(dest, 0, length);
+        reader.nextParse();
+        protocolHandlerMock.handleMessageCalled = false;
+
+        systemHandler.react(reader, message, tcpSocketsPort);
+        assertFalse(protocolHandlerMock.handleMessageCalled);
+
+        length = writeMessage(new byte[]{2}, new byte[]{1}, dest);
         reader.setSource(dest, 0, length);
         reader.nextParse();
         protocolHandlerMock.handleMessageCalled = false;
@@ -71,16 +57,15 @@ public class NodeReactorTest {
     }
 
 
-    private int writeMessage(byte[] semanticProtocolId, byte[] dest) {
+    private int writeMessage(byte[] semanticProtocolId, byte[] semanticProtocolVersion, byte[] dest) {
         IonWriter writer = new IonWriter();
         writer.setDestination(dest, 0);
-        writer.setComplexFieldStack(new int[16]);
+        writer.setNestedFieldStack(new int[16]);
         //writer.writeObjectBeginPush(2);
 
         IapMessageFieldsWriter.writeSemanticProtocolId(writer, semanticProtocolId);
+        IapMessageFieldsWriter.writeSemanticProtocolVersion(writer, semanticProtocolVersion);
 
-        //writer.writeKeyShort(new byte[]{IapMessageKeys.SEMANTIC_PROTOCOL_ID});
-        //writer.writeBytes(new byte[]{semanticProtocolId});
 
         //writer.writeObjectEndPop();
 

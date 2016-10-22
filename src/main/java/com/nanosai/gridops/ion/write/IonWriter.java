@@ -52,7 +52,7 @@ public class IonWriter {
         return this;
     }
 
-    public IonWriter setComplexFieldStack(int[] stack){
+    public IonWriter setNestedFieldStack(int[] stack){
         this.complexFieldStack = stack;
         return this;
     }
