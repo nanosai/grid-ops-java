@@ -17,36 +17,36 @@ public class TcpClientExample {
 
     public static void main(String[] args) throws IOException {
 
-        final TcpSocketsPort socketsProxy = GridOps.tcpSocketsPortBuilder().build();
+        final TcpSocketsPort socketsPort = GridOps.tcpSocketsPortBuilder().build();
 
-        TcpSocket tcpSocket = socketsProxy.addSocket("localhost", 1111);
+        TcpSocket tcpSocket = socketsPort.addSocket("localhost", 1111);
 
         IonWriter ionWriter = GridOps.ionWriter().setNestedFieldStack(new int[2]);
 
         MemoryBlockBatch responses = new MemoryBlockBatch(10);
 
         while(true){
-            TcpMessage request = socketsProxy.allocateWriteMemoryBlock(1024);
+            TcpMessage request = socketsPort.allocateWriteMemoryBlock(1024);
             generateIAPMessage(request, ionWriter);
 
             request.tcpSocket = tcpSocket;
 
             System.out.println("Sending message");
-            socketsProxy.enqueue(request);
+            socketsPort.enqueue(request);
 
-            socketsProxy.writeToSockets();
+            socketsPort.writeBlock();
 
-            sleep(100);
+            //sleep(100);
 
             //try reading from socketsProxy
-            int messagesRead = socketsProxy.read(responses);
+            int messagesRead = socketsPort.readBlock(responses);
 
             System.out.println("messagesRead = " + messagesRead);
             if(messagesRead > 0){
                 System.out.println(responses.blocks[0].lengthWritten());
             }
 
-            sleep(2000);
+            sleep(200);
         }
 
         //todo convenience method for MemoryBlock's as destination

@@ -47,7 +47,7 @@ public class Host implements Runnable {
             }
 
             try {
-                this.tcpSocketsPort.read(memoryBlockBatch);
+                this.tcpSocketsPort.readNow(memoryBlockBatch);
             } catch(IOException e) {
                 e.printStackTrace(); //should an IOException ever escape out here?
             }
@@ -69,7 +69,7 @@ public class Host implements Runnable {
 
 
             try{
-                this.tcpSocketsPort.writeToSockets();
+                this.tcpSocketsPort.writeNow();
                 this.tcpSocketsPort.cleanupSockets();
             } catch (IOException e) {
                 e.printStackTrace(); //should an IOException ever escape out here?

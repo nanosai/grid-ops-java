@@ -1,7 +1,6 @@
 package com.nanosai.gridops.examples;
 
 import com.nanosai.gridops.GridOps;
-import com.nanosai.gridops.mem.MemoryBlock;
 import com.nanosai.gridops.mem.MemoryBlockBatch;
 import com.nanosai.gridops.tcp.TcpMessage;
 import com.nanosai.gridops.tcp.TcpServer;
@@ -32,7 +31,7 @@ public class TcpServerExample {
 
 
                 //process inbound messages.
-                int requestCount = socketsProxy.read(requests);
+                int requestCount = socketsProxy.readNow(requests);
                 for(int i=0; i < requestCount; i++){
                     TcpMessage request = (TcpMessage) requests.blocks[i];
 
@@ -46,7 +45,7 @@ public class TcpServerExample {
                     socketsProxy.enqueue(response);
                 }
 
-                socketsProxy.writeToSockets();
+                socketsProxy.writeNow();
 
 
                 try {

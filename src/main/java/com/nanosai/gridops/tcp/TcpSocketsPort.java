@@ -1,7 +1,6 @@
 package com.nanosai.gridops.tcp;
 
 import com.nanosai.gridops.mem.MemoryAllocator;
-import com.nanosai.gridops.mem.MemoryBlock;
 import com.nanosai.gridops.mem.MemoryBlockBatch;
 
 import java.io.IOException;
@@ -139,28 +138,40 @@ public class TcpSocketsPort {
         return tcpSocket;
     }
 
-    protected int selectReadReadySockets(TcpSocket[] readyTcpSocket, int limit) throws IOException {
+
+    public int readNow(MemoryBlockBatch msgDest) throws IOException {
         int readReady = this.readSelector.selectNow();
-
-        int readyIndex = 0;
-        if(readReady > 0){
-            Iterator<SelectionKey> iterator = this.readSelector.selectedKeys().iterator();
-            while(iterator.hasNext() && readyIndex < limit){
-                SelectionKey selectionKey = iterator.next();
-
-                if(selectionKey.channel().isOpen()){
-                    readyTcpSocket[readyIndex++] = (TcpSocket) selectionKey.attachment();
-                }
-                iterator.remove();
-            }
+        if(readReady > 0) {
+            int ready = getReadReadySockets(this.readySocketsTemp, this.readySocketsTemp.length);
+            return read(msgDest, this.readySocketsTemp, ready);
         }
-        return readyIndex;
+        return 0;
     }
 
-    public int read(MemoryBlockBatch msgDest) throws IOException {
-        int ready = selectReadReadySockets(this.readySocketsTemp, this.readySocketsTemp.length);
+    public int readBlock(MemoryBlockBatch msgDest) throws IOException {
+        while(msgDest.count == 0){
+            int readReady = this.readSelector.select();
+            if(readReady > 0) {
+                int ready = getReadReadySockets(this.readySocketsTemp, this.readySocketsTemp.length);
+                read(msgDest, this.readySocketsTemp, ready);
+            }
+        }
+        return msgDest.count;
+    }
 
-        return read(msgDest, this.readySocketsTemp, ready);
+    protected int getReadReadySockets(TcpSocket[] readyTcpSocket, int limit) throws IOException {
+
+        int readyIndex = 0;
+        Iterator<SelectionKey> iterator = this.readSelector.selectedKeys().iterator();
+        while(iterator.hasNext() && readyIndex < limit){
+            SelectionKey selectionKey = iterator.next();
+
+            if(selectionKey.channel().isOpen()){
+                readyTcpSocket[readyIndex++] = (TcpSocket) selectionKey.attachment();
+            }
+            iterator.remove();
+        }
+        return readyIndex;
     }
 
     protected int read(MemoryBlockBatch msgDest, TcpSocket[] readReadySockets, int readReadySocketCount) throws IOException {
@@ -189,43 +200,56 @@ public class TcpSocketsPort {
      *  Write methods below
      */
 
-
-    public void writeToSockets() throws IOException {
+    public void writeNow() throws IOException {
         // Cancel all sockets which have no more data to write.
         cancelEmptySockets();
 
-        // Register all sockets that *have* data and which are not yet registered.
-        //registerNonEmptySockets();
+        int writeReady = this.writeSelector.selectNow();
+        if(writeReady > 0){
+            write();
+        }
 
-        // Select from the Selector.
-        selectAndWrite();
     }
 
 
-    private void selectAndWrite() throws IOException {
-        int writeReady = this.writeSelector.selectNow();
+    public void writeBlock() throws IOException {
+        int registeredSockets = this.writeSelector.keys().size();
 
-        if(writeReady > 0){
-            Set<SelectionKey> selectionKeys = this.writeSelector.selectedKeys();
-            Iterator<SelectionKey> keyIterator   = selectionKeys.iterator();
+        while(registeredSockets > 0){
+            // Cancel all sockets which have no more data to write.
+            cancelEmptySockets();
 
-            while(keyIterator.hasNext()){
-                SelectionKey key = keyIterator.next();
+            // Select from the Selector.
+            int writeReady = this.writeSelector.select();
+            if(writeReady > 0){
+                write();
+            }
+            registeredSockets = this.writeSelector.keys().size();
+        }
 
-                TcpSocket socket = (TcpSocket) key.attachment();
+    }
 
-                socket.writeQueued(this.writeByteBuffer);
 
-                if(socket.isEmpty()){
-                    this.nonEmptyToEmptySockets.add(socket);
-                    //this.emptyToNonEmptySockets.remove(socket); //necessary?
-                }
+    private void write() throws IOException {
+        Set<SelectionKey> selectionKeys = this.writeSelector.selectedKeys();
+        Iterator<SelectionKey> keyIterator   = selectionKeys.iterator();
 
-                keyIterator.remove();
+        while(keyIterator.hasNext()){
+            SelectionKey key = keyIterator.next();
+
+            TcpSocket socket = (TcpSocket) key.attachment();
+
+            socket.writeQueued(this.writeByteBuffer);
+
+            if(socket.isEmpty()){
+                this.nonEmptyToEmptySockets.add(socket);
+                //this.emptyToNonEmptySockets.remove(socket); //necessary?
             }
 
-            selectionKeys.clear();
+            keyIterator.remove();
         }
+
+        selectionKeys.clear();
     }
 
 
