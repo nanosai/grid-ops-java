@@ -42,7 +42,7 @@ public class TcpServerExample {
 
                     response.tcpSocket   = request.tcpSocket;
 
-                    socketsProxy.enqueue(response);
+                    socketsProxy.writeNowOrEnqueue(response);
                 }
 
                 socketsProxy.writeNow();

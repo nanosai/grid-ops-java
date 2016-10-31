@@ -293,11 +293,11 @@ public class TcpSocketsPort {
         return this.socketMap.get(socketId);
     }
 
-    public void enqueue(TcpMessage tcpMessage) throws IOException {
-        enqueue(tcpMessage.tcpSocket, tcpMessage);
+    public void writeNowOrEnqueue(TcpMessage tcpMessage) throws IOException {
+        writeNowOrEnqueue(tcpMessage.tcpSocket, tcpMessage);
     }
 
-    public void enqueue(TcpSocket tcpSocket, TcpMessage message) throws IOException {
+    public void writeNowOrEnqueue(TcpSocket tcpSocket, TcpMessage message) throws IOException {
         if(tcpSocket.isEmpty()){
             //attempt to write message immediately instead of first queueing up the message.
             tcpSocket.write(this.writeByteBuffer, message);

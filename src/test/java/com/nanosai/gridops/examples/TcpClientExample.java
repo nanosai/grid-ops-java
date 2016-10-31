@@ -32,7 +32,7 @@ public class TcpClientExample {
             request.tcpSocket = tcpSocket;
 
             System.out.println("Sending message");
-            socketsPort.enqueue(request);
+            socketsPort.writeNowOrEnqueue(request);
 
             socketsPort.writeBlock();
 
