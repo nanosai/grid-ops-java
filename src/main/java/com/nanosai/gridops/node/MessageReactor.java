@@ -2,6 +2,7 @@ package com.nanosai.gridops.node;
 
 import com.nanosai.gridops.iap.IapMessageFields;
 import com.nanosai.gridops.ion.read.IonReader;
+import com.nanosai.gridops.mem.MemoryBlock;
 import com.nanosai.gridops.tcp.TcpSocketsPort;
 
 /**
@@ -15,6 +16,6 @@ public abstract class MessageReactor {
         this.messageType = messageType;
     }
 
-    public abstract void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort);
+    public abstract void react(MemoryBlock message, IonReader reader, IapMessageFields messageFields, TcpSocketsPort tcpSocketsPort);
 
 }

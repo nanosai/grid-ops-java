@@ -32,11 +32,11 @@ public class NodeReactorTest {
         reader.setSource(dest, 0, length);
         reader.nextParse();
 
-        IapMessageFields message = new IapMessageFields();
-        message.data = dest;
-        IapMessageFieldsReader.read(reader, message);
+        IapMessageFields messageFields = new IapMessageFields();
+        messageFields.data = dest;
+        IapMessageFieldsReader.read(reader, messageFields);
 
-        systemHandler.react(reader, message, tcpSocketsPort);
+        systemHandler.react(null, reader, messageFields, tcpSocketsPort);
         assertTrue(protocolHandlerMock.handleMessageCalled);
 
         length = writeMessage(new byte[]{123}, new byte[]{0}, dest);
@@ -44,7 +44,7 @@ public class NodeReactorTest {
         reader.nextParse();
         protocolHandlerMock.handleMessageCalled = false;
 
-        systemHandler.react(reader, message, tcpSocketsPort);
+        systemHandler.react(null, reader, messageFields, tcpSocketsPort);
         assertFalse(protocolHandlerMock.handleMessageCalled);
 
         length = writeMessage(new byte[]{2}, new byte[]{1}, dest);
@@ -52,7 +52,7 @@ public class NodeReactorTest {
         reader.nextParse();
         protocolHandlerMock.handleMessageCalled = false;
 
-        systemHandler.react(reader, message, tcpSocketsPort);
+        systemHandler.react(null, reader, messageFields, tcpSocketsPort);
         assertFalse(protocolHandlerMock.handleMessageCalled);
     }
 

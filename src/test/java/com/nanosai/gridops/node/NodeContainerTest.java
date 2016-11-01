@@ -37,14 +37,14 @@ public class NodeContainerTest {
         message.data = dest;
         IapMessageFieldsReader.read(reader, message);
 
-        systemContainer.react(reader, message, tcpSocketsPort);
+        systemContainer.react(null, reader, message, tcpSocketsPort);
         assertTrue(system0.handleMessageCalled);
 
         system0.handleMessageCalled = false;
         byte[] unknownNodeId = new byte[]{123};
         writeMessage(unknownNodeId, dest);
 
-        systemContainer.react(reader, message, tcpSocketsPort);
+        systemContainer.react(null, reader, message, tcpSocketsPort);
         assertFalse(system0.handleMessageCalled);
 
     }

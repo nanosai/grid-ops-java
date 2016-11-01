@@ -2,6 +2,7 @@ package com.nanosai.gridops.node;
 
 import com.nanosai.gridops.iap.IapMessageFields;
 import com.nanosai.gridops.ion.read.IonReader;
+import com.nanosai.gridops.mem.MemoryBlock;
 import com.nanosai.gridops.tcp.TcpSocketsPort;
 
 /**
@@ -21,14 +22,13 @@ public class NodeReactor {
     }
 
 
-    public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
-        if(message.semanticProtocolIdLength > 0){
+    public void react(MemoryBlock message, IonReader reader, IapMessageFields messageFields, TcpSocketsPort tcpSocketsPort) {
+        if(messageFields.semanticProtocolIdLength > 0){
 
-            ProtocolReactor protocolReactor = findProtocolReactor(message);
+            ProtocolReactor protocolReactor = findProtocolReactor(messageFields);
             if(protocolReactor != null){
-                protocolReactor.react(reader, message, tcpSocketsPort);
+                protocolReactor.react(message, reader, messageFields, tcpSocketsPort);
             }
-
         }
     }
 

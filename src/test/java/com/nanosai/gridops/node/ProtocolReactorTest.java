@@ -5,6 +5,7 @@ import com.nanosai.gridops.iap.IapMessageFieldsReader;
 import com.nanosai.gridops.iap.IapMessageFieldsWriter;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
+import com.nanosai.gridops.mem.MemoryBlock;
 import com.nanosai.gridops.tcp.TcpSocketsPort;
 import org.junit.Test;
 
@@ -21,13 +22,13 @@ public class ProtocolReactorTest {
 
         MessageReactor messageReactor0 = new MessageReactor(new  byte[]{0}) {
             @Override
-            public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
+            public void react(MemoryBlock message, IonReader reader, IapMessageFields messageFields, TcpSocketsPort tcpSocketsPort) {
             }
         };
 
         MessageReactor messageReactor1 = new MessageReactor(new byte[]{1}) {
             @Override
-            public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
+            public void react(MemoryBlock message, IonReader reader, IapMessageFields messageFields, TcpSocketsPort tcpSocketsPort) {
             }
         };
 
@@ -57,21 +58,21 @@ public class ProtocolReactorTest {
         reader.setSource(dest, 0, length);
         reader.nextParse();
 
-        IapMessageFields message = new IapMessageFields();
-        message.data = dest;
-        IapMessageFieldsReader.read(reader, message);
+        IapMessageFields messageFields = new IapMessageFields();
+        messageFields.data = dest;
+        IapMessageFieldsReader.read(reader, messageFields);
 
-        protocolReactor.react(reader, message, tcpSocketsPort);
+        protocolReactor.react(null, reader, messageFields, tcpSocketsPort);
         assertTrue(messageHandlerMock.handleMessageCalled);
 
         length = writeMessage(new byte[]{123}, dest);
         reader.setSource(dest, 0, length);
         reader.nextParse();
 
-        IapMessageFieldsReader.read(reader, message);
+        IapMessageFieldsReader.read(reader, messageFields);
 
         messageHandlerMock.handleMessageCalled = false;
-        protocolReactor.react(reader, message, tcpSocketsPort);
+        protocolReactor.react(null, reader, messageFields, tcpSocketsPort);
 
         assertFalse(messageHandlerMock.handleMessageCalled);
 

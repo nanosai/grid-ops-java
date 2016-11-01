@@ -2,6 +2,7 @@ package com.nanosai.gridops.node;
 
 import com.nanosai.gridops.iap.IapMessageFields;
 import com.nanosai.gridops.ion.read.IonReader;
+import com.nanosai.gridops.mem.MemoryBlock;
 import com.nanosai.gridops.tcp.TcpSocketsPort;
 
 /**
@@ -17,7 +18,7 @@ public class MessageReactorMock extends MessageReactor {
     }
 
     @Override
-    public void react(IonReader reader, IapMessageFields message, TcpSocketsPort tcpSocketsPort) {
+    public void react(MemoryBlock message, IonReader reader, IapMessageFields messageFields, TcpSocketsPort tcpSocketsPort) {
         this.handleMessageCalled = true;
     }
 

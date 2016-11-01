@@ -63,7 +63,7 @@ public class Host implements Runnable {
                 IapMessageFieldsReader.read(reader, messageFields);
 
                 //todo pass the tcpSocketsPort as parameter to the react() method.
-                this.nodeContainer.react(reader, messageFields, tcpSocketsPort);
+                this.nodeContainer.react(memoryBlockBatch.blocks[i], reader, messageFields, tcpSocketsPort);
             }
             memoryBlockBatch.clear();
 
