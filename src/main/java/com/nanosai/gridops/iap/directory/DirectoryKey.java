@@ -1,4 +1,4 @@
-package com.nanosai.gridops.directory;
+package com.nanosai.gridops.iap.directory;
 
 import java.util.Arrays;
 
@@ -35,8 +35,12 @@ public class DirectoryKey {
 	
 	@Override
 	public int hashCode() {
-		
-		return Arrays.hashCode(this.getIdSource());
+		int hashCode = 0;
+		for(int i=0; i < this.idLength; i++){
+			hashCode += this.idSource[this.idOffset + i] * i;
+		}
+
+		return hashCode;
 	}
 
     public DirectoryKey() {
