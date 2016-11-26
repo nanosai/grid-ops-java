@@ -17,6 +17,11 @@ import java.util.concurrent.BlockingQueue;
  */
 public class TcpSocketsPort {
 
+    public static interface SocketManager {
+        void onClose(TcpSocket socket);
+    }
+
+
     // **************************
     // socket management related variables.
     // **************************
@@ -25,6 +30,8 @@ public class TcpSocketsPort {
     private List<SocketChannel>          newSocketsTemp = new ArrayList<SocketChannel>();
 
     private long nextSocketId = 1;
+
+    private SocketManager socketManager = null;
 
 
 
@@ -81,6 +88,10 @@ public class TcpSocketsPort {
              );
     }
 
+
+    public void setSocketManager(SocketManager socketManager) {
+        this.socketManager = socketManager;
+    }
 
 
     private void init() throws IOException {
@@ -182,9 +193,11 @@ public class TcpSocketsPort {
 
             receivedMessageCount += tcpSocket.readMessages(this.readBuffer, msgDest);
 
-            if(tcpSocket.endOfStreamReached || tcpSocket.state != 0){
+            if(tcpSocket.endOfStreamReached || tcpSocket.state != TcpSocket.STATE_OPEN){
                 tcpSocket.readSelectorSelectionKey.cancel();
                 tcpSocket.isRegisteredWithReadSelector = false;
+
+                System.out.println("closing socket soon (read)");
 
                 this.socketsToBeClosed.add(tcpSocket);
             }
@@ -244,6 +257,13 @@ public class TcpSocketsPort {
             if(socket.isEmpty()){
                 this.nonEmptyToEmptySockets.add(socket);
                 //this.emptyToNonEmptySockets.remove(socket); //necessary?
+            }
+            if(socket.state != TcpSocket.STATE_OPEN){
+                key.cancel();
+                socket.isRegisteredWithWriteSelector = false;
+                System.out.println("closing socket soon (write)");
+
+                this.socketsToBeClosed.add(socket);
             }
 
             keyIterator.remove();
@@ -328,7 +348,9 @@ public class TcpSocketsPort {
         for(int i=0, n=this.socketsToBeClosed.size(); i < n; i++){
             TcpSocket tcpSocket = this.socketsToBeClosed.get(i);
 
-            //System.out.println("Closing TcpSocket");
+            if(this.socketManager != null){
+                this.socketManager.onClose(tcpSocket);
+            }
             try {
                 tcpSocket.closeAndFree();
             } catch (IOException e) {

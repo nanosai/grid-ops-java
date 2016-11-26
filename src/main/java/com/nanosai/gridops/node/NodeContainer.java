@@ -1,6 +1,6 @@
 package com.nanosai.gridops.node;
 
-import com.nanosai.gridops.iap.IapMessageFields;
+import com.nanosai.gridops.iap.IapMessageBase;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.mem.MemoryBlock;
 import com.nanosai.gridops.tcp.TcpSocketsPort;
@@ -17,7 +17,7 @@ public class NodeContainer {
         this.nodeReactors = nodeReactors;
     }
 
-    public void react(MemoryBlock message, IonReader reader, IapMessageFields messageFields, TcpSocketsPort tcpSocketsPort) {
+    public void react(MemoryBlock message, IonReader reader, IapMessageBase messageFields, TcpSocketsPort tcpSocketsPort) {
         if(messageFields.receiverNodeIdLength > 0){
             NodeReactor nodeReactor = findNodeReactor(messageFields);
 
@@ -34,7 +34,7 @@ public class NodeContainer {
      * @param messageFields The message fields containing the receiver node id to find the node reactor for.
      * @return The node reactor matching the given receiver node id, or null if no node reactor found.
      */
-    public NodeReactor findNodeReactor(IapMessageFields messageFields){
+    public NodeReactor findNodeReactor(IapMessageBase messageFields){
         for(int i = 0; i< nodeReactors.length; i++){
             if(messageFields.equalsReceiverNodeId( this.nodeReactors[i].nodeId)){
                 return nodeReactors[i];

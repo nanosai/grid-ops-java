@@ -1,8 +1,6 @@
 package com.nanosai.gridops.node;
 
-import com.nanosai.gridops.iap.IapMessageFields;
-import com.nanosai.gridops.iap.IapMessageFieldsReader;
-import com.nanosai.gridops.iap.IapMessageFieldsWriter;
+import com.nanosai.gridops.iap.IapMessageBase;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.tcp.TcpSocketsPort;
@@ -32,11 +30,10 @@ public class NodeReactorTest {
         reader.setSource(dest, 0, length);
         reader.nextParse();
 
-        IapMessageFields messageFields = new IapMessageFields();
-        messageFields.data = dest;
-        IapMessageFieldsReader.read(reader, messageFields);
+        IapMessageBase messageBase = new IapMessageBase();
+        messageBase.read(reader);
 
-        systemHandler.react(null, reader, messageFields, tcpSocketsPort);
+        systemHandler.react(null, reader, messageBase, tcpSocketsPort);
         assertTrue(protocolHandlerMock.handleMessageCalled);
 
         length = writeMessage(new byte[]{123}, new byte[]{0}, dest);
@@ -44,7 +41,7 @@ public class NodeReactorTest {
         reader.nextParse();
         protocolHandlerMock.handleMessageCalled = false;
 
-        systemHandler.react(null, reader, messageFields, tcpSocketsPort);
+        systemHandler.react(null, reader, messageBase, tcpSocketsPort);
         assertFalse(protocolHandlerMock.handleMessageCalled);
 
         length = writeMessage(new byte[]{2}, new byte[]{1}, dest);
@@ -52,7 +49,7 @@ public class NodeReactorTest {
         reader.nextParse();
         protocolHandlerMock.handleMessageCalled = false;
 
-        systemHandler.react(null, reader, messageFields, tcpSocketsPort);
+        systemHandler.react(null, reader, messageBase, tcpSocketsPort);
         assertFalse(protocolHandlerMock.handleMessageCalled);
     }
 
@@ -63,11 +60,12 @@ public class NodeReactorTest {
         writer.setNestedFieldStack(new int[16]);
         //writer.writeObjectBeginPush(2);
 
-        IapMessageFieldsWriter.writeSemanticProtocolId(writer, semanticProtocolId);
-        IapMessageFieldsWriter.writeSemanticProtocolVersion(writer, semanticProtocolVersion);
+        IapMessageBase messageBase = new IapMessageBase();
+        messageBase.setSemanticProtocolId  (semanticProtocolId);
+        messageBase.writeSemanticProtocolId(writer);
 
-
-        //writer.writeObjectEndPop();
+        messageBase.setSemanticProtocolVersion(semanticProtocolVersion);
+        messageBase.writeSemanticProtocolVersion(writer);
 
         return writer.destIndex;
     }

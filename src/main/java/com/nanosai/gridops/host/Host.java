@@ -1,7 +1,6 @@
 package com.nanosai.gridops.host;
 
-import com.nanosai.gridops.iap.IapMessageFields;
-import com.nanosai.gridops.iap.IapMessageFieldsReader;
+import com.nanosai.gridops.iap.IapMessageBase;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.mem.MemoryBlockBatch;
 import com.nanosai.gridops.node.NodeContainer;
@@ -36,7 +35,7 @@ public class Host implements Runnable {
 
         MemoryBlockBatch memoryBlockBatch = new MemoryBlockBatch(64, 64);
         IonReader reader = new IonReader();
-        IapMessageFields messageFields = new IapMessageFields();
+        IapMessageBase messageBase = new IapMessageBase();
 
         while(! isStopped() ){
 
@@ -60,10 +59,10 @@ public class Host implements Runnable {
                 reader.moveInto();
                 reader.nextParse();
 
-                IapMessageFieldsReader.read(reader, messageFields);
+                messageBase.read(reader);
 
                 //todo pass the tcpSocketsPort as parameter to the react() method.
-                this.nodeContainer.react(memoryBlockBatch.blocks[i], reader, messageFields, tcpSocketsPort);
+                this.nodeContainer.react(memoryBlockBatch.blocks[i], reader, messageBase, tcpSocketsPort);
             }
             memoryBlockBatch.clear();
 

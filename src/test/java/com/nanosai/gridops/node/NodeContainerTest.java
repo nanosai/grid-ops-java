@@ -1,8 +1,6 @@
 package com.nanosai.gridops.node;
 
-import com.nanosai.gridops.iap.IapMessageFields;
-import com.nanosai.gridops.iap.IapMessageFieldsReader;
-import com.nanosai.gridops.iap.IapMessageFieldsWriter;
+import com.nanosai.gridops.iap.IapMessageBase;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.tcp.TcpSocketsPort;
@@ -33,9 +31,9 @@ public class NodeContainerTest {
         reader.setSource(dest, 0, length);
         reader.nextParse();
 
-        IapMessageFields message = new IapMessageFields();
-        message.data = dest;
-        IapMessageFieldsReader.read(reader, message);
+        IapMessageBase message = new IapMessageBase();
+
+        message.read(reader);
 
         systemContainer.react(null, reader, message, tcpSocketsPort);
         assertTrue(system0.handleMessageCalled);
@@ -55,7 +53,10 @@ public class NodeContainerTest {
         writer.setNestedFieldStack(new int[16]);
         //writer.writeObjectBeginPush(2);
 
-        IapMessageFieldsWriter.writeReceiverNodeId(writer, systemId);
+        IapMessageBase messageBase = new IapMessageBase();
+        messageBase.setReceiverNodeId(systemId);
+
+        messageBase.writeReceiverNodeId(writer);
 
         //writer.writeObjectEndPop();
         return writer.destIndex;

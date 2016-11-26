@@ -14,6 +14,10 @@ import java.nio.channels.SocketChannel;
  */
 public class TcpSocket {
 
+    public static final int STATE_OPEN   = 0;
+    public static final int STATE_FAULTY = 1;
+    public static final int STATE_CLOSED = 2;
+
     private TcpSocketPool tcpSocketPool = null;
 
     public SocketChannel    socketChannel = null;
@@ -41,7 +45,7 @@ public class TcpSocket {
 
 
     public int readMessages(ByteBuffer tempBuffer, MemoryBlockBatch messageDestination) throws IOException {
-        if(this.state != 0) {
+        if(this.state != STATE_OPEN) {
             return 0; //TcpSocket is in an invalid state - no more messages can be read from it.
         }
 
@@ -79,6 +83,7 @@ public class TcpSocket {
             bytesRead = doSocketRead(destinationBuffer);
         } catch(IOException e){
             this.endOfStreamReached = true;
+            this.state = STATE_FAULTY;
             return -1;
         }
 
@@ -92,6 +97,7 @@ public class TcpSocket {
                 }
             } catch(IOException e){
                 this.endOfStreamReached = true;
+                this.state = STATE_FAULTY;
                 return -1;
             }
         }
@@ -137,7 +143,13 @@ public class TcpSocket {
         int bytesWrittenNow = 0;
 
         do {
-            bytesWrittenNow = doSocketWrite(byteBuffer);
+            try{
+                bytesWrittenNow = doSocketWrite(byteBuffer);
+            } catch(IOException e){
+                this.endOfStreamReached = true;
+                this.state = STATE_FAULTY;
+                break; //exit do-while loop.
+            }
             message.readIndex += bytesWrittenNow;
         } while(bytesWrittenNow > 0 && byteBuffer.hasRemaining());
 

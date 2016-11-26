@@ -1,8 +1,6 @@
 package com.nanosai.gridops.node;
 
-import com.nanosai.gridops.iap.IapMessageFields;
-import com.nanosai.gridops.iap.IapMessageFieldsReader;
-import com.nanosai.gridops.iap.IapMessageFieldsWriter;
+import com.nanosai.gridops.iap.IapMessageBase;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.mem.MemoryBlock;
@@ -22,13 +20,13 @@ public class ProtocolReactorTest {
 
         MessageReactor messageReactor0 = new MessageReactor(new  byte[]{0}) {
             @Override
-            public void react(MemoryBlock message, IonReader reader, IapMessageFields messageFields, TcpSocketsPort tcpSocketsPort) {
+            public void react(MemoryBlock message, IonReader reader, IapMessageBase messageBase, TcpSocketsPort tcpSocketsPort) {
             }
         };
 
         MessageReactor messageReactor1 = new MessageReactor(new byte[]{1}) {
             @Override
-            public void react(MemoryBlock message, IonReader reader, IapMessageFields messageFields, TcpSocketsPort tcpSocketsPort) {
+            public void react(MemoryBlock message, IonReader reader, IapMessageBase messageBase, TcpSocketsPort tcpSocketsPort) {
             }
         };
 
@@ -58,21 +56,20 @@ public class ProtocolReactorTest {
         reader.setSource(dest, 0, length);
         reader.nextParse();
 
-        IapMessageFields messageFields = new IapMessageFields();
-        messageFields.data = dest;
-        IapMessageFieldsReader.read(reader, messageFields);
+        IapMessageBase messageBase = new IapMessageBase();
+        messageBase.read(reader);
 
-        protocolReactor.react(null, reader, messageFields, tcpSocketsPort);
+        protocolReactor.react(null, reader, messageBase, tcpSocketsPort);
         assertTrue(messageHandlerMock.handleMessageCalled);
 
         length = writeMessage(new byte[]{123}, dest);
         reader.setSource(dest, 0, length);
         reader.nextParse();
 
-        IapMessageFieldsReader.read(reader, messageFields);
+        messageBase.read(reader);
 
         messageHandlerMock.handleMessageCalled = false;
-        protocolReactor.react(null, reader, messageFields, tcpSocketsPort);
+        protocolReactor.react(null, reader, messageBase, tcpSocketsPort);
 
         assertFalse(messageHandlerMock.handleMessageCalled);
 
@@ -86,7 +83,10 @@ public class ProtocolReactorTest {
         writer.setNestedFieldStack(new int[16]);
         //writer.writeObjectBeginPush(2);
 
-        IapMessageFieldsWriter.writeMessageType(writer, messageType);
+        IapMessageBase messageBase = new IapMessageBase();
+        messageBase.setMessageType(messageType);
+
+        messageBase.writeMessageType(writer);
 
         //writer.writeKeyShort(new byte[]{IapMessageKeys.MESSAGE_TYPE});
         //writer.writeBytes   (new byte[]{messageType});

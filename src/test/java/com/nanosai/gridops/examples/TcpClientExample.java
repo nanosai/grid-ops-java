@@ -1,7 +1,7 @@
 package com.nanosai.gridops.examples;
 
 import com.nanosai.gridops.GridOps;
-import com.nanosai.gridops.iap.IapMessageFieldsWriter;
+import com.nanosai.gridops.iap.IapMessageBase;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.mem.MemoryBlockBatch;
 import com.nanosai.gridops.tcp.TcpMessage;
@@ -65,17 +65,13 @@ public class TcpClientExample {
 
         ionWriter.writeObjectBeginPush(1);
 
-        byte[] receiverNodeId = new byte[]{33};
-        IapMessageFieldsWriter.writeReceiverNodeId(ionWriter, receiverNodeId);
+        IapMessageBase messageBase = new IapMessageBase();
+        messageBase.setReceiverNodeId         (new byte[]{33});
+        messageBase.setSemanticProtocolId     (new byte[]{22});
+        messageBase.setSemanticProtocolVersion(new byte[] {0});
+        messageBase.setMessageType            (new byte[]{11});
 
-        byte[] protocolId = new byte[]{22};
-        IapMessageFieldsWriter.writeSemanticProtocolId(ionWriter, protocolId);
-
-        byte[] protocolVersion = new byte[] {0};
-        IapMessageFieldsWriter.writeSemanticProtocolVersion(ionWriter, protocolVersion);
-
-        byte[] messageType = new byte[]{11};
-        IapMessageFieldsWriter.writeMessageType(ionWriter, messageType);
+        messageBase.write(ionWriter);
 
         ionWriter.writeObjectEndPop();
 

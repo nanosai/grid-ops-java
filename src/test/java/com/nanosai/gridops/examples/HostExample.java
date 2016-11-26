@@ -2,7 +2,7 @@ package com.nanosai.gridops.examples;
 
 import com.nanosai.gridops.GridOps;
 import com.nanosai.gridops.host.Host;
-import com.nanosai.gridops.iap.IapMessageFields;
+import com.nanosai.gridops.iap.IapMessageBase;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.mem.MemoryBlock;
 import com.nanosai.gridops.node.MessageReactor;
@@ -31,7 +31,7 @@ public class HostExample {
 
         MessageReactor messageReactor = new MessageReactor(messageType) {
             @Override
-            public void react(MemoryBlock message, IonReader ionReader, IapMessageFields iapMessageFields, TcpSocketsPort tcpSocketsPort) {
+            public void react(MemoryBlock message, IonReader ionReader, IapMessageBase iapMessageBase, TcpSocketsPort tcpSocketsPort) {
                 System.out.println("Reacting to message");
             }
         };

@@ -1,6 +1,6 @@
 package com.nanosai.gridops.node;
 
-import com.nanosai.gridops.iap.IapMessageFields;
+import com.nanosai.gridops.iap.IapMessageBase;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.mem.MemoryBlock;
 import com.nanosai.gridops.tcp.TcpSocketsPort;
@@ -22,7 +22,7 @@ public class NodeReactor {
     }
 
 
-    public void react(MemoryBlock message, IonReader reader, IapMessageFields messageFields, TcpSocketsPort tcpSocketsPort) {
+    public void react(MemoryBlock message, IonReader reader, IapMessageBase messageFields, TcpSocketsPort tcpSocketsPort) {
         if(messageFields.semanticProtocolIdLength > 0){
 
             ProtocolReactor protocolReactor = findProtocolReactor(messageFields);
@@ -40,7 +40,7 @@ public class NodeReactor {
      * @param messageFields The IapMessageMessageFields containing the semantic protocol id and version to find the protocol reactor for.
      * @return The message handler matching the given message type, or null if no message handler found.
      */
-    public ProtocolReactor findProtocolReactor(IapMessageFields messageFields){
+    public ProtocolReactor findProtocolReactor(IapMessageBase messageFields){
         for(int i = 0; i< protocolReactors.length; i++){
             if(messageFields.equalsSemanticProtocolId     ( protocolReactors[i].protocolId) &&
                messageFields.equalsSemanticProtocolVersion( protocolReactors[i].protocolVersion)){
