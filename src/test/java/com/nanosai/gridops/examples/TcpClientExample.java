@@ -75,7 +75,7 @@ public class TcpClientExample {
 
         ionWriter.writeObjectEndPop();
 
-        request.writeIndex = ionWriter.destIndex;
+        request.writeIndex = ionWriter.index;
 
         System.out.println("length = " + request.lengthWritten());
     }

@@ -67,7 +67,7 @@ public class NodeReactorTest {
         messageBase.setSemanticProtocolVersion(semanticProtocolVersion);
         messageBase.writeSemanticProtocolVersion(writer);
 
-        return writer.destIndex;
+        return writer.index;
     }
 
 }

@@ -93,7 +93,7 @@ public class ProtocolReactorTest {
 
         //writer.writeObjectEndPop();
 
-        return writer.destIndex;
+        return writer.index;
     }
 
 }

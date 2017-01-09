@@ -32,14 +32,14 @@ public class IonReaderTest {
         IonReader reader = new IonReader();
         assertFalse(reader.hasNext());
 
-        reader.setSource(source, 0, writer.destIndex);
+        reader.setSource(source, 0, writer.index);
         assertTrue(reader.hasNext());
 
         writer.setDestination(source, 1000);
         writer.writeBytes(new byte[]{1, 2, 3, 4, 5});
         writer.writeBytes(null);
 
-        reader.setSource(source, 1000, writer.destIndex - 1000);
+        reader.setSource(source, 1000, writer.index - 1000);
         assertTrue(reader.hasNext());
 
         reader.nextParse();
@@ -65,7 +65,7 @@ public class IonReaderTest {
         writer.writeUtf8("abc");
         writer.writeInt64(123);
 
-        memoryBlock.writeIndex = writer.destIndex;
+        memoryBlock.writeIndex = writer.index;
 
         IonReader ionReader = new IonReader().setSource(memoryBlock);
 

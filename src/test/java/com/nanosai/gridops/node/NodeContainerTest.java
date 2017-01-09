@@ -59,7 +59,7 @@ public class NodeContainerTest {
         messageBase.writeReceiverNodeId(writer);
 
         //writer.writeObjectEndPop();
-        return writer.destIndex;
+        return writer.index;
     }
 
 }

@@ -38,7 +38,7 @@ public class IapMessageBaseTest {
         messageBase.write(writer);
         writer.writeObjectEndPop();
 
-        IonReader reader = GridOps.ionReader().setSource(writer.dest, 0, writer.destIndex);
+        IonReader reader = GridOps.ionReader().setSource(writer.dest, 0, writer.index);
         reader.nextParse().moveInto();
 
         IapMessageBase messageBase2 = new IapMessageBase();
@@ -84,7 +84,7 @@ public class IapMessageBaseTest {
         IapMessageBase.writeMessageType            (ionWriter, new byte[]{66});
 
         ionWriter.writeObjectEndPop();
-        return ionWriter.destIndex;
+        return ionWriter.index;
     }
     */
 
