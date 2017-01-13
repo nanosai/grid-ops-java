@@ -408,14 +408,14 @@ public class IonWriterTest {
         writer.writeInt64(-123);
         assertEquals(20, writer.index);
         assertEquals((IonFieldTypes.INT_NEG << 4) | 1, 255 & dest[index++]);
-        assertEquals(123, 255 & dest[index++]);
+        assertEquals(122, 255 & dest[index++]);
 
         writer.writeInt64(-123456);
         assertEquals(24, writer.index);
         assertEquals((IonFieldTypes.INT_NEG << 4) | 3, 255 & dest[index++]);
-        assertEquals(255 & 123456 >> 16, 255 & dest[index++]);
-        assertEquals(255 & 123456 >> 8, 255 & dest[index++]);
-        assertEquals(255 & 123456     , 255 & dest[index++]);
+        assertEquals(255 & 123455 >> 16, 255 & dest[index++]);
+        assertEquals(255 & 123455 >> 8, 255 & dest[index++]);
+        assertEquals(255 & 123455     , 255 & dest[index++]);
 
 
         writer.writeInt64Obj(null);
@@ -438,14 +438,14 @@ public class IonWriterTest {
         writer.writeInt64Obj(new Long(-123));
         assertEquals(33, writer.index);
         assertEquals((IonFieldTypes.INT_NEG << 4) | 1, 255 & dest[index++]);
-        assertEquals(123, 255 & dest[index++]);
+        assertEquals(122, 255 & dest[index++]);
 
         writer.writeInt64Obj(new Long(-123456));
         assertEquals(37, writer.index);
         assertEquals((IonFieldTypes.INT_NEG << 4) | 3, 255 & dest[index++]);
-        assertEquals(255 & 123456 >> 16, 255 & dest[index++]);
-        assertEquals(255 & 123456 >> 8, 255 & dest[index++]);
-        assertEquals(255 & 123456     , 255 & dest[index++]);
+        assertEquals(255 & 123455 >> 16, 255 & dest[index++]);
+        assertEquals(255 & 123455 >> 8, 255 & dest[index++]);
+        assertEquals(255 & 123455     , 255 & dest[index++]);
 
 
         writer.writeFloat32(123.123f);
@@ -775,7 +775,7 @@ public class IonWriterTest {
 
 
         offset = 20;
-        bytesWritten = IonWriter.writeInt64(dest, offset, -65535);
+        bytesWritten = IonWriter.writeInt64(dest, offset, -65536);
 
         assertEquals(3, bytesWritten);
         assertEquals((IonFieldTypes.INT_NEG<<4) | 2, dest[offset++]);
@@ -797,7 +797,7 @@ public class IonWriterTest {
         assertEquals(255, 255 & dest[offset++]);
 
         offset = 20;
-        bytesWritten = IonWriter.writeInt64Obj(dest, offset, -65535L);
+        bytesWritten = IonWriter.writeInt64Obj(dest, offset, -65536L);
 
         assertEquals(3, bytesWritten);
         assertEquals((IonFieldTypes.INT_NEG<<4) | 2, dest[offset++]);

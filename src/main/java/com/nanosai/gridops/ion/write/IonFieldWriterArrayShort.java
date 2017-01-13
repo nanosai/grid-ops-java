@@ -71,7 +71,7 @@ public class IonFieldWriterArrayShort implements IIonFieldWriter {
                 int ionFieldType = IonFieldTypes.INT_POS;
                 if(elementVal < 0){
                     ionFieldType = IonFieldTypes.INT_NEG;
-                    elementVal  = (short) -elementVal;
+                    elementVal  = (short) -(elementVal+1);
                 }
 
                 int length = IonUtil.lengthOfInt64Value(elementVal);

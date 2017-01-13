@@ -218,7 +218,7 @@ public class IonReader {
         }
 
         if(this.fieldType == IonFieldTypes.INT_NEG){
-            value = -value;
+            value = (-value)-1;
         }
 
         return value;
@@ -237,7 +237,7 @@ public class IonReader {
         }
 
         if(this.fieldType == IonFieldTypes.INT_NEG){
-            value = -value;
+            value = (-value)-1;
         }
 
         return value;

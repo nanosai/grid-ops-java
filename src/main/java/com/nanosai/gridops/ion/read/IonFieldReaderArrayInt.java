@@ -63,7 +63,7 @@ public class IonFieldReaderArrayInt implements IIonFieldReader {
             if( (elementLeadByte >> 4) == IonFieldTypes.INT_POS){
                 values[i] = elementValue;
             } else {
-                values[i] = -elementValue;
+                values[i] = (-elementValue)-1;
             }
         }
 

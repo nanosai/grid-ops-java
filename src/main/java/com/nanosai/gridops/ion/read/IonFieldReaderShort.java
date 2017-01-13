@@ -1,5 +1,7 @@
 package com.nanosai.gridops.ion.read;
 
+import com.nanosai.gridops.ion.IonFieldTypes;
+
 import java.lang.reflect.Field;
 
 /**
@@ -28,6 +30,10 @@ public class IonFieldReaderShort implements IIonFieldReader {
             theShort <<= 8;
             theShort |= 255 & source[sourceOffset++];
         }
+        if( (leadByte >> 4) == IonFieldTypes.INT_NEG){
+            theShort = (short) ((-theShort) - 1);
+        }
+
 
         try {
             field.set(destination, theShort);

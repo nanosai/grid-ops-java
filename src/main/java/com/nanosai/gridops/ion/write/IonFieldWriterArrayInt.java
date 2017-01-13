@@ -71,7 +71,7 @@ public class IonFieldWriterArrayInt implements IIonFieldWriter {
                 int ionFieldType = IonFieldTypes.INT_POS;
                 if(elementVal < 0){
                     ionFieldType = IonFieldTypes.INT_NEG;
-                    elementVal  = -elementVal;
+                    elementVal  = -(elementVal+1);
                 }
 
                 int length = IonUtil.lengthOfInt64Value(elementVal);

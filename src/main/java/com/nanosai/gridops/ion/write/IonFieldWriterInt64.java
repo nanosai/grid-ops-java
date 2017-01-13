@@ -35,7 +35,7 @@ public class IonFieldWriterInt64 implements IIonFieldWriter {
             int ionFieldType = IonFieldTypes.INT_POS;
             if(value < 0){
                 ionFieldType = IonFieldTypes.INT_NEG;
-                value  = -value;
+                value  = -(value+1);
             }
 
             int length = IonUtil.lengthOfInt64Value(value);

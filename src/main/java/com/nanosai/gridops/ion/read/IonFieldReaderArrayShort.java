@@ -62,7 +62,7 @@ public class IonFieldReaderArrayShort implements IIonFieldReader {
             if( (elementLeadByte >> 4) == IonFieldTypes.INT_POS){
                 values[i] = (short) elementValue;
             } else {
-                values[i] = (short) -elementValue;
+                values[i] = (short) ((-elementValue)-1);
             }
         }
 

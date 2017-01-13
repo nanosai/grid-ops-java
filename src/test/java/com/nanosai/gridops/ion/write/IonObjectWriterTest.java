@@ -331,7 +331,7 @@ public class IonObjectWriterTest {
         assertEquals( 9, 255 & dest[index++]);
 
         assertEquals((IonFieldTypes.INT_NEG << 4) | 1, 255 & dest[index++]);
-        assertEquals( 1, 255 & dest[index++]);
+        assertEquals( 0, 255 & dest[index++]);
     }
 
 
@@ -373,7 +373,7 @@ public class IonObjectWriterTest {
         assertEquals( 9, 255 & dest[index++]);
 
         assertEquals((IonFieldTypes.INT_NEG << 4) | 1, 255 & dest[index++]);
-        assertEquals( 1, 255 & dest[index++]);
+        assertEquals( 0, 255 & dest[index++]);
     }
 
 
@@ -416,7 +416,7 @@ public class IonObjectWriterTest {
         assertEquals( 9, 255 & dest[index++]);
 
         assertEquals((IonFieldTypes.INT_NEG << 4) | 1, 255 & dest[index++]);
-        assertEquals( 1, 255 & dest[index++]);
+        assertEquals( 0, 255 & dest[index++]);
 
 
     }
