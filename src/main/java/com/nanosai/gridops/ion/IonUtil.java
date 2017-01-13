@@ -111,6 +111,9 @@ public class IonUtil {
         if(boolean.class.equals(fieldType)){
             return new IonFieldReaderBoolean(field);
         }
+        if(byte.class.equals(fieldType)){
+            return new IonFieldReaderByte(field);
+        }
         if(short.class.equals(fieldType)){
             return new IonFieldReaderShort(field);
         }
