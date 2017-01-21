@@ -1,9 +1,15 @@
 package com.nanosai.gridops.node;
 
 import com.nanosai.gridops.iap.IapMessageBase;
+import com.nanosai.gridops.iap.error.ErrorMessageConstants;
+import com.nanosai.gridops.iap.error.ErrorResponse;
 import com.nanosai.gridops.ion.read.IonReader;
+import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.mem.MemoryBlock;
+import com.nanosai.gridops.tcp.TcpMessage;
 import com.nanosai.gridops.tcp.TcpSocketsPort;
+
+import java.io.IOException;
 
 /**
  * Created by jjenkov on 23-09-2016.
@@ -14,6 +20,12 @@ public class NodeReactor {
 
     private ProtocolReactor[] protocolReactors = null;
 
+    private IapMessageBase iapMessageBase = new IapMessageBase();
+    private IonWriter ionWriter  = new IonWriter().setNestedFieldStack(new int[2]);
+    private ErrorResponse errorResponse = new ErrorResponse();
+
+
+
 
 
     public NodeReactor(byte[] nodeId, ProtocolReactor... protocolReactors) {
@@ -22,12 +34,14 @@ public class NodeReactor {
     }
 
 
-    public void react(MemoryBlock message, IonReader reader, IapMessageBase messageFields, TcpSocketsPort tcpSocketsPort) {
+    public void react(MemoryBlock message, IonReader reader, IapMessageBase messageFields, TcpSocketsPort tcpSocketsPort) throws Exception {
         if(messageFields.semanticProtocolIdLength > 0){
 
             ProtocolReactor protocolReactor = findProtocolReactor(messageFields);
             if(protocolReactor != null){
                 protocolReactor.react(message, reader, messageFields, tcpSocketsPort);
+            } else {
+                sendErrorResponse((TcpMessage) message, tcpSocketsPort);
             }
         }
     }
@@ -50,6 +64,29 @@ public class NodeReactor {
         return null;
     }
 
+
+    private void sendErrorResponse(TcpMessage message, TcpSocketsPort tcpSocketsPort) throws IOException {
+        //no node reactor found, send error message back
+        this.iapMessageBase.setSemanticProtocolId     (ErrorMessageConstants.errorCodeSemanticProtocolId);
+        this.iapMessageBase.setSemanticProtocolVersion(ErrorMessageConstants.semanticProtocolVersion);
+        this.iapMessageBase.setMessageType            (ErrorMessageConstants.errorResponseMessageType);
+
+        TcpMessage tcpMessage = tcpSocketsPort.allocateWriteMemoryBlock(1024);
+
+        ionWriter.setDestination(tcpMessage);
+        ionWriter.writeObjectBeginPush(1);
+        this.iapMessageBase.write(ionWriter);
+        errorResponse.writeErrorId(ionWriter, ErrorMessageConstants.errorIdUnsupportedProtocol);
+        errorResponse.writeErrorMessage(ionWriter, "Unsupported protocol");
+        ionWriter.writeObjectEndPop();
+        tcpMessage.writeIndex = ionWriter.index;
+
+        enqueueErrorResponse(message, tcpSocketsPort, tcpMessage);
+    }
+
+    protected void enqueueErrorResponse(TcpMessage message, TcpSocketsPort tcpSocketsPort, TcpMessage tcpMessage) throws IOException {
+        tcpSocketsPort.writeNowOrEnqueue(message.tcpSocket, tcpMessage);
+    }
 
 
 }

@@ -1,11 +1,17 @@
 package com.nanosai.gridops.node;
 
+import com.nanosai.gridops.GridOps;
 import com.nanosai.gridops.iap.IapMessageBase;
+import com.nanosai.gridops.iap.error.ErrorMessageConstants;
+import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.mem.MemoryBlock;
+import com.nanosai.gridops.tcp.TcpMessage;
 import com.nanosai.gridops.tcp.TcpSocketsPort;
 import org.junit.Test;
+
+import java.io.IOException;
 
 import static org.junit.Assert.*;
 
@@ -39,17 +45,17 @@ public class ProtocolReactorTest {
     }
 
     @Test
-    public void testReact() {
-        MessageReactorMock messageHandlerMock = new MessageReactorMock(new byte[]{0});
+    public void testReact() throws Exception {
+        byte[] messageType = new byte[]{0};
+        MessageReactorMock messageHandlerMock = new MessageReactorMock(messageType);
         assertFalse(messageHandlerMock.handleMessageCalled);
 
-        ProtocolReactor protocolReactor = new ProtocolReactor(new byte[]{0}, new byte[]{0}, messageHandlerMock);
+        ProtocolReactorMock protocolReactor = new ProtocolReactorMock(new byte[]{0}, new byte[]{0}, messageHandlerMock);
 
         byte[] dest = new byte[128];
 
-        TcpSocketsPort tcpSocketsPort = null;
+        TcpSocketsPort tcpSocketsPort = GridOps.tcpSocketsPortBuilder().build();
 
-        byte[] messageType = new byte[]{0};
         int length = writeMessage(messageType, dest);
 
         IonReader reader = new IonReader();
@@ -94,6 +100,72 @@ public class ProtocolReactorTest {
         //writer.writeObjectEndPop();
 
         return writer.index;
+    }
+
+
+    @Test
+    public void testUnsupportedMessageType() throws Exception {
+        ProtocolReactorMock protocolReactor = new ProtocolReactorMock(new byte[]{0}, new byte[]{0});
+
+        TcpSocketsPort tcpSocketsPort = GridOps.tcpSocketsPortBuilder().build();
+
+        IapMessageBase iapMessageBase = new IapMessageBase();
+        iapMessageBase.setMessageType(new byte[99]);
+
+        protocolReactor.react(null, null, iapMessageBase, tcpSocketsPort);
+
+        assertNotNull(protocolReactor.enqueuedTcpMessage);
+        assertFalse(protocolReactor.enqueuedTcpMessage.startIndex == protocolReactor.enqueuedTcpMessage.writeIndex);
+
+        byte[] sourceBytes = new byte[1];
+        int sourceBytesLength = 0;
+        IonReader reader = new IonReader().setSource(protocolReactor.enqueuedTcpMessage);
+
+        reader.nextParse();
+        assertEquals(IonFieldTypes.OBJECT, reader.fieldType);
+
+        reader.moveInto();
+
+        //receiver node id
+        reader.nextParse();
+        assertEquals(IonFieldTypes.KEY_SHORT, reader.fieldType);
+        reader.nextParse();
+        assertEquals(IonFieldTypes.BYTES, reader.fieldType);
+        sourceBytesLength = reader.readBytes(sourceBytes);
+        assertEquals(0, sourceBytesLength);
+
+        //semantic protocol id
+        assertKeyBytes(sourceBytes, reader, (byte) 0);
+
+        //semantic protocol version
+        assertKeyBytes(sourceBytes, reader, (byte) 0);
+
+        //message type
+        assertKeyBytes(sourceBytes, reader, (byte) 0);
+
+        //error code
+        assertKeyBytes(sourceBytes, reader, ErrorMessageConstants.errorIdUnsupportedMessageType[0]);
+
+        //error message
+        reader.nextParse();
+        assertEquals(IonFieldTypes.KEY_SHORT, reader.fieldType);
+        reader.nextParse();
+        assertEquals(IonFieldTypes.UTF_8, reader.fieldType);
+        assertEquals("Unsupported message type", reader.readUtf8String());
+
+        assertFalse(reader.hasNext());
+    }
+
+
+    private void assertKeyBytes(byte[] sourceBytes, IonReader reader, byte expectedByteValue) {
+        int sourceBytesLength;
+        reader.nextParse();
+        assertEquals(IonFieldTypes.KEY_SHORT, reader.fieldType);
+        reader.nextParse();
+        assertEquals(IonFieldTypes.BYTES, reader.fieldType);
+        sourceBytesLength = reader.readBytes(sourceBytes);
+        assertEquals(1, sourceBytesLength);
+        assertEquals(expectedByteValue, sourceBytes[0]);
     }
 
 }

@@ -62,7 +62,12 @@ public class Host implements Runnable {
                 messageBase.read(reader);
 
                 //todo pass the tcpSocketsPort as parameter to the react() method.
-                this.nodeContainer.react(memoryBlockBatch.blocks[i], reader, messageBase, tcpSocketsPort);
+                try {
+                    this.nodeContainer.react(memoryBlockBatch.blocks[i], reader, messageBase, tcpSocketsPort);
+                } catch (Exception e) {
+                    //todo do something sensible with this exception.
+                    e.printStackTrace();
+                }
             }
             memoryBlockBatch.clear();
 

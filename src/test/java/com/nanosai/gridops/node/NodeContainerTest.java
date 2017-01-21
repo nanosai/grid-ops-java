@@ -1,6 +1,9 @@
 package com.nanosai.gridops.node;
 
+import com.nanosai.gridops.GridOps;
 import com.nanosai.gridops.iap.IapMessageBase;
+import com.nanosai.gridops.iap.error.ErrorMessageConstants;
+import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.tcp.TcpSocketsPort;
@@ -15,14 +18,15 @@ public class NodeContainerTest {
 
 
     @Test
-    public void testReact() {
+    public void testReact() throws Exception {
         byte[] systemId = new byte[]{0};
-        NodeReactorMock system0 = new NodeReactorMock(systemId);
-        assertFalse(system0.handleMessageCalled);
+        NodeReactorMock node0 = new NodeReactorMock(systemId);
+        node0.callSuperReact(false);
+        assertFalse(node0.handleMessageCalled);
 
-        TcpSocketsPort tcpSocketsPort = null;
+        TcpSocketsPort tcpSocketsPort = GridOps.tcpSocketsPortBuilder().build();
 
-        NodeContainer systemContainer = new NodeContainer(system0);
+        NodeContainerMock nodeContainer = new NodeContainerMock(node0);
 
         byte[] dest = new byte[1024];
 
@@ -35,15 +39,15 @@ public class NodeContainerTest {
 
         message.read(reader);
 
-        systemContainer.react(null, reader, message, tcpSocketsPort);
-        assertTrue(system0.handleMessageCalled);
+        nodeContainer.react(null, reader, message, tcpSocketsPort);
+        assertTrue(node0.handleMessageCalled);
 
-        system0.handleMessageCalled = false;
+        node0.handleMessageCalled = false;
         byte[] unknownNodeId = new byte[]{123};
         writeMessage(unknownNodeId, dest);
 
-        systemContainer.react(null, reader, message, tcpSocketsPort);
-        assertFalse(system0.handleMessageCalled);
+        nodeContainer.react(null, reader, message, tcpSocketsPort);
+        assertFalse(node0.handleMessageCalled);
 
     }
 
@@ -60,6 +64,74 @@ public class NodeContainerTest {
 
         //writer.writeObjectEndPop();
         return writer.index;
+    }
+
+
+
+
+    @Test
+    public void testUnsupportedProtocol() throws Exception {
+        NodeContainerMock nodeContainer = new NodeContainerMock();
+
+        TcpSocketsPort tcpSocketsPort = GridOps.tcpSocketsPortBuilder().build();
+
+        IapMessageBase iapMessageBase = new IapMessageBase();
+        iapMessageBase.setReceiverNodeId     (new byte[99]);
+
+        nodeContainer.react(null, null, iapMessageBase, tcpSocketsPort);
+
+        assertNotNull(nodeContainer.enqueuedTcpMessage);
+        assertFalse(nodeContainer.enqueuedTcpMessage.startIndex == nodeContainer.enqueuedTcpMessage.writeIndex);
+
+        byte[] sourceBytes = new byte[1];
+        int sourceBytesLength = 0;
+        IonReader reader = new IonReader().setSource(nodeContainer.enqueuedTcpMessage);
+
+        reader.nextParse();
+        assertEquals(IonFieldTypes.OBJECT, reader.fieldType);
+
+        reader.moveInto();
+
+        //receiver node id
+        reader.nextParse();
+        assertEquals(IonFieldTypes.KEY_SHORT, reader.fieldType);
+        reader.nextParse();
+        assertEquals(IonFieldTypes.BYTES, reader.fieldType);
+        sourceBytesLength = reader.readBytes(sourceBytes);
+        assertEquals(0, sourceBytesLength);
+
+        //semantic protocol id
+        assertKeyBytes(sourceBytes, reader, (byte) 0);
+
+        //semantic protocol version
+        assertKeyBytes(sourceBytes, reader, (byte) 0);
+
+        //message type
+        assertKeyBytes(sourceBytes, reader, (byte) 0);
+
+        //error code
+        assertKeyBytes(sourceBytes, reader, ErrorMessageConstants.errorIdUnknownNodeId[0]);
+
+        //error message
+        reader.nextParse();
+        assertEquals(IonFieldTypes.KEY_SHORT, reader.fieldType);
+        reader.nextParse();
+        assertEquals(IonFieldTypes.UTF_8_SHORT, reader.fieldType);
+        assertEquals("Unknown node id", reader.readUtf8String());
+
+        assertFalse(reader.hasNext());
+    }
+
+
+    private void assertKeyBytes(byte[] sourceBytes, IonReader reader, byte expectedByteValue) {
+        int sourceBytesLength;
+        reader.nextParse();
+        assertEquals(IonFieldTypes.KEY_SHORT, reader.fieldType);
+        reader.nextParse();
+        assertEquals(IonFieldTypes.BYTES, reader.fieldType);
+        sourceBytesLength = reader.readBytes(sourceBytes);
+        assertEquals(1, sourceBytesLength);
+        assertEquals(expectedByteValue, sourceBytes[0]);
     }
 
 }

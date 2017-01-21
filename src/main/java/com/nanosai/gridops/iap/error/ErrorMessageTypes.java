@@ -1,7 +1,8 @@
 package com.nanosai.gridops.iap.error;
 
 /**
- * Created by jjenkov on 01-10-2016.
+ * This class contains the IAP message types for the Error protocol.
+ *
  */
 public class ErrorMessageTypes {
 
