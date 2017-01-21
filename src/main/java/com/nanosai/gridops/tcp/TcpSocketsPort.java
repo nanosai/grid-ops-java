@@ -17,9 +17,7 @@ import java.util.concurrent.BlockingQueue;
  */
 public class TcpSocketsPort {
 
-    public static interface SocketManager {
-        void onClose(TcpSocket socket);
-    }
+
 
 
     // **************************
@@ -31,7 +29,7 @@ public class TcpSocketsPort {
 
     private long nextSocketId = 1;
 
-    private SocketManager socketManager = null;
+    private ISocketManager socketManager = null;
 
 
 
@@ -89,8 +87,9 @@ public class TcpSocketsPort {
     }
 
 
-    public void setSocketManager(SocketManager socketManager) {
+    public void setSocketManager(ISocketManager socketManager) {
         this.socketManager = socketManager;
+        this.socketManager.init(this);
     }
 
 
@@ -145,6 +144,10 @@ public class TcpSocketsPort {
 
         tcpSocket.readSelectorSelectionKey = key;
         tcpSocket.isRegisteredWithReadSelector = true;
+
+        if(this.socketManager != null){
+            this.socketManager.socketAdded(tcpSocket);
+        }
 
         return tcpSocket;
     }
@@ -348,11 +351,11 @@ public class TcpSocketsPort {
         for(int i=0, n=this.socketsToBeClosed.size(); i < n; i++){
             TcpSocket tcpSocket = this.socketsToBeClosed.get(i);
 
-            if(this.socketManager != null){
-                this.socketManager.onClose(tcpSocket);
-            }
             try {
                 tcpSocket.closeAndFree();
+                if(this.socketManager != null){
+                    this.socketManager.socketClosed(tcpSocket);
+                }
             } catch (IOException e) {
                 System.out.println("Error closing TcpSocket:");
                 e.printStackTrace();
