@@ -78,10 +78,10 @@ public class IapMessageBaseTest {
 
         messageBase
 
-        IapMessageBase.writeReceiverNodeId         (ionWriter, new byte[]{99});
-        IapMessageBase.writeSemanticProtocolId     (ionWriter, new byte[]{88});
-        IapMessageBase.writeSemanticProtocolVersion(ionWriter, new byte[]{77});
-        IapMessageBase.writeMessageType            (ionWriter, new byte[]{66});
+        IapMessageBase.writeAccessToken         (ionWriter, new byte[]{99});
+        IapMessageBase.writeServiceId     (ionWriter, new byte[]{88});
+        IapMessageBase.writeIpAddress(ionWriter, new byte[]{77});
+        IapMessageBase.writeTcpPort            (ionWriter, new byte[]{66});
 
         ionWriter.writeObjectEndPop();
         return ionWriter.index;
