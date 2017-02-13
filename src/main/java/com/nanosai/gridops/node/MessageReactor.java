@@ -16,6 +16,6 @@ public abstract class MessageReactor {
         this.messageType = messageType;
     }
 
-    public abstract void react(MemoryBlock message, IonReader reader, IapMessageBase messageBase, TcpSocketsPort tcpSocketsPort);
+    public abstract void react(MemoryBlock message, IonReader reader, IapMessageBase messageBase, TcpSocketsPort tcpSocketsPort) throws Exception;
 
 }

@@ -5,7 +5,7 @@ package com.nanosai.gridops.ion;
  */
 public class IonFieldTypes {
 
-    /* Core type ID constants */
+    /* Core type Id constants */
     public static final int BYTES           =  0;  //a series of raw bytes
     public static final int BOOLEAN         =  1;  // a number between 1 and 15, useful for booleans and small enums
     public static final int INT_POS         =  2;
@@ -34,7 +34,7 @@ public class IonFieldTypes {
 
 
     /*
-        Extended type ID constants - can be from 0 to 255 - but we use only from 16 to 255 to avoid
+        Extended type Id constants - can be from 0 to 255 - but we use only from 16 to 255 to avoid
         numeric clashes with the core type IDs. The clashes are only "mental". They could be avoided in code.
      */
     public static final int ELEMENT_COUNT        = 16;  //extended short

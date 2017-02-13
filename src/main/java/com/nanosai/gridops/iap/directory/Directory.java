@@ -1,5 +1,7 @@
 package com.nanosai.gridops.iap.directory;
 
+import com.nanosai.gridops.id.Id;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,13 +10,13 @@ import java.util.Map;
  */
 public class Directory {
 
-    private Map<DirectoryKey, Object> entries = new HashMap<>();
+    private Map<Id, Object> entries = new HashMap<>();
 
-    public Object lookup(DirectoryKey key) {
+    public Object lookup(Id key) {
         return this.entries.get(key);
     }
 
-    public void register(DirectoryKey key, Object value){
+    public void register(Id key, Object value){
         this.entries.put(key, value);
     }
 

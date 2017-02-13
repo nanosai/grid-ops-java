@@ -12,9 +12,10 @@ public class ErrorMessageConstants {
     public static final byte[] semanticProtocolVersion     = new byte[] {0};
     public static final byte[] errorResponseMessageType    = new byte[] {0};
 
-    public static final byte[] errorIdUnknownNodeId          = new byte[] {0};
-    public static final byte[] errorIdUnsupportedProtocol    = new byte[] {1};
-    public static final byte[] errorIdUnsupportedMessageType = new byte[] {2};
+    public static final byte[] errorIdNoError                = new byte[] {0};
+    public static final byte[] errorIdUnknownNodeId          = new byte[] {1};
+    public static final byte[] errorIdUnsupportedProtocol    = new byte[] {2};
+    public static final byte[] errorIdUnsupportedMessageType = new byte[] {3};
 
 
 
