@@ -8,6 +8,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by jjenkov on 04-11-2015.
@@ -22,7 +23,7 @@ public class IonFieldWriterTable implements IIonFieldWriter {
     protected IIonFieldWriter[] fieldWritersForArrayType = null;
 
 
-    public IonFieldWriterTable(Field field, String alias, IIonObjectWriterConfigurator configurator) {
+    public IonFieldWriterTable(Field field, String alias, IIonObjectWriterConfigurator configurator, Map<Field, IIonFieldWriter> existingFieldWriters) {
         this.field = field;
         this.keyField = IonUtil.preGenerateKeyField(alias);
 
@@ -34,10 +35,10 @@ public class IonFieldWriterTable implements IIonFieldWriter {
 
         for(int i=0; i<typeInTableFields.length; i++){
             IonFieldWriterConfiguration fieldConfiguration = new IonFieldWriterConfiguration();
-            fieldConfiguration.field = typeInTableFields[i];
-            fieldConfiguration.include = true;
+            fieldConfiguration.field     = typeInTableFields[i];
             fieldConfiguration.fieldName = typeInTableFields[i].getName();
-            fieldConfiguration.alias = null;
+            fieldConfiguration.alias     = typeInTableFields[i].getName();
+            fieldConfiguration.include   = true;
 
             configurator.configure(fieldConfiguration);
 
@@ -53,11 +54,7 @@ public class IonFieldWriterTable implements IIonFieldWriter {
 
         for(int i=0; i < fieldWriterConfigurationsTemp.size(); i++){
             try {
-                if(fieldWriterConfigurationsTemp.get(i).alias != null){
-                    fieldNames[i] = fieldWriterConfigurationsTemp.get(i).alias.getBytes("UTF-8");
-                } else {
-                    fieldNames[i] = fieldWriterConfigurationsTemp.get(i).fieldName.getBytes("UTF-8");
-                }
+                fieldNames[i] = fieldWriterConfigurationsTemp.get(i).alias.getBytes("UTF-8");
 
                 totalKeyFieldsLength += fieldNames[i].length;
 
@@ -68,13 +65,11 @@ public class IonFieldWriterTable implements IIonFieldWriter {
                     totalKeyFieldsLength += 1 + IonUtil.lengthOfInt64Value(fieldNames[i].length);
                 }
 
-                fieldWritersForArrayType[i] = IonUtil.createFieldWriter(fieldWriterConfigurationsTemp.get(i).field, configurator);
-
+                fieldWritersForArrayType[i] = IonUtil.createFieldWriter(fieldWriterConfigurationsTemp.get(i).field, fieldWriterConfigurationsTemp.get(i).alias, configurator, existingFieldWriters);
             } catch (UnsupportedEncodingException e) {
                 //todo rethrow this exception if it ever occurs.
                 e.printStackTrace();
             }
-
         }
 
         allKeyFieldBytes = new byte[totalKeyFieldsLength];

@@ -5,6 +5,7 @@ import com.nanosai.gridops.ion.IonUtil;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -41,34 +42,7 @@ public class IonObjectWriter {
     public IonObjectWriter(Class typeClass, IIonObjectWriterConfigurator configurator){
         this.typeClass = typeClass;
 
-        Field[] fields = this.typeClass.getDeclaredFields();
-
-        List<IIonFieldWriter> fieldWritersTemp = new ArrayList<IIonFieldWriter>();
-
-        IonFieldWriterConfiguration fieldConfiguration = new IonFieldWriterConfiguration();
-
-        for(int i=0; i < fields.length; i++){
-            fieldConfiguration.field = fields[i];
-            fieldConfiguration.include = true;
-            fieldConfiguration.fieldName = fields[i].getName();
-            fieldConfiguration.alias = null;
-
-            configurator.configure(fieldConfiguration);
-
-            if(fieldConfiguration.include){
-                if(fieldConfiguration.alias == null){
-                    fieldWritersTemp.add(IonUtil.createFieldWriter(fields[i], configurator));
-                } else {
-                    fieldWritersTemp.add(IonUtil.createFieldWriter(fields[i], fieldConfiguration.alias, configurator));
-                }
-            }
-        }
-
-        this.fieldWriters = new IIonFieldWriter[fieldWritersTemp.size()];
-
-        for(int i=0, n=fieldWritersTemp.size(); i < n; i++){
-            this.fieldWriters[i] = fieldWritersTemp.get(i);
-        }
+        this.fieldWriters = IonUtil.createFieldWriters(this.typeClass.getDeclaredFields(), configurator, new HashMap<>());
     }
 
 

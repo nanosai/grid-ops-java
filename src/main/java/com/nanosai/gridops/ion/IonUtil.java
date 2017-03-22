@@ -5,8 +5,7 @@ import com.nanosai.gridops.ion.write.*;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.*;
 
 /**
  * Created by jjenkov on 19-11-2015.
@@ -32,11 +31,47 @@ public class IonUtil {
         return 8;
     }
 
-    public static IIonFieldWriter createFieldWriter(Field field, IIonObjectWriterConfigurator configurator){
-        return createFieldWriter(field, field.getName(), configurator);
+    public static IIonFieldWriter[] createFieldWriters(Field[] fields, IIonObjectWriterConfigurator configurator, Map<Field, IIonFieldWriter> existingFieldWriters) {
+        List<IIonFieldWriter> fieldWritersTemp = new ArrayList<>();
+
+        IonFieldWriterConfiguration fieldConfiguration = new IonFieldWriterConfiguration();
+
+        for(int i=0; i < fields.length; i++){
+            if(existingFieldWriters.containsKey(fields[i])){
+                fieldWritersTemp.add(existingFieldWriters.get(fields[i]));
+                continue;
+            }
+
+            fieldConfiguration.field     = fields[i];
+            fieldConfiguration.fieldName = fields[i].getName();
+            fieldConfiguration.alias     = fields[i].getName();
+            fieldConfiguration.include   = true;
+
+            configurator.configure(fieldConfiguration);
+
+            if(fieldConfiguration.include){
+                IIonFieldWriter fieldWriter =
+                        IonUtil.createFieldWriter(fields[i], fieldConfiguration.alias, configurator, existingFieldWriters);
+
+                existingFieldWriters.put(fields[i], fieldWriter);
+
+                if(fieldWriter instanceof IonFieldWriterObject){
+                    ((IonFieldWriterObject) fieldWriter).generateFieldWriters(configurator, existingFieldWriters);
+                }
+                fieldWritersTemp.add(fieldWriter);
+            }
+        }
+
+        IIonFieldWriter[] fieldWriters = new IIonFieldWriter[fieldWritersTemp.size()];
+
+        for(int i=0, n=fieldWritersTemp.size(); i < n; i++){
+            fieldWriters[i] = fieldWritersTemp.get(i);
+        }
+
+        return fieldWriters;
     }
 
-    public static IIonFieldWriter createFieldWriter(Field field, String alias, IIonObjectWriterConfigurator configurator){
+    public static IIonFieldWriter createFieldWriter(Field field, String alias, IIonObjectWriterConfigurator configurator, Map<Field, IIonFieldWriter> existingFieldWriters){
         field.setAccessible(true); //allows access to private fields, and supposedly speeds up reflection...  ?
         Class fieldType = field.getType();
 
@@ -89,10 +124,10 @@ public class IonUtil {
             if(double.class.equals(fieldType.getComponentType())){
                 return new IonFieldWriterArrayDouble(field, alias);
             }
-            return new IonFieldWriterTable(field, alias, configurator);
+            return new IonFieldWriterTable(field, alias, configurator, existingFieldWriters);
         }
 
-        return new IonFieldWriterObject(field, alias, configurator);
+        return new IonFieldWriterObject(field, alias);
     }
 
 
