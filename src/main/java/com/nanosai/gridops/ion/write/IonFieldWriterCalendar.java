@@ -9,26 +9,12 @@ import java.util.Calendar;
 /**
  * Created by jjenkov on 04-11-2015.
  */
-public class IonFieldWriterCalendar implements IIonFieldWriter {
-
-    protected Field  field    = null;
-    protected byte[] keyField = null;
+public class IonFieldWriterCalendar extends IonFieldWriterBase implements IIonFieldWriter {
 
     protected int length = 7;
 
     public IonFieldWriterCalendar(Field field, String alias) {
-        this.field = field;
-        this.keyField = IonUtil.preGenerateKeyField(alias);
-    }
-
-    @Override
-    public int writeKeyAndValueFields(Object sourceObject, byte[] destination, int destinationOffset, int maxLengthLength) {
-
-        System.arraycopy(this.keyField, 0, destination, destinationOffset, this.keyField.length);
-        destinationOffset += this.keyField.length;
-
-        return this.keyField.length + writeValueField(sourceObject, destination, destinationOffset, maxLengthLength);
-
+        super(field, alias);
     }
 
     @Override

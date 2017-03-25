@@ -13,35 +13,19 @@ import java.util.Map;
 /**
  * Created by jjenkov on 04-11-2015.
  */
-public class IonFieldWriterObject implements IIonFieldWriter {
-
-    protected Field  field    = null;
-    protected byte[] keyField = null;
-
+public class IonFieldWriterObject extends IonFieldWriterBase implements IIonFieldWriter {
 
     public Field[] fields    = null;
 
     public IIonFieldWriter[] fieldWriters = null;
 
-
     public IonFieldWriterObject(Field field, String alias) {
-        this.field = field;
-        this.keyField = IonUtil.preGenerateKeyField(alias);
+        super(field, alias);
     }
 
     public void generateFieldWriters(IIonObjectWriterConfigurator configurator, Map<Field, IIonFieldWriter> existingFieldWriters) {
         //generate field writers for this IonFieldWriterObject instance - fields in the class of this field.
         this.fieldWriters = IonUtil.createFieldWriters(field.getType().getDeclaredFields(), configurator, existingFieldWriters);
-    }
-
-    @Override
-    public int writeKeyAndValueFields(Object sourceObject, byte[] destination, int destinationOffset, int maxLengthLength) {
-        System.arraycopy(this.keyField, 0, destination, destinationOffset, this.keyField.length);
-        destinationOffset += this.keyField.length;
-
-        int valueLength = writeValueField(sourceObject, destination, destinationOffset, maxLengthLength);
-
-        return this.keyField.length + valueLength;
     }
 
 
@@ -63,7 +47,8 @@ public class IonFieldWriterObject implements IIonFieldWriter {
 
             for(int i=0; i<fieldWriters.length; i++){
                 if(fieldWriters[i] != null){
-                    destinationOffset += fieldWriters[i].writeKeyAndValueFields(fieldValue, destination, destinationOffset, maxLengthLength);
+                    destinationOffset += fieldWriters[i].writeKeyField(destination, destinationOffset);
+                    destinationOffset += fieldWriters[i].writeValueField(fieldValue, destination, destinationOffset, maxLengthLength);
                 }
             }
 

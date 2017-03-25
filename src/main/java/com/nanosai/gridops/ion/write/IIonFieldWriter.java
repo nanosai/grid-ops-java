@@ -5,8 +5,9 @@ package com.nanosai.gridops.ion.write;
  */
 public interface IIonFieldWriter {
 
-    public int writeKeyAndValueFields(Object sourceObject, byte[] destination, int destinationOffset, int maxLengthLength);
-
+    public int getKeyFieldLength();
+    public int writeKeyField  (byte[] destination, int destinationOffset);
     public int writeValueField(Object sourceObject, byte[] destination, int destinationOffset, int maxLengthLength);
+
 
 }

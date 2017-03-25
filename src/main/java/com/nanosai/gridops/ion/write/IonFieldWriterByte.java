@@ -8,25 +8,12 @@ import java.lang.reflect.Field;
 /**
  * Created by jjenkov on 04-11-2015.
  */
-public class IonFieldWriterByte implements IIonFieldWriter {
-
-    protected Field  field    = null;
-    protected byte[] keyField = null;
+public class IonFieldWriterByte extends IonFieldWriterBase implements IIonFieldWriter {
 
     public IonFieldWriterByte(Field field, String alias) {
-        this.field = field;
-        this.keyField = IonUtil.preGenerateKeyField(alias);
+        super(field, alias);
     }
 
-
-    @Override
-    public int writeKeyAndValueFields(Object sourceObject, byte[] destination, int destinationOffset, int maxLengthLength) {
-
-        System.arraycopy(this.keyField, 0, destination, destinationOffset, this.keyField.length);
-        destinationOffset += this.keyField.length;
-
-        return this.keyField.length + writeValueField(sourceObject, destination, destinationOffset, maxLengthLength);
-    }
 
     @Override
     public int writeValueField(Object sourceObject, byte[] dest, int destOffset, int maxLengthLength) {

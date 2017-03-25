@@ -31,14 +31,17 @@ public class IonUtil {
         return 8;
     }
 
-    public static IIonFieldWriter[] createFieldWriters(Field[] fields, IIonObjectWriterConfigurator configurator, Map<Field, IIonFieldWriter> existingFieldWriters) {
+    public static IIonFieldWriter[] createFieldWriters(
+            Field[] fields, IIonObjectWriterConfigurator configurator,
+            Map<Field, IIonFieldWriter> existingFieldWriters) {
         List<IIonFieldWriter> fieldWritersTemp = new ArrayList<>();
 
         IonFieldWriterConfiguration fieldConfiguration = new IonFieldWriterConfiguration();
 
         for(int i=0; i < fields.length; i++){
             if(existingFieldWriters.containsKey(fields[i])){
-                fieldWritersTemp.add(existingFieldWriters.get(fields[i]));
+                IIonFieldWriter fieldWriter = existingFieldWriters.get(fields[i]);
+                fieldWritersTemp.add(fieldWriter);
                 continue;
             }
 
@@ -57,6 +60,8 @@ public class IonUtil {
 
                 if(fieldWriter instanceof IonFieldWriterObject){
                     ((IonFieldWriterObject) fieldWriter).generateFieldWriters(configurator, existingFieldWriters);
+                } else if(fieldWriter instanceof IonFieldWriterTable){
+                    ((IonFieldWriterTable) fieldWriter).generateFieldWriters(configurator, existingFieldWriters);
                 }
                 fieldWritersTemp.add(fieldWriter);
             }
@@ -124,7 +129,7 @@ public class IonUtil {
             if(double.class.equals(fieldType.getComponentType())){
                 return new IonFieldWriterArrayDouble(field, alias);
             }
-            return new IonFieldWriterTable(field, alias, configurator, existingFieldWriters);
+            return new IonFieldWriterTable(field, alias);
         }
 
         return new IonFieldWriterObject(field, alias);

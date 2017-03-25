@@ -8,26 +8,13 @@ import java.lang.reflect.Field;
 /**
  * Created by jjenkov on 04-11-2015.
  */
-public class IonFieldWriterArrayDouble implements IIonFieldWriter {
+public class IonFieldWriterArrayDouble extends IonFieldWriterBase implements IIonFieldWriter {
 
     private static int MAX_ELEMENT_FIELD_LENGTH = 9;    //an ION long field can max be 9 bytes long
     private static int COMPLEX_TYPE_ID_SHORT_FIELD_LENGTH = 2;    //an ION long field can max be 9 bytes long
 
-    protected Field  field    = null;
-    protected byte[] keyField = null;
-
     public IonFieldWriterArrayDouble(Field field, String alias) {
-        this.field = field;
-        this.keyField = IonUtil.preGenerateKeyField(alias);
-    }
-
-    @Override
-    public int writeKeyAndValueFields(Object sourceObject, byte[] destination, int destinationOffset, int maxLengthLength) {
-
-        System.arraycopy(this.keyField, 0, destination, destinationOffset, this.keyField.length);
-        destinationOffset += this.keyField.length;
-
-        return this.keyField.length + writeValueField(sourceObject, destination, destinationOffset, maxLengthLength);
+        super(field, alias);
     }
 
 

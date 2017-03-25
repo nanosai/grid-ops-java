@@ -55,7 +55,8 @@ public class IonObjectWriter {
 
         for(int i=0; i<fieldWriters.length; i++){
             if(fieldWriters[i] != null){
-                destinationOffset += fieldWriters[i].writeKeyAndValueFields(src, destination, destinationOffset, maxLengthLength);
+                destinationOffset += fieldWriters[i].writeKeyField(destination, destinationOffset);
+                destinationOffset += fieldWriters[i].writeValueField(src, destination, destinationOffset, maxLengthLength);
             }
         }
 
