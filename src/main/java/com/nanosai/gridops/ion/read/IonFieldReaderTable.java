@@ -16,11 +16,11 @@ import java.util.Map;
  */
 public class IonFieldReaderTable implements IIonFieldReader {
 
-    private Field field = null;
+    private Field field       = null;
     private Class typeInTable = null;
-    private Map<IonKeyFieldKey, IIonFieldReader> fieldReaderMap = new HashMap<>();
+    private Field[] typeInTableFields = null;
+    private Map<IonKeyFieldKey, IIonFieldReader> fieldReaderMap = null;
     private IonFieldReaderNop nopFieldReader = new IonFieldReaderNop();
-
 
     private List tempList = new ArrayList();
 
@@ -35,46 +35,15 @@ public class IonFieldReaderTable implements IIonFieldReader {
     private IonKeyFieldKey tempKeyFieldKey = new IonKeyFieldKey();
 
     public IonFieldReaderTable(Field field, IIonObjectReaderConfigurator configurator) {
-        this.field = field;
-
-        this.typeInTable = field.getType().getComponentType();  // field type is an array, so we need to get to the component type of the array.
-
-        Field[] typeInTableFields = typeInTable.getDeclaredFields();
-
-        IonFieldReaderConfiguration fieldConfiguration = new IonFieldReaderConfiguration();
-
-        for(int i=0; i<typeInTableFields.length; i++){
-            fieldConfiguration.field     =  typeInTableFields[i];
-            fieldConfiguration.include   = true;
-            fieldConfiguration.fieldName = typeInTableFields[i].getName();
-            fieldConfiguration.alias     = null;
-
-            configurator.configure(fieldConfiguration);
-
-            if (fieldConfiguration.include) {
-                if (fieldConfiguration.alias == null) {
-                    putFieldReader(typeInTableFields[i].getName(), IonUtil.createFieldReader(typeInTableFields[i], configurator));
-                } else {
-                    putFieldReader(fieldConfiguration.alias, IonUtil.createFieldReader(typeInTableFields[i], configurator));
-                }
-            }
-
-            //Field fieldOfTypeInTable = typeInTableFields[i];
-            //putFieldReader(fieldOfTypeInTable, IonUtil.createFieldReader(fieldOfTypeInTable));
-        }
-
-        //don't fill array until during reading.
-        fieldReaderArray = new IIonFieldReader[typeInTableFields.length];
+        this.field             = field;
+        this.typeInTable       = field.getType().getComponentType();  // field type is an array, so we need to get to the component type of the array.
+        this.typeInTableFields = typeInTable.getDeclaredFields();
+        this.fieldReaderArray  = new IIonFieldReader[typeInTableFields.length];
     }
 
-    private void putFieldReader(String fieldName, IIonFieldReader fieldReader) {
-        try {
-            this.fieldReaderMap.put(new IonKeyFieldKey(fieldName.getBytes("UTF-8")), fieldReader);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+    public void generateFieldReaders(IIonObjectReaderConfigurator configurator, Map<Field, IIonFieldReader> existingFieldReaders) {
+        this.fieldReaderMap = IonUtil.createFieldReaders(this.typeInTableFields, configurator, existingFieldReaders);
     }
-
 
 
     @Override

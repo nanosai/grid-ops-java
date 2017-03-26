@@ -31,15 +31,6 @@ public class IonObjectReader {
      */
     public IonObjectReader(Class typeClass) {
         this(typeClass, new IonObjectReaderConfiguratorNopImpl());
-        /*
-        this.typeClass = typeClass;
-
-        Field[] fields = this.typeClass.getDeclaredFields();
-
-        for(int i=0; i < fields.length; i++){
-            putFieldReader(fields[i].getName(), IonUtil.createFieldReader(fields[i]));
-        }
-        */
      }
 
 
@@ -54,27 +45,11 @@ public class IonObjectReader {
      */
     public IonObjectReader(Class typeClass, IIonObjectReaderConfigurator configurator) {
         this.typeClass = typeClass;
-
         Field[] fields = this.typeClass.getDeclaredFields();
 
-        IonFieldReaderConfiguration fieldConfiguration = new IonFieldReaderConfiguration();
+        this.fieldReaderMap = IonUtil.createFieldReaders(fields, configurator, new HashMap<>());
 
-        for(int i=0; i < fields.length; i++) {
-            fieldConfiguration.field     =  fields[i];
-            fieldConfiguration.include   = true;
-            fieldConfiguration.fieldName = fields[i].getName();
-            fieldConfiguration.alias     = null;
 
-            configurator.configure(fieldConfiguration);
-
-            if (fieldConfiguration.include) {
-                if (fieldConfiguration.alias == null) {
-                    putFieldReader(fields[i].getName(), IonUtil.createFieldReader(fields[i], configurator));
-                } else {
-                    putFieldReader(fieldConfiguration.alias, IonUtil.createFieldReader(fields[i], configurator));
-                }
-            }
-        }
     }
 
 

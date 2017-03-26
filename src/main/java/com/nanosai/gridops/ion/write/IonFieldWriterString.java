@@ -20,8 +20,14 @@ public class IonFieldWriterString extends IonFieldWriterBase implements IIonFiel
         try {
             String value = (String) field.get(sourceObject);
 
+            if(value == null){
+                dest[destOffset++] = (byte) (255 & ((IonFieldTypes.UTF_8_SHORT << 4) | 0));
+                return 1;
+            }
+
             //todo optimize this - do not get bytes from a string like this. UTF-8 encode char-for-char with charAt() instead.
             byte[] valueBytes = value.getBytes("UTF-8");
+
 
             int length = valueBytes.length;
 

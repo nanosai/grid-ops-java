@@ -13,9 +13,10 @@ import java.util.Map;
  */
 public class IonFieldReaderObject implements IIonFieldReader {
 
-    private Field field = null;
-
+    private Field field     = null;
     private Class typeClass = null;
+
+    private Field[] fields = null;
 
     private Map<IonKeyFieldKey, IIonFieldReader> fieldReaderMap = new HashMap<>();
     private IonFieldReaderNop nopFieldReader = new IonFieldReaderNop();
@@ -23,40 +24,13 @@ public class IonFieldReaderObject implements IIonFieldReader {
     private IonKeyFieldKey currentKeyFieldKey = new IonKeyFieldKey();
 
     public IonFieldReaderObject(Field field, IIonObjectReaderConfigurator configurator) {
-        this.field = field;
-
+        this.field     = field;
         this.typeClass = field.getType();
-
-        Field[] fields = this.typeClass.getDeclaredFields();
-
-        IonFieldReaderConfiguration fieldConfiguration = new IonFieldReaderConfiguration();
-
-
-        for(int i=0; i < fields.length; i++){
-            fieldConfiguration.field     =  fields[i];
-            fieldConfiguration.include   = true;
-            fieldConfiguration.fieldName = fields[i].getName();
-            fieldConfiguration.alias     = null;
-
-            configurator.configure(fieldConfiguration);
-
-            if (fieldConfiguration.include) {
-                if (fieldConfiguration.alias == null) {
-                    putFieldReader(fields[i].getName(), IonUtil.createFieldReader(fields[i], configurator));
-                } else {
-                    putFieldReader(fieldConfiguration.alias, IonUtil.createFieldReader(fields[i], configurator));
-                }
-            }
-        }
-
+        this.fields    = this.typeClass.getDeclaredFields();
     }
 
-    private void putFieldReader(String fieldName, IIonFieldReader fieldReader) {
-        try {
-            this.fieldReaderMap.put(new IonKeyFieldKey(fieldName.getBytes("UTF-8")), fieldReader);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+    public void generateFieldReaders(IIonObjectReaderConfigurator configurator, Map<Field, IIonFieldReader> existingFieldReaders) {
+        this.fieldReaderMap = IonUtil.createFieldReaders(this.fields, configurator, existingFieldReaders);
     }
 
 

@@ -31,6 +31,59 @@ public class IonUtil {
         return 8;
     }
 
+
+    public static Map<IonKeyFieldKey, IIonFieldReader> createFieldReaders(
+            Field[] fields,
+            IIonObjectReaderConfigurator configurator,
+            Map<Field, IIonFieldReader> existingFieldReaders) {
+
+        IonFieldReaderConfiguration          fieldConfiguration = new IonFieldReaderConfiguration();
+        Map<IonKeyFieldKey, IIonFieldReader> fieldReaderMap     = new HashMap<>();
+
+        for(int i=0; i < fields.length; i++){
+
+            fieldConfiguration.field     = fields[i];
+            fieldConfiguration.fieldName = fields[i].getName();
+            fieldConfiguration.alias     = fields[i].getName();
+            fieldConfiguration.include   = true;
+
+            configurator.configure(fieldConfiguration);
+
+            if(existingFieldReaders.containsKey(fields[i])){
+                IIonFieldReader fieldReader = existingFieldReaders.get(fields[i]);
+                try {
+                    fieldReaderMap.put(new IonKeyFieldKey(fieldConfiguration.alias.getBytes("UTF-8")), fieldReader); //todo this is wrong - should be IonKeyFieldKey - except those are not unique to classes...
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    //todo better exception handling, althouth UTF-8 is a known encoding.
+                }
+                continue;
+            }
+
+
+            if (fieldConfiguration.include) {
+                IIonFieldReader fieldReader = IonUtil.createFieldReader(fields[i], configurator);
+
+                existingFieldReaders.put(fields[i], fieldReader);
+
+                if(fieldReader instanceof IonFieldReaderObject){
+                    ((IonFieldReaderObject) fieldReader).generateFieldReaders(configurator, existingFieldReaders);
+                } else if(fieldReader instanceof IonFieldReaderTable){
+                    ((IonFieldReaderTable) fieldReader).generateFieldReaders(configurator, existingFieldReaders);
+                }
+
+                try {
+                    fieldReaderMap.put(new IonKeyFieldKey(fieldConfiguration.alias.getBytes("UTF-8")), fieldReader);
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    //todo throw exception - but will never happen since UTF-8 is a known encoding.
+                }
+            }
+        }
+        return fieldReaderMap;
+    }
+
+
     public static IIonFieldWriter[] createFieldWriters(
             Field[] fields, IIonObjectWriterConfigurator configurator,
             Map<Field, IIonFieldWriter> existingFieldWriters) {
