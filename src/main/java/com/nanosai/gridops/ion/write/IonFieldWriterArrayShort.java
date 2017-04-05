@@ -44,9 +44,7 @@ public class IonFieldWriterArrayShort extends IonFieldWriterBase implements IIon
             destOffset += arrayLengthLength;
 
             //write element count
-            dest[destOffset++] = (byte) (255 & ((IonFieldTypes.EXTENDED << 4) | elementCountLengthLength) );
-            dest[destOffset++] = (byte) IonFieldTypes.ELEMENT_COUNT;
-
+            dest[destOffset++] = (byte) (255 & ((IonFieldTypes.INT_POS << 4) | elementCountLengthLength) );
             for(int i=(elementCountLengthLength-1)*8; i >= 0; i-=8){
                 dest[destOffset++] = (byte) (255 & (elementCount >> i));
             }

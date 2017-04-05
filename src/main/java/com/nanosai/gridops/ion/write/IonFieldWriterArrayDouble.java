@@ -11,7 +11,6 @@ import java.lang.reflect.Field;
 public class IonFieldWriterArrayDouble extends IonFieldWriterBase implements IIonFieldWriter {
 
     private static int MAX_ELEMENT_FIELD_LENGTH = 9;    //an ION long field can max be 9 bytes long
-    private static int COMPLEX_TYPE_ID_SHORT_FIELD_LENGTH = 2;    //an ION long field can max be 9 bytes long
 
     public IonFieldWriterArrayDouble(Field field, String alias) {
         super(field, alias);
@@ -30,12 +29,11 @@ public class IonFieldWriterArrayDouble extends IonFieldWriterBase implements IIo
 
             int elementCount = value.length;
             int elementCountLengthLength = IonUtil.lengthOfInt64Value(elementCount);
-            int maxPossibleFieldLength =
-                    COMPLEX_TYPE_ID_SHORT_FIELD_LENGTH +          // 2 bytes for complex type id field
-                         1 + elementCountLengthLength +           // +1 for lead byte of element count field (int64-positive)
+            int maxPossibleArrayFieldLength =
+                    1 + elementCountLengthLength +           // +1 for lead byte of element count field (Int64-Pos)
                     (elementCount * MAX_ELEMENT_FIELD_LENGTH);
 
-            int arrayLengthLength = IonUtil.lengthOfInt64Value(maxPossibleFieldLength);
+            int arrayLengthLength = IonUtil.lengthOfInt64Value(maxPossibleArrayFieldLength);
 
             dest[destOffset++] = (byte) (255 & ((IonFieldTypes.ARRAY << 4) | arrayLengthLength) );
             int lengthStartOffset = destOffset;
@@ -44,9 +42,7 @@ public class IonFieldWriterArrayDouble extends IonFieldWriterBase implements IIo
             destOffset += arrayLengthLength;
 
             //write element count
-            dest[destOffset++] = (byte) (255 & ((IonFieldTypes.EXTENDED << 4) | elementCountLengthLength) );
-            dest[destOffset++] = (byte) IonFieldTypes.ELEMENT_COUNT;
-
+            dest[destOffset++] = (byte) (255 & ((IonFieldTypes.INT_POS << 4) | elementCountLengthLength));
             for(int i=(elementCountLengthLength-1)*8; i >= 0; i-=8){
                 dest[destOffset++] = (byte) (255 & (elementCount >> i));
             }

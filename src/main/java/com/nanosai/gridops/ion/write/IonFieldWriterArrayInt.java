@@ -11,7 +11,6 @@ import java.lang.reflect.Field;
 public class IonFieldWriterArrayInt extends IonFieldWriterBase implements IIonFieldWriter {
 
     private static int MAX_ELEMENT_FIELD_LENGTH           = 9;    //an ION long field can max be 9 bytes long
-    private static int COMPLEX_TYPE_ID_SHORT_FIELD_LENGTH = 2;    //an ION long field can max be 9 bytes long
 
     public IonFieldWriterArrayInt(Field field, String alias) {
         super(field, alias);
@@ -30,7 +29,6 @@ public class IonFieldWriterArrayInt extends IonFieldWriterBase implements IIonFi
             int elementCount = value.length;
             int elementCountLengthLength = IonUtil.lengthOfInt64Value(elementCount);
             int maxPossibleFieldLength =
-                    COMPLEX_TYPE_ID_SHORT_FIELD_LENGTH +          // 2 bytes for complex type id field
                          1 + elementCountLengthLength +           // +1 for lead byte of element count field (int64-positive)
                     (elementCount * MAX_ELEMENT_FIELD_LENGTH);
 
@@ -43,9 +41,7 @@ public class IonFieldWriterArrayInt extends IonFieldWriterBase implements IIonFi
             destOffset += arrayLengthLength;
 
             //write element count
-            dest[destOffset++] = (byte) (255 & ((IonFieldTypes.EXTENDED << 4) | elementCountLengthLength) );
-            dest[destOffset++] = (byte) IonFieldTypes.ELEMENT_COUNT;
-
+            dest[destOffset++] = (byte) (255 & ((IonFieldTypes.INT_POS << 4) | elementCountLengthLength));
             for(int i=(elementCountLengthLength-1)*8; i >= 0; i-=8){
                 dest[destOffset++] = (byte) (255 & (elementCount >> i));
             }

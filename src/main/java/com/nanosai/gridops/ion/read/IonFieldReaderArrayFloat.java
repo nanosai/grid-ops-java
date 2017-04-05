@@ -39,8 +39,6 @@ public class IonFieldReaderArrayFloat implements IIonFieldReader {
         //read array field element count
         int elementCountLeadByte = source[sourceOffset++];
         int elementCountLength   = elementCountLeadByte & 15;
-        sourceOffset++; //step over extended type byte... todo maybe validate it?
-
 
         int elementCount = 0;
         for(int i=0; i<elementCountLength; i++){

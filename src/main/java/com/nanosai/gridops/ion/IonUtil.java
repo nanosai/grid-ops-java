@@ -55,7 +55,7 @@ public class IonUtil {
                     fieldReaderMap.put(new IonKeyFieldKey(fieldConfiguration.alias.getBytes("UTF-8")), fieldReader); //todo this is wrong - should be IonKeyFieldKey - except those are not unique to classes...
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
-                    //todo better exception handling, althouth UTF-8 is a known encoding.
+                    //todo better exception handling, although UTF-8 is a known encoding.
                 }
                 continue;
             }
