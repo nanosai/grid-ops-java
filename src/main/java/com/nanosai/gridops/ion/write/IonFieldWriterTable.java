@@ -61,13 +61,23 @@ public class IonFieldWriterTable extends IonFieldWriterBase implements IIonField
             destination[destinationOffset] = (byte) (255 & (IonFieldTypes.TABLE << 4) | (maxLengthLength));
             destinationOffset += 1 + maxLengthLength ; // 1 for lead byte + make space for maxLengthLength length bytes.
 
+            //write element count
+            int elementCount = Array.getLength(array);
+            int elementCountLengthLength = IonUtil.lengthOfInt64Value(elementCount);
 
+            destination[destinationOffset++] = (byte) (255 & ((IonFieldTypes.INT_POS << 4) | elementCountLengthLength) );
+            for(int i=(elementCountLengthLength-1)*8; i >= 0; i-=8){
+                destination[destinationOffset++] = (byte) (255 & (elementCount >> i));
+            }
+
+
+            //write key fields
             System.arraycopy(this.allKeyFieldBytes, 0, destination, destinationOffset, this.allKeyFieldBytes.length);
             destinationOffset += this.allKeyFieldBytes.length;
 
 
-            int arrayLength = Array.getLength(array);
-            for(int i=0; i<arrayLength; i++){
+            //write array elements
+            for(int i=0; i<elementCount; i++){
                 Object source = Array.get(array, i);
 
                 //for each field in source write its field value out.

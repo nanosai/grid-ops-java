@@ -416,6 +416,23 @@ public class IonWriter {
     public void writeTableBegin(int lengthLength){
         this.dest[this.index++] = (byte) (255 & ((IonFieldTypes.TABLE << 4) | lengthLength));
         this.index += lengthLength;
+
+        //make space for element count. Since we don't know how many elements the array will end up having,
+        //we just reserve as much space to represent the element count as was reserved above to represent
+        //byte length of the whole array field.
+        dest[this.index++] = (byte) (255 & ((IonFieldTypes.INT_POS << 4) | lengthLength));
+        this.index += lengthLength;
+    }
+
+    public void writeTableBegin(int lengthLength, int elementCount){
+        this.dest[this.index++] = (byte) (255 & ((IonFieldTypes.TABLE << 4) | lengthLength));
+        this.index += lengthLength;
+
+        int elementCountLengthLength = IonUtil.lengthOfInt64Value(elementCount);
+        dest[this.index++] = (byte) (255 & ((IonFieldTypes.INT_POS << 4) | elementCountLengthLength));
+        for(int i=(elementCountLengthLength-1)*8; i >= 0; i-=8){
+            dest[this.index++] = (byte) (255 & (elementCount >> i));
+        }
     }
 
     public void writeTableEnd(int objectStartIndex, int lengthLength, int length){
@@ -423,6 +440,20 @@ public class IonWriter {
 
         for(int i=(lengthLength-1)*8; i >= 0; i-=8){
             dest[objectStartIndex++] = (byte) (255 & (length >> i));
+        }
+    }
+
+    public void writeTableEnd(int objectStartIndex, int lengthLength, int length, int elementCount){
+        objectStartIndex++;  //jump over the lead byte of the ION Object field
+
+        for(int i=(lengthLength-1)*8; i >= 0; i-=8){
+            dest[objectStartIndex++] = (byte) (255 & (length >> i));
+        }
+
+        //write element count into reserved bytes
+        dest[objectStartIndex++] = (byte) (255 & ((IonFieldTypes.INT_POS << 4) | lengthLength));
+        for(int i=(lengthLength-1)*8; i >= 0; i-=8){
+            dest[objectStartIndex++] = (byte) (255 & (elementCount >> i));
         }
     }
 
@@ -1118,7 +1149,27 @@ public class IonWriter {
     public static int writeTableBegin(byte[] dest, int destOffset, int lengthLength){
         dest[destOffset++] = (byte) (255 & ((IonFieldTypes.TABLE << 4) | lengthLength));
 
-        return 1 + lengthLength;
+        //make space for element count. Since we don't know how many elements the array will end up having,
+        //we just reserve as much space to represent the element count as was reserved above to represent
+        //byte length of the whole array field.
+        dest[destOffset++] = (byte) (255 & ((IonFieldTypes.INT_POS << 4) | lengthLength));
+        destOffset += lengthLength;
+
+        return 2 + (2 * lengthLength);
+    }
+
+    public static int writeTableBegin(byte[] dest, int destOffset, int lengthLength, int elementCount){
+        dest[destOffset++] = (byte) (255 & ((IonFieldTypes.TABLE << 4) | lengthLength));
+        destOffset += lengthLength;
+
+        //write element count
+        int elementCountLengthLength = IonUtil.lengthOfInt64Value(elementCount);
+        dest[destOffset++] = (byte) (255 & ((IonFieldTypes.INT_POS << 4) | elementCountLengthLength));
+        for(int i=(elementCountLengthLength-1)*8; i >= 0; i-=8){
+            dest[destOffset++] = (byte) (255 & (elementCount >> i));
+        }
+
+        return 2 + lengthLength + elementCountLengthLength;
     }
 
     public static void writeTableEnd(byte[] dest, int destOffset, int lengthLength, int length){
@@ -1126,6 +1177,20 @@ public class IonWriter {
 
         for(int i=(lengthLength-1)*8; i >= 0; i-=8){
             dest[destOffset++] = (byte) (255 & (length >> i));
+        }
+    }
+
+    public static void writeTableEnd(byte[] dest, int destOffset, int lengthLength, int length, int elementCount){
+        destOffset++;
+
+        for(int i=(lengthLength-1)*8; i >= 0; i-=8){
+            dest[destOffset++] = (byte) (255 & (length >> i));
+        }
+
+        //write element count into reserved bytes
+        dest[destOffset++] = (byte) (255 & ((IonFieldTypes.INT_POS << 4) | lengthLength));
+        for(int i=(lengthLength-1)*8; i >= 0; i-=8){
+            dest[destOffset++] = (byte) (255 & (elementCount >> i));
         }
     }
 
@@ -1178,7 +1243,7 @@ public class IonWriter {
         for(int i=(lengthLength-1)*8; i >= 0; i-=8){
             dest[destOffset++] = (byte) (255 & (elementCount >> i));
         }
-            }
+    }
 
 
     public static int writeDirect(byte[] dest, int destOffset, byte[] ionFieldBytes){
@@ -1190,6 +1255,7 @@ public class IonWriter {
     /*
         Extended field types
      */
+    /*
     public static int writeElementCount(byte[] dest, int destOffset, long elementCount){
         int lengthLength = IonUtil.lengthOfInt64Value(elementCount);
         dest[destOffset++] = (byte) (255 & ((IonFieldTypes.EXTENDED << 4) | lengthLength));
@@ -1201,6 +1267,7 @@ public class IonWriter {
 
         return 2 + lengthLength; // 1 lead byte, 1 extended type id byte, lengthLength element count bytes
     }
+    */
 
 
     public static int writeComplexTypeId(byte[] dest, int destOffset, byte[] value) {

@@ -825,7 +825,7 @@ public class IonObjectWriterTest {
         int index = 0;
         assertEquals((IonFieldTypes.OBJECT << 4) | 2, 255 & dest[index++]);
         assertEquals(   0, 255 & dest[index++]);
-        assertEquals( 199, 255 & dest[index++]);
+        assertEquals( 201, 255 & dest[index++]);
 
         assertEquals((IonFieldTypes.KEY_SHORT << 4) | 5, 255 & dest[index++]);
         assertEquals('p', 255 & dest[index++]);
@@ -836,7 +836,10 @@ public class IonObjectWriterTest {
 
         assertEquals((IonFieldTypes.TABLE << 4) | 2, 255 & dest[index++]);
         assertEquals(   0, 255 & dest[index++]);
-        assertEquals( 190, 255 & dest[index++]);
+        assertEquals( 192, 255 & dest[index++]);
+
+        assertEquals((IonFieldTypes.INT_POS << 4) | 1, 255 & dest[index++]);
+        assertEquals(   3, 255 & dest[index++]);
 
         assertEquals((IonFieldTypes.KEY_SHORT << 4) | 2, 255 & dest[index++]);
         assertEquals('f', 255 & dest[index++]);

@@ -461,6 +461,8 @@ public class IonReaderTest {
 
     }
 
+
+    /*
     @Test
     public void testReadElementCount() {
         byte[] dest = new byte[10 * 1024];
@@ -496,6 +498,7 @@ public class IonReaderTest {
         assertEquals(2048 & 255, 255 & dest[offset++]);
 
     }
+    */
 
 
 

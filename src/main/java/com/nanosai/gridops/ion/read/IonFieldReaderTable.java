@@ -65,6 +65,16 @@ public class IonFieldReaderTable implements IIonFieldReader {
 
         int tableEndIndex = tableStartIndex + 1 + tableLengthLength + tableLength;
 
+        //read table field element count (row count)
+        int elementCountLeadByte = source[sourceOffset++];
+        int elementCountLength   = elementCountLeadByte & 15;
+
+        int elementCount = 0;
+        for(int i=0; i<elementCountLength; i++){
+            elementCount <<= 8;
+            elementCount |= 255 & source[sourceOffset++];
+        }
+
 
         //read the key fields of the table
         tempKeyFieldKey.setSource(source);
@@ -113,13 +123,17 @@ public class IonFieldReaderTable implements IIonFieldReader {
 
         //start reading the value fields.
         sourceOffset--; //will have skipped over the lead byte of first value field during search for key fields.
+
+        Object arrayInstance = Array.newInstance(this.typeInTable, elementCount);
         int fieldReaderIndex = 0;
         Object objectInTable = null;
+        int arrayIndex = 0;
         while(sourceOffset < tableEndIndex){
             if(fieldReaderIndex == 0) {
                 try {
                     objectInTable = this.typeInTable.newInstance();
-                    this.tempList.add(objectInTable);
+                    Array.set(arrayInstance, arrayIndex++, objectInTable);
+                    //this.tempList.add(objectInTable);
                 } catch (InstantiationException e) {
                     e.printStackTrace();
                 } catch (IllegalAccessException e) {
@@ -135,11 +149,12 @@ public class IonFieldReaderTable implements IIonFieldReader {
             }
         }
 
-        Object arrayInstance = Array.newInstance(this.typeInTable, this.tempList.size());
-
+        //Object arrayInstance = Array.newInstance(this.typeInTable, this.tempList.size());
+        /*
         for(int i=0, n=this.tempList.size(); i < n; i++){
             Array.set(arrayInstance, i, this.tempList.get(i));   //todo perhaps use a faster data type than ArrayList
         }
+        */
 
         try {
             this.field.set(destination, arrayInstance);

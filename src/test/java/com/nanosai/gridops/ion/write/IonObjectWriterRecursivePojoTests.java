@@ -182,7 +182,7 @@ public class IonObjectWriterRecursivePojoTests {
         int index = 0;
         assertEquals(IonFieldTypes.OBJECT << 4 | 2, 255 & dest[index++]);
         assertEquals(0, 255 & dest[index++]);
-        assertEquals(52, 255 & dest[index++]);
+        assertEquals(54, 255 & dest[index++]);
 
         assertEquals(IonFieldTypes.KEY_SHORT << 4 | 4, 255 & dest[index++]);
         assertEquals('n', 255 & dest[index++]);
@@ -208,8 +208,10 @@ public class IonObjectWriterRecursivePojoTests {
 
         assertEquals(IonFieldTypes.TABLE << 4 | 2, 255 & dest[index++]);
         assertEquals( 0, 255 & dest[index++]);
-        assertEquals(30, 255 & dest[index++]);
-        //assertEquals(IonFieldTypes.TABLE << 4 | 2, 255 & dest[index++]);
+        assertEquals(32, 255 & dest[index++]);
+
+        assertEquals(IonFieldTypes.INT_POS << 4 | 1, 255 & dest[index++]);
+        assertEquals( 2, 255 & dest[index++]);
 
         assertEquals(IonFieldTypes.KEY_SHORT << 4 | 4, 255 & dest[index++]);
         assertEquals('n', 255 & dest[index++]);

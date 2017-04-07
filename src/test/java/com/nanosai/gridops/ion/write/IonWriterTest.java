@@ -180,7 +180,7 @@ public class IonWriterTest {
 
 
     @Test
-    public void testTableWriteMethods() {
+    public void testTableWriteMethods_UnknownElementCountUntilTableEnds() {
         byte[] dest = new byte[100 *1024];
 
         int index = 10;
@@ -191,10 +191,45 @@ public class IonWriterTest {
         int lengthLength = 2;
         writer.writeTableBegin(lengthLength);
 
-        assertEquals(13, writer.index);
+        assertEquals(16, writer.index);
         assertEquals((IonFieldTypes.TABLE << 4) | 2, 255 & dest[index++]);
         assertEquals(0, 255 & dest[index++]);
         assertEquals(0, 255 & dest[index++]);
+
+        assertEquals((IonFieldTypes.INT_POS << 4) | 2, 255 & dest[index++]);
+
+        writer.writeTableEnd(tableStartIndex, lengthLength, 123, 9);
+
+        index = tableStartIndex;
+        assertEquals((IonFieldTypes.TABLE << 4) | 2, 255 & dest[index++]);
+        assertEquals(0, 255 & dest[index++]);
+        assertEquals(123, 255 & dest[index++]);
+
+        assertEquals((IonFieldTypes.INT_POS << 4) | 2, 255 & dest[index++]);
+        assertEquals(0, 255 & dest[index++]);
+        assertEquals(9, 255 & dest[index++]);
+    }
+
+
+    @Test
+    public void testTableWriteMethods_KnownElementCount() {
+        byte[] dest = new byte[100 *1024];
+
+        int index = 10;
+        IonWriter writer = new IonWriter();
+        writer.setDestination(dest, index);
+
+        int tableStartIndex = writer.index;
+        int lengthLength = 2;
+        writer.writeTableBegin(lengthLength, 7);
+
+        assertEquals(15, writer.index);
+        assertEquals((IonFieldTypes.TABLE << 4) | 2, 255 & dest[index++]);
+        assertEquals(0, 255 & dest[index++]);
+        assertEquals(0, 255 & dest[index++]);
+
+        assertEquals((IonFieldTypes.INT_POS << 4) | 1, 255 & dest[index++]);
+        assertEquals(7, 255 & dest[index++]);
 
         writer.writeTableEnd(tableStartIndex, lengthLength,123);
 
@@ -202,6 +237,9 @@ public class IonWriterTest {
         assertEquals((IonFieldTypes.TABLE << 4) | 2, 255 & dest[index++]);
         assertEquals(0, 255 & dest[index++]);
         assertEquals(123, 255 & dest[index++]);
+
+        assertEquals((IonFieldTypes.INT_POS << 4) | 1, 255 & dest[index++]);
+        assertEquals(7, 255 & dest[index++]);
     }
 
 
@@ -711,6 +749,7 @@ public class IonWriterTest {
     }
 
 
+    /*
     @Test
     public void testWriteElementCountStatic() {
         byte[] dest = new byte[100 *1024];
@@ -727,6 +766,7 @@ public class IonWriterTest {
         assertEquals(elementCount >> 8, 255 & dest[index++]);
         assertEquals(elementCount & 255, 255 & dest[index++]);
     }
+    */
 
 
     @Test
@@ -1286,14 +1326,42 @@ public class IonWriterTest {
 
 
     @Test
-    public void testStaticWriteTable() {
+    public void testStaticWriteTable_UnknownElementCountUntilTableEnd() {
         byte[] dest = new byte[10 * 1024];
 
         int offset = 10;
         int bytesWritten = IonWriter.writeTableBegin(dest, offset, 3);
 
-        assertEquals(4, bytesWritten);
+        assertEquals(8, bytesWritten);
         assertEquals((IonFieldTypes.TABLE<<4) | 3, 255 & dest[offset++]);
+
+        offset = 10;
+        IonWriter.writeTableEnd(dest, offset, 3, 65535, 7);
+        assertEquals((IonFieldTypes.TABLE<<4) | 3, 255 & dest[offset++]);
+        assertEquals(0, 255 & dest[offset++]);
+        assertEquals(255, 255 & dest[offset++]);
+        assertEquals(255, 255 & dest[offset++]);
+        assertEquals((IonFieldTypes.INT_POS<<4) | 3, 255 & dest[offset++]);
+        assertEquals(0, 255 & dest[offset++]);
+        assertEquals(0, 255 & dest[offset++]);
+        assertEquals(7, 255 & dest[offset++]);
+    }
+
+
+    @Test
+    public void testStaticWriteTable_KnownElementCount() {
+        byte[] dest = new byte[10 * 1024];
+
+        int offset = 10;
+        int bytesWritten = IonWriter.writeTableBegin(dest, offset, 3, 11);
+
+        assertEquals(6, bytesWritten);
+        assertEquals((IonFieldTypes.TABLE<<4) | 3, 255 & dest[offset++]);
+        assertEquals(0, 255 & dest[offset++]);
+        assertEquals(0, 255 & dest[offset++]);
+        assertEquals(0, 255 & dest[offset++]);
+        assertEquals((IonFieldTypes.INT_POS<<4) | 1, 255 & dest[offset++]);
+        assertEquals(11, 255 & dest[offset++]);
 
         offset = 10;
         IonWriter.writeTableEnd(dest, offset, 3, 65535);
@@ -1301,6 +1369,8 @@ public class IonWriterTest {
         assertEquals(0, 255 & dest[offset++]);
         assertEquals(255, 255 & dest[offset++]);
         assertEquals(255, 255 & dest[offset++]);
+        assertEquals((IonFieldTypes.INT_POS<<4) | 1, 255 & dest[offset++]);
+        assertEquals(11, 255 & dest[offset++]);
     }
 
 
