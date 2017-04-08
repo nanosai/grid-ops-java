@@ -15,7 +15,7 @@ import java.util.Map;
  *
  *
  */
-public class IonObjectReader {
+public class IonObjectReader<T> {
 
     private Class typeClass = null;
 
@@ -29,7 +29,7 @@ public class IonObjectReader {
      * Creates an IonObjectReader targeted at the given class.
      * @param typeClass The class this IonObjectReader instance should be able to read instances of, from ION data.
      */
-    public IonObjectReader(Class typeClass) {
+    public IonObjectReader(Class<T> typeClass) {
         this(typeClass, new IonObjectReaderConfiguratorNopImpl());
      }
 
@@ -43,13 +43,11 @@ public class IonObjectReader {
      * @param typeClass The class this IonObjectReader instance should be able to read instances of, from ION data.
      * @param configurator  The configurator that can configure each field reader (one per field in the target class) of this IonObjectReader - even exclude them.
      */
-    public IonObjectReader(Class typeClass, IIonObjectReaderConfigurator configurator) {
+    public IonObjectReader(Class<T> typeClass, IIonObjectReaderConfigurator configurator) {
         this.typeClass = typeClass;
         Field[] fields = this.typeClass.getDeclaredFields();
 
         this.fieldReaderMap = IonUtil.createFieldReaders(fields, configurator, new HashMap<>());
-
-
     }
 
 
@@ -64,9 +62,12 @@ public class IonObjectReader {
 
 
     public Object read(byte[] source, int sourceOffset){
-        this.currentKeyFieldKey.setSource(source);
+        return read(source, sourceOffset, instantiateType());
+    }
 
-        Object destination =  instantiateType();
+
+    public Object read(byte[] source, int sourceOffset, Object dest){
+        this.currentKeyFieldKey.setSource(source);
 
         int leadByte = 255 & source[sourceOffset++];
         int fieldType = leadByte >> 4;
@@ -85,8 +86,6 @@ public class IonObjectReader {
             length |= 255 & source[sourceOffset++];
         }
         int endIndex = sourceOffset + length;
-
-
 
         while(sourceOffset < endIndex){
             leadByte     = 255 & source[sourceOffset++];
@@ -121,22 +120,23 @@ public class IonObjectReader {
 
                 //todo check for end of object - if found, call reader.setNull() - no value field following the key field.
 
-
                 int nextLeadByte  = 255 & source[sourceOffset];
                 int nextFieldType = nextLeadByte >> 4;
 
                 if(nextFieldType != IonFieldTypes.KEY && nextFieldType != IonFieldTypes.KEY_SHORT){
-                    sourceOffset += reader.read(source, sourceOffset, destination);
+                    sourceOffset += reader.read(source, sourceOffset, dest);
                 } else {
                     //next field is also a key - meaning the previous key has a value of null (no value field following it).
-                    reader.setNull(destination);
-               }
+                    reader.setNull(dest);
+                }
             }
 
         }
 
-        return destination;
+        return dest;
     }
+
+
 
     private Object instantiateType() {
         try {
