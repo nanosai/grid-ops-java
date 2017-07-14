@@ -1,7 +1,7 @@
 package com.nanosai.gridops.node;
 
 import com.nanosai.gridops.tcp.TcpMessage;
-import com.nanosai.gridops.tcp.TcpSocketsPort;
+import com.nanosai.gridops.tcp.TcpMessagePort;
 
 import java.io.IOException;
 
@@ -12,12 +12,12 @@ public class NodeContainerMock extends NodeContainer {
 
     public TcpMessage enqueuedTcpMessage = null;
 
-    public NodeContainerMock(NodeReactor... nodeReactors) {
-        super(nodeReactors);
+    public NodeContainerMock() {
+        super();
     }
 
     @Override
-    protected void enqueueErrorResponse(TcpMessage message, TcpSocketsPort tcpSocketsPort, TcpMessage tcpMessage) throws IOException {
+    protected void enqueueErrorResponse(TcpMessage message, TcpMessagePort tcpMessagePort, TcpMessage tcpMessage) throws IOException {
         this.enqueuedTcpMessage = tcpMessage;
     }
 }

@@ -4,7 +4,7 @@ import com.nanosai.gridops.iap.IapMessageBase;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.mem.MemoryBlock;
 import com.nanosai.gridops.tcp.TcpMessage;
-import com.nanosai.gridops.tcp.TcpSocketsPort;
+import com.nanosai.gridops.tcp.TcpMessagePort;
 
 import java.io.IOException;
 
@@ -23,23 +23,19 @@ public class NodeReactorMock extends NodeReactor {
     }
 
     public NodeReactorMock(byte[] nodeId){
-        super(nodeId, new ProtocolReactor[0]);
-    }
-
-    public NodeReactorMock(byte[] nodeId, ProtocolReactor... protocolReactors) {
-        super(nodeId, protocolReactors);
+        super(nodeId);
     }
 
     @Override
-    public void react(MemoryBlock message, IonReader reader, IapMessageBase messageBase, TcpSocketsPort tcpSocketsPort) throws Exception {
+    public void react(MemoryBlock message, IonReader reader, IapMessageBase messageBase, TcpMessagePort tcpMessagePort) throws Exception {
         this.handleMessageCalled = true;
         if(callSuperReact){
-            super.react(message, reader, messageBase, tcpSocketsPort);
+            super.react(message, reader, messageBase, tcpMessagePort);
         }
     }
 
     @Override
-    protected void enqueueErrorResponse(TcpMessage message, TcpSocketsPort tcpSocketsPort, TcpMessage tcpMessage) throws IOException {
+    protected void enqueueErrorResponse(TcpMessage message, TcpMessagePort tcpMessagePort, TcpMessage tcpMessage) throws IOException {
         this.enqueuedTcpMessage = tcpMessage;
     }
 }

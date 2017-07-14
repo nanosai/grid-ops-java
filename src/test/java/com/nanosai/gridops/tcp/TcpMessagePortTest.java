@@ -1,7 +1,6 @@
 package com.nanosai.gridops.tcp;
 
 import com.nanosai.gridops.mem.MemoryAllocator;
-import com.nanosai.gridops.mem.MemoryBlock;
 import com.nanosai.gridops.mem.MemoryBlockBatch;
 import org.junit.Test;
 
@@ -14,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Created by jjenkov on 10-09-2016.
  */
-public class TcpSocketsPortTest {
+public class TcpMessagePortTest {
 
     public void testConstructors(){
 
@@ -29,7 +28,7 @@ public class TcpSocketsPortTest {
         MemoryAllocator writeMemoryAllocator = new MemoryAllocator(
                 new byte[1024 * 1024], new long[1024], (allocator) -> new TcpMessage(allocator));
 
-        TcpSocketsPort proxy = new TcpSocketsPort(blockingQueue, messageReaderFactory,
+        TcpMessagePort proxy = new TcpMessagePort(blockingQueue, messageReaderFactory,
                 readMemoryAllocator, writeMemoryAllocator);
 
 

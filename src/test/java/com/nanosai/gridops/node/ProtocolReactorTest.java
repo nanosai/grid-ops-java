@@ -7,11 +7,8 @@ import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.mem.MemoryBlock;
-import com.nanosai.gridops.tcp.TcpMessage;
-import com.nanosai.gridops.tcp.TcpSocketsPort;
+import com.nanosai.gridops.tcp.TcpMessagePort;
 import org.junit.Test;
-
-import java.io.IOException;
 
 import static org.junit.Assert.*;
 
@@ -26,17 +23,18 @@ public class ProtocolReactorTest {
 
         MessageReactor messageReactor0 = new MessageReactor(new  byte[]{0}) {
             @Override
-            public void react(MemoryBlock message, IonReader reader, IapMessageBase messageBase, TcpSocketsPort tcpSocketsPort) {
+            public void react(MemoryBlock message, IonReader reader, IapMessageBase messageBase, TcpMessagePort tcpSocketsPort) {
             }
         };
 
         MessageReactor messageReactor1 = new MessageReactor(new byte[]{1}) {
             @Override
-            public void react(MemoryBlock message, IonReader reader, IapMessageBase messageBase, TcpSocketsPort tcpSocketsPort) {
+            public void react(MemoryBlock message, IonReader reader, IapMessageBase messageBase, TcpMessagePort tcpSocketsPort) {
             }
         };
 
-        ProtocolReactor protocolReactor = new ProtocolReactor(new byte[]{0}, new byte[]{0}, messageReactor0, messageReactor1);
+        ProtocolReactor protocolReactor = new ProtocolReactor(new byte[]{0}, new byte[]{0});
+        protocolReactor.addMessageReactor(messageReactor0).addMessageReactor(messageReactor1);
 
         assertSame(messageReactor0, protocolReactor.findMessageReactor(new byte[]{0}, 0, 1));
         assertSame(messageReactor1, protocolReactor.findMessageReactor(new byte[]{1}, 0, 1));
@@ -50,11 +48,12 @@ public class ProtocolReactorTest {
         MessageReactorMock messageHandlerMock = new MessageReactorMock(messageType);
         assertFalse(messageHandlerMock.handleMessageCalled);
 
-        ProtocolReactorMock protocolReactor = new ProtocolReactorMock(new byte[]{0}, new byte[]{0}, messageHandlerMock);
+        ProtocolReactorMock protocolReactor = new ProtocolReactorMock(new byte[]{0}, new byte[]{0});
+        protocolReactor.addMessageReactor(messageHandlerMock);
 
         byte[] dest = new byte[128];
 
-        TcpSocketsPort tcpSocketsPort = GridOps.tcpSocketsPortBuilder().build();
+        TcpMessagePort tcpMessagePort = GridOps.tcpMessagePortBuilder().build();
 
         int length = writeMessage(messageType, dest);
 
@@ -65,7 +64,7 @@ public class ProtocolReactorTest {
         IapMessageBase messageBase = new IapMessageBase();
         messageBase.read(reader);
 
-        protocolReactor.react(null, reader, messageBase, tcpSocketsPort);
+        protocolReactor.react(null, reader, messageBase, tcpMessagePort);
         assertTrue(messageHandlerMock.handleMessageCalled);
 
         length = writeMessage(new byte[]{123}, dest);
@@ -75,7 +74,7 @@ public class ProtocolReactorTest {
         messageBase.read(reader);
 
         messageHandlerMock.handleMessageCalled = false;
-        protocolReactor.react(null, reader, messageBase, tcpSocketsPort);
+        protocolReactor.react(null, reader, messageBase, tcpMessagePort);
 
         assertFalse(messageHandlerMock.handleMessageCalled);
 
@@ -107,12 +106,12 @@ public class ProtocolReactorTest {
     public void testUnsupportedMessageType() throws Exception {
         ProtocolReactorMock protocolReactor = new ProtocolReactorMock(new byte[]{0}, new byte[]{0});
 
-        TcpSocketsPort tcpSocketsPort = GridOps.tcpSocketsPortBuilder().build();
+        TcpMessagePort tcpMessagePort = GridOps.tcpMessagePortBuilder().build();
 
         IapMessageBase iapMessageBase = new IapMessageBase();
         iapMessageBase.setMessageType(new byte[99]);
 
-        protocolReactor.react(null, null, iapMessageBase, tcpSocketsPort);
+        protocolReactor.react(null, null, iapMessageBase, tcpMessagePort);
 
         assertNotNull(protocolReactor.enqueuedTcpMessage);
         assertFalse(protocolReactor.enqueuedTcpMessage.startIndex == protocolReactor.enqueuedTcpMessage.writeIndex);

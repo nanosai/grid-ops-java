@@ -6,7 +6,8 @@ import com.nanosai.gridops.iap.error.ErrorMessageConstants;
 import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
-import com.nanosai.gridops.tcp.TcpSocketsPort;
+import com.nanosai.gridops.mem.MemoryBlock;
+import com.nanosai.gridops.tcp.TcpMessagePort;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -24,9 +25,10 @@ public class NodeContainerTest {
         node0.callSuperReact(false);
         assertFalse(node0.handleMessageCalled);
 
-        TcpSocketsPort tcpSocketsPort = GridOps.tcpSocketsPortBuilder().build();
+        TcpMessagePort tcpMessagePort = GridOps.tcpMessagePortBuilder().build();
 
-        NodeContainerMock nodeContainer = new NodeContainerMock(node0);
+        NodeContainerMock nodeContainer = new NodeContainerMock();
+        nodeContainer.addNodeReactor(node0);
 
         byte[] dest = new byte[1024];
 
@@ -39,14 +41,14 @@ public class NodeContainerTest {
 
         message.read(reader);
 
-        nodeContainer.react(null, reader, message, tcpSocketsPort);
+        nodeContainer.react((MemoryBlock) null, reader, message, tcpMessagePort);
         assertTrue(node0.handleMessageCalled);
 
         node0.handleMessageCalled = false;
         byte[] unknownNodeId = new byte[]{123};
         writeMessage(unknownNodeId, dest);
 
-        nodeContainer.react(null, reader, message, tcpSocketsPort);
+        nodeContainer.react((MemoryBlock) null, reader, message, tcpMessagePort);
         assertFalse(node0.handleMessageCalled);
 
     }
@@ -73,12 +75,12 @@ public class NodeContainerTest {
     public void testUnsupportedProtocol() throws Exception {
         NodeContainerMock nodeContainer = new NodeContainerMock();
 
-        TcpSocketsPort tcpSocketsPort = GridOps.tcpSocketsPortBuilder().build();
+        TcpMessagePort tcpMessagePort = GridOps.tcpMessagePortBuilder().build();
 
         IapMessageBase iapMessageBase = new IapMessageBase();
         iapMessageBase.setReceiverNodeId     (new byte[99]);
 
-        nodeContainer.react(null, null, iapMessageBase, tcpSocketsPort);
+        nodeContainer.react((MemoryBlock) null, null, iapMessageBase, tcpMessagePort);
 
         assertNotNull(nodeContainer.enqueuedTcpMessage);
         assertFalse(nodeContainer.enqueuedTcpMessage.startIndex == nodeContainer.enqueuedTcpMessage.writeIndex);

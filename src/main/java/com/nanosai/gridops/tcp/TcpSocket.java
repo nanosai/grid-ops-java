@@ -193,7 +193,7 @@ public class TcpSocket {
      * Closes the TcpSocket + underlying SocketChannel, and frees up all queued inbound and outbound
      * messages.
      *
-     * todo maybe split into three methods: close() + free() + closeAndFree()
+     * todo maybe split into three methods: closeOutputStream() + free() + closeAndFree()
      */
     public void closeAndFree() throws IOException {
         if(this.messageReader != null){

@@ -14,8 +14,13 @@ import com.nanosai.gridops.node.NodeContainer;
 import com.nanosai.gridops.node.NodeReactor;
 import com.nanosai.gridops.node.ProtocolReactor;
 import com.nanosai.gridops.tcp.*;
+import com.nanosai.gridops.threadloop.IThreadLoopActor;
+import com.nanosai.gridops.threadloop.ThreadLoopBackoff;
+import com.nanosai.gridops.threadloop.ThreadLoopDefaultImpl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -73,10 +78,6 @@ public class GridOps {
         return new MemoryAllocator(new byte[sizeInBytes], new long[maxFreeBlocks], memoryBlockFactory);
     }
 
-    public static TcpSocketsPortBuilder tcpSocketsPortBuilder() {
-        return new TcpSocketsPortBuilder();
-    }
-
 
     public static class TcpServerBuilder {
         private int tcpPort = 1111;
@@ -113,7 +114,11 @@ public class GridOps {
     }
 
 
-    public static class TcpSocketsPortBuilder {
+    public static TcpMessagePortBuilder tcpMessagePortBuilder() {
+        return new TcpMessagePortBuilder();
+    }
+
+    public static class TcpMessagePortBuilder {
         private int incomingMessageBufferSize = 16 * 1024 * 1024;
         private int incomingMessageBufferFreeBlockMaxCount = 128 * 1024;
         private IMemoryBlockFactory incomingMessageMemoryBlockFactory = null;
@@ -128,64 +133,64 @@ public class GridOps {
 
         private BlockingQueue newSocketsQueue = null;
 
-        public TcpSocketsPortBuilder incomingMessageBufferSize(int incomingMessageBufferSize) {
+        public TcpMessagePortBuilder incomingMessageBufferSize(int incomingMessageBufferSize) {
             this.incomingMessageBufferSize = incomingMessageBufferSize;
             return this;
         }
 
-        public TcpSocketsPortBuilder incomingMessageBufferFreeBlockMaxCount(int incomingMessageBufferFreeBlockMaxCount) {
+        public TcpMessagePortBuilder incomingMessageBufferFreeBlockMaxCount(int incomingMessageBufferFreeBlockMaxCount) {
             this.incomingMessageBufferFreeBlockMaxCount = incomingMessageBufferFreeBlockMaxCount;
             return this;
         }
 
-        public TcpSocketsPortBuilder incomingMessageMemoryBlockFactory(IMemoryBlockFactory incomingMessageMemoryBlockFactory) {
+        public TcpMessagePortBuilder incomingMessageMemoryBlockFactory(IMemoryBlockFactory incomingMessageMemoryBlockFactory) {
             this.incomingMessageMemoryBlockFactory = incomingMessageMemoryBlockFactory;
             return this;
         }
 
-        public TcpSocketsPortBuilder incomingMessageMemoryAllocator(MemoryAllocator incomingMessageMemoryAllocator) {
+        public TcpMessagePortBuilder incomingMessageMemoryAllocator(MemoryAllocator incomingMessageMemoryAllocator) {
             this.incomingMessageMemoryAllocator = incomingMessageMemoryAllocator;
             return this;
         }
 
-        public TcpSocketsPortBuilder setMessageReaderFactory(IMessageReaderFactory messageReaderFactory) {
+        public TcpMessagePortBuilder setMessageReaderFactory(IMessageReaderFactory messageReaderFactory) {
             this.messageReaderFactory = messageReaderFactory;
             return this;
         }
 
-        public TcpSocketsPortBuilder outgoingMessageBufferSize(int outgoingMessageBufferSize) {
+        public TcpMessagePortBuilder outgoingMessageBufferSize(int outgoingMessageBufferSize) {
             this.outgoingMessageBufferSize = outgoingMessageBufferSize;
             return this;
         }
 
-        public TcpSocketsPortBuilder outgoingMessageBufferFreeBlockMaxCount(int outgoingMessageBufferFreeBlockMaxCount) {
+        public TcpMessagePortBuilder outgoingMessageBufferFreeBlockMaxCount(int outgoingMessageBufferFreeBlockMaxCount) {
             this.outgoingMessageBufferFreeBlockMaxCount = outgoingMessageBufferFreeBlockMaxCount;
             return this;
         }
 
-        public TcpSocketsPortBuilder outgoingMessageMemoryBlockFactory(IMemoryBlockFactory outgoingMessageMemoryBlockFactory) {
+        public TcpMessagePortBuilder outgoingMessageMemoryBlockFactory(IMemoryBlockFactory outgoingMessageMemoryBlockFactory) {
             this.outgoingMessageMemoryBlockFactory = outgoingMessageMemoryBlockFactory;
             return this;
         }
 
-        public TcpSocketsPortBuilder outgoingMessageMemoryAllocator(MemoryAllocator outgoingMessageMemoryAllocator) {
+        public TcpMessagePortBuilder outgoingMessageMemoryAllocator(MemoryAllocator outgoingMessageMemoryAllocator) {
             this.outgoingMessageMemoryAllocator = outgoingMessageMemoryAllocator;
             return this;
         }
 
-        public TcpSocketsPortBuilder newSocketsQueue(BlockingQueue blockingQueue) {
+        public TcpMessagePortBuilder newSocketsQueue(BlockingQueue blockingQueue) {
             this.newSocketsQueue = blockingQueue;
             return this;
         }
 
-        public TcpSocketsPortBuilder tcpServer(TcpServer tcpServer){
+        public TcpMessagePortBuilder tcpServer(TcpServer tcpServer){
             newSocketsQueue(tcpServer.getSocketQueue());
             return this;
         }
 
 
 
-        public TcpSocketsPort build() throws IOException {
+        public TcpMessagePort build() throws IOException {
             /*
             if(this.newSocketsQueue == null){
                 throw new RuntimeException("The newSocketsQueue must not be null");
@@ -216,7 +221,7 @@ public class GridOps {
                 this.messageReaderFactory = new IapMessageReaderFactory();
             }
 
-            return new TcpSocketsPort(
+            return new TcpMessagePort(
                     this.newSocketsQueue,
                     this.messageReaderFactory,
                     this.incomingMessageMemoryAllocator,
@@ -227,18 +232,18 @@ public class GridOps {
 
 
     // NodeContainer
-    public static NodeContainer nodeContainer(NodeReactor ... nodeReactors) {
-        return new NodeContainer(nodeReactors);
+    public static NodeContainer nodeContainer() {
+        return new NodeContainer();
     }
 
     // NodeReactor
-    public static NodeReactor nodeReactor(byte[] nodeId, ProtocolReactor ... protocolReactors) {
-        return new NodeReactor(nodeId, protocolReactors);
+    public static NodeReactor nodeReactor(byte[] nodeId) {
+        return new NodeReactor(nodeId);
     }
 
     // ProtocolReactor
-    public static ProtocolReactor protocolReactor(byte[] protocolId, byte[] protocolVersion, MessageReactor... messageReactors){
-        return new ProtocolReactor(protocolId, protocolVersion, messageReactors);
+    public static ProtocolReactor protocolReactor(byte[] protocolId, byte[] protocolVersion){
+        return new ProtocolReactor(protocolId, protocolVersion);
     }
 
 
@@ -248,11 +253,11 @@ public class GridOps {
 
     public static class HostBuilder {
 
-        private TcpSocketsPort tcpSocketsPort;
+        private TcpMessagePort tcpMessagePort;
         private NodeContainer  nodeContainer;
 
-        public HostBuilder tcpSocketsPort(TcpSocketsPort port){
-            this.tcpSocketsPort = port;
+        public HostBuilder tcpSocketsPort(TcpMessagePort port){
+            this.tcpMessagePort = port;
             return this;
         }
 
@@ -262,7 +267,7 @@ public class GridOps {
         }
 
         public Host build() {
-            return new Host(this.tcpSocketsPort, this.nodeContainer);
+            return new Host(this.tcpMessagePort, this.nodeContainer);
         }
 
         public Host buildAndStart() {
@@ -272,6 +277,49 @@ public class GridOps {
         }
 
 
+    }
+
+
+    public static ThreadLoopBuilder threadLoopBuilder() {
+        return new ThreadLoopBuilder();
+    }
+    public static class ThreadLoopBuilder  {
+
+        private List<IThreadLoopActor> threadLoopActorList = new ArrayList<>();
+        private ThreadLoopBackoff threadLoopBackoff = null;
+
+        public ThreadLoopBuilder addThreadLoopActor(IThreadLoopActor actor){
+            this.threadLoopActorList.add(actor);
+            return this;
+        }
+
+        public ThreadLoopBuilder backoff() {
+            this.threadLoopBackoff = new ThreadLoopBackoff(1000, 50000, 10);
+            return this;
+        }
+
+        public ThreadLoopBuilder backoff(int sleepTimeMin, int sleepTimeMax, int step) {
+            this.threadLoopBackoff = new ThreadLoopBackoff(sleepTimeMin, sleepTimeMax, step);
+            return this;
+        }
+
+
+
+
+        public ThreadLoopDefaultImpl build(){
+            IThreadLoopActor[] actors = new IThreadLoopActor[threadLoopActorList.size()];
+            for(int i=0; i<threadLoopActorList.size(); i++){
+                actors[i] = threadLoopActorList.get(i);
+            }
+
+            return new ThreadLoopDefaultImpl(this.threadLoopBackoff, actors);
+        }
+
+        public ThreadLoopDefaultImpl buildAndStart() {
+            ThreadLoopDefaultImpl threadLoop = build();
+            new Thread(threadLoop).start();
+            return threadLoop;
+        }
     }
 
 

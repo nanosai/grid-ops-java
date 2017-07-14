@@ -1,17 +1,17 @@
 package com.nanosai.gridops.tcp;
 
 /**
- * An ISocketManager helps manage the sockets (connections) managed by a TcpSocketsPort.
+ * An ISocketManager helps manage the sockets (connections) managed by a TcpMessagePort.
  */
 public interface ISocketManager {
 
 
     /**
-     * Called when the ISocketManager is first set on TcpSocketsPort.
+     * Called when the ISocketManager is first set on TcpMessagePort.
      *
-     * @param tcpSocketsPort The TcpSocketsPort the ISocketManager is added to.
+     * @param tcpMessagePort The TcpMessagePort the ISocketManager is added to.
      */
-    public void init(TcpSocketsPort tcpSocketsPort);
+    public void init(TcpMessagePort tcpMessagePort);
 
     /**
      * Called when a new TcpSocket is added to the TcpSocketManager
@@ -22,8 +22,8 @@ public interface ISocketManager {
 
 
     /**
-     * Called after a TcpSocket is closed by the TcpSocketsPort
-     * @param tcpSocket The tcpSocket that was just closed the the TcpSocketsPort
+     * Called after a TcpSocket is closed by the TcpMessagePort
+     * @param tcpSocket The tcpSocket that was just closed the the TcpMessagePort
      */
     public void socketClosed(TcpSocket tcpSocket);
 

@@ -15,7 +15,7 @@ import java.util.concurrent.BlockingQueue;
 /**
  * Created by jjenkov on 06-05-2016.
  */
-public class TcpSocketsPort {
+public class TcpMessagePort {
 
 
 
@@ -61,12 +61,12 @@ public class TcpSocketsPort {
 
 
     // ***************************
-    // TCP Socket close oriented variables.
+    // TCP Socket closeOutputStream oriented variables.
     // ***************************
     private List<TcpSocket> socketsToBeClosed = new ArrayList<>();
 
 
-    public TcpSocketsPort(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory,
+    public TcpMessagePort(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory,
                           MemoryAllocator inboundMessageAllocator, MemoryAllocator outboundMessageAllocator) throws IOException {
         this.socketQueue          = socketQueue;
         this.messageReaderFactory = messageReaderFactory;
@@ -75,7 +75,7 @@ public class TcpSocketsPort {
         init();
     }
 
-    public TcpSocketsPort(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory) throws IOException {
+    public TcpMessagePort(BlockingQueue<SocketChannel> socketQueue, IMessageReaderFactory messageReaderFactory) throws IOException {
         this(socketQueue,
              messageReaderFactory,
              new MemoryAllocator(new byte[36 * 1024 * 1024], new long[10240],

@@ -6,7 +6,7 @@ import com.nanosai.gridops.iap.error.ErrorMessageConstants;
 import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
-import com.nanosai.gridops.tcp.TcpSocketsPort;
+import com.nanosai.gridops.tcp.TcpMessagePort;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -22,8 +22,9 @@ public class NodeReactorTest {
         ProtocolReactorMock protocolHandlerMock = new ProtocolReactorMock(new byte[]{2}, new byte[]{0});
         assertFalse(protocolHandlerMock.handleMessageCalled);
 
-        TcpSocketsPort tcpSocketsPort = GridOps.tcpSocketsPortBuilder().build();
-        NodeReactorMock nodeReactor = new NodeReactorMock(new byte[]{0}, protocolHandlerMock);
+        TcpMessagePort tcpMessagePort = GridOps.tcpMessagePortBuilder().build();
+        NodeReactorMock nodeReactor = new NodeReactorMock(new byte[]{0});
+        nodeReactor.addProtocolReactor(protocolHandlerMock);
 
         byte[] dest = new byte[128];
 
@@ -37,7 +38,7 @@ public class NodeReactorTest {
         messageBase.read(reader);
 
         nodeReactor.callSuperReact(true);
-        nodeReactor.react(null, reader, messageBase, tcpSocketsPort);
+        nodeReactor.react(null, reader, messageBase, tcpMessagePort);
         assertTrue(protocolHandlerMock.handleMessageCalled);
 
         length = writeMessage(new byte[]{123}, new byte[]{0}, dest);
@@ -46,7 +47,7 @@ public class NodeReactorTest {
         protocolHandlerMock.handleMessageCalled = false;
 
 
-        nodeReactor.react(null, reader, messageBase, tcpSocketsPort);
+        nodeReactor.react(null, reader, messageBase, tcpMessagePort);
         assertFalse(protocolHandlerMock.handleMessageCalled);
 
         length = writeMessage(new byte[]{2}, new byte[]{1}, dest);
@@ -54,7 +55,7 @@ public class NodeReactorTest {
         reader.nextParse();
         protocolHandlerMock.handleMessageCalled = false;
 
-        nodeReactor.react(null, reader, messageBase, tcpSocketsPort);
+        nodeReactor.react(null, reader, messageBase, tcpMessagePort);
         assertFalse(protocolHandlerMock.handleMessageCalled);
     }
 
@@ -83,13 +84,13 @@ public class NodeReactorTest {
         NodeReactorMock nodeReactor = new NodeReactorMock(new byte[]{0});
         nodeReactor.callSuperReact(true);
 
-        TcpSocketsPort tcpSocketsPort = GridOps.tcpSocketsPortBuilder().build();
+        TcpMessagePort tcpMessagePort = GridOps.tcpMessagePortBuilder().build();
 
         IapMessageBase iapMessageBase = new IapMessageBase();
         iapMessageBase.setSemanticProtocolId     (new byte[99]);
         iapMessageBase.setSemanticProtocolVersion(new byte[0]);
 
-        nodeReactor.react(null, null, iapMessageBase, tcpSocketsPort);
+        nodeReactor.react(null, null, iapMessageBase, tcpMessagePort);
 
         assertNotNull(nodeReactor.enqueuedTcpMessage);
         assertFalse(nodeReactor.enqueuedTcpMessage.startIndex == nodeReactor.enqueuedTcpMessage.writeIndex);

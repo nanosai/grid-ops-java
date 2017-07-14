@@ -1,5 +1,6 @@
 package com.nanosai.gridops.iap;
 
+import com.nanosai.gridops.ion.codec.IonCodec;
 import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
@@ -7,17 +8,7 @@ import com.nanosai.gridops.ion.write.IonWriter;
 /**
  * Created by jjenkov on 26-11-2016.
  */
-public class IapMessageBase implements IIapMessageCodec {
-
-    private static final byte[] receiverNodeIdKey              = new byte[] {IapMessageKeys.RECEIVER_NODE_ID};
-    private static final byte[] receiverNodeIdCodeKey          = new byte[] {IapMessageKeys.RECEIVER_NODE_ID_CODE};
-    private static final byte[] semanticProtocolIdKey          = new byte[] {IapMessageKeys.SEMANTIC_PROTOCOL_ID};
-    private static final byte[] semanticProtocolIdCodeKey      = new byte[] {IapMessageKeys.SEMANTIC_PROTOCOL_ID_CODE};
-    private static final byte[] semanticProtocolVersionKey     = new byte[] {IapMessageKeys.SEMANTIC_PROTOCOL_VERSION};
-    private static final byte[] semanticProtocolVersionCodeKey = new byte[] {IapMessageKeys.SEMANTIC_PROTOCOL_VERSION_CODE};
-    private static final byte[] messageTypeKey                 = new byte[] {IapMessageKeys.MESSAGE_TYPE};
-    private static final byte[] messageTypeCodeKey             = new byte[] {IapMessageKeys.MESSAGE_TYPE_CODE};
-
+public class IapMessageBase implements IonCodec {
 
 
     // receiver system id
@@ -40,6 +31,20 @@ public class IapMessageBase implements IIapMessageCodec {
     public int    messageTypeOffset = 0;
     public int    messageTypeLength = 0;
 
+
+    public IapMessageBase() {
+    }
+
+    public IapMessageBase(byte[] receiverNodeIdSource, byte[] semanticProtocolIdSource, byte[] semanticProtocolVersionSource, byte[] messageTypeSource) {
+        this.receiverNodeIdSource = receiverNodeIdSource;
+        this.receiverNodeIdLength = receiverNodeIdSource.length;
+        this.semanticProtocolIdSource = semanticProtocolIdSource;
+        this.semanticProtocolIdLength = semanticProtocolIdSource.length;
+        this.semanticProtocolVersionSource = semanticProtocolVersionSource;
+        this.semanticProtocolVersionLength = semanticProtocolVersionSource.length;
+        this.messageTypeSource = messageTypeSource;
+        this.messageTypeLength = messageTypeSource.length;
+    }
 
     public void setReceiverNodeId(byte[] receiverNodeId){
         this.receiverNodeIdSource = receiverNodeId;
@@ -155,7 +160,7 @@ public class IapMessageBase implements IIapMessageCodec {
     */
 
     public void writeReceiverNodeId(IonWriter writer){
-        writer.writeKeyShort(receiverNodeIdKey);
+        writer.writeKeyShort((byte) IapMessageKeys.RECEIVER_NODE_ID);
         writer.writeBytes   (this.receiverNodeIdSource, this.receiverNodeIdOffset, this.receiverNodeIdLength);
     }
 
@@ -167,7 +172,7 @@ public class IapMessageBase implements IIapMessageCodec {
     */
 
     public void writeSemanticProtocolId(IonWriter writer){
-        writer.writeKeyShort(semanticProtocolIdKey);
+        writer.writeKeyShort((byte) IapMessageKeys.SEMANTIC_PROTOCOL_ID);
         writer.writeBytes   (this.semanticProtocolIdSource, this.semanticProtocolIdOffset, this.semanticProtocolIdLength);
     }
 
@@ -179,7 +184,7 @@ public class IapMessageBase implements IIapMessageCodec {
     */
 
     public void writeSemanticProtocolVersion(IonWriter writer){
-        writer.writeKeyShort(semanticProtocolVersionKey);
+        writer.writeKeyShort((byte) IapMessageKeys.SEMANTIC_PROTOCOL_VERSION);
         writer.writeBytes   (this.semanticProtocolVersionSource, this.semanticProtocolVersionOffset, this.semanticProtocolVersionLength);
     }
 
@@ -191,7 +196,7 @@ public class IapMessageBase implements IIapMessageCodec {
     */
 
     public void writeMessageType(IonWriter writer){
-        writer.writeKeyShort(messageTypeKey);
+        writer.writeKeyShort((byte) IapMessageKeys.MESSAGE_TYPE);
         writer.writeBytes   (this.messageTypeSource, this.messageTypeOffset, this.messageTypeLength);
     }
 

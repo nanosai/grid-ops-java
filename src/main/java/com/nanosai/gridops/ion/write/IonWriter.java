@@ -1,5 +1,6 @@
 package com.nanosai.gridops.ion.write;
 
+import com.nanosai.gridops.ion.codec.IonCodec;
 import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.ion.IonUtil;
 import com.nanosai.gridops.ion.types.Key;
@@ -633,6 +634,12 @@ public class IonWriter {
         this.index += length;
     }
 
+    public void writeKeyShort(byte value){
+        this.dest[this.index++] = (byte) (255 & ((IonFieldTypes.KEY_SHORT << 4) | 1));
+        this.dest[this.index++] = value;
+    }
+
+
     public void writeKeyShort(Key key){
         if(key.source == null){
             this.dest[this.index++] = (byte) (255 & (IonFieldTypes.KEY_SHORT << 4));
@@ -733,6 +740,42 @@ public class IonWriter {
             this.dest[this.index++] = complexTypeVersion[i];
         }
 
+    }
+
+    public void writeIapMessage(int lengthLength, IonCodec messageBase){
+        writeObjectBeginPush(lengthLength);
+
+        messageBase.write(this);
+
+        writeObjectEndPop();
+    }
+
+    public void writeIapMessage(int lengthLength, IonCodec messageBase, MemoryBlock memoryBlock){
+        writeObjectBeginPush(lengthLength);
+
+        messageBase.write(this);
+
+        writeObjectEndPop();
+        memoryBlock.writeIndex = this.index;
+    }
+
+    public void writeIapMessage(int lengthLength, IonCodec messageBase, IonCodec messageExtension, MemoryBlock memoryBlock){
+        writeObjectBeginPush(lengthLength);
+
+        messageBase.write(this);
+        messageExtension.write(this);
+
+        writeObjectEndPop();
+        memoryBlock.writeIndex = this.index;
+    }
+
+    public void writeIapMessage(int lengthLength, IonCodec messageBase, IonCodec messageExtension){
+        writeObjectBeginPush(lengthLength);
+
+        messageBase.write(this);
+        messageExtension.write(this);
+
+        writeObjectEndPop();
     }
 
 

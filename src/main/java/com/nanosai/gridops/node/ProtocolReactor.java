@@ -7,9 +7,11 @@ import com.nanosai.gridops.ion.read.IonReader;
 import com.nanosai.gridops.ion.write.IonWriter;
 import com.nanosai.gridops.mem.MemoryBlock;
 import com.nanosai.gridops.tcp.TcpMessage;
-import com.nanosai.gridops.tcp.TcpSocketsPort;
+import com.nanosai.gridops.tcp.TcpMessagePort;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by jjenkov on 23-09-2016.
@@ -19,25 +21,31 @@ public class ProtocolReactor {
     public byte[] protocolId;
     public byte[] protocolVersion;
 
-    private MessageReactor[] messageReactors = null;
+    private List<MessageReactor> messageReactors = new ArrayList<>();
+
     private IapMessageBase   iapMessageBase  = new IapMessageBase();
     private ErrorResponse    errorResponse   = new ErrorResponse();
     private IonWriter        ionWriter       = new IonWriter().setNestedFieldStack(new int[4]);
 
 
-    public ProtocolReactor(byte[] protocolId, byte[] protocolVersion, MessageReactor... messageReactors) {
+    public ProtocolReactor(byte[] protocolId, byte[] protocolVersion) {
         this.protocolId = protocolId;
         this.protocolVersion = protocolVersion;
-        this.messageReactors = messageReactors;
     }
 
-    public void react(MemoryBlock message, IonReader reader, IapMessageBase messageBase, TcpSocketsPort tcpSocketsPort) throws Exception {
+    public ProtocolReactor addMessageReactor(MessageReactor messageReactor){
+        this.messageReactors.add(messageReactor);
+        return this;
+    }
+
+    public void react(MemoryBlock message, IonReader reader, IapMessageBase messageBase, TcpMessagePort tcpMessagePort) throws Exception {
         if(messageBase.messageTypeLength > 0){
             MessageReactor messageReactor = findMessageReactor(messageBase.messageTypeSource, messageBase.messageTypeOffset, messageBase.messageTypeLength);
             if(messageReactor != null){
-                messageReactor.react(message, reader, messageBase, tcpSocketsPort);
+                //System.out.println("Found MessageReactor");
+                messageReactor.react(message, reader, messageBase, tcpMessagePort);
             } else {
-                sendErrorResponse((TcpMessage) message, tcpSocketsPort);
+                sendErrorResponse((TcpMessage) message, tcpMessagePort);
             }
         }
     }
@@ -50,19 +58,19 @@ public class ProtocolReactor {
      * @return The message handler matching the given message type, or null if no message handler found.
      */
     protected MessageReactor findMessageReactor(byte[] messageType, int offset, int length){
-        for(int i = 0; i< messageReactors.length; i++){
+        for(int i = 0, n=messageReactors.size(); i<n; i++){
             if(NodeUtil.equals(messageType, offset, length,
-                    messageReactors[i].messageType, 0, messageReactors[i].messageType.length)){
-                return messageReactors[i];
+                    messageReactors.get(i).messageType, 0, messageReactors.get(i).messageType.length)){
+                return messageReactors.get(i);
             }
         }
         return null;
     }
 
 
-    protected void sendErrorResponse(TcpMessage message, TcpSocketsPort tcpSocketsPort) throws IOException {
+    protected void sendErrorResponse(TcpMessage message, TcpMessagePort tcpMessagePort) throws IOException {
         //no node reactor found, send error message back
-        TcpMessage responseMessage = tcpSocketsPort.allocateWriteMemoryBlock(1024);
+        TcpMessage responseMessage = tcpMessagePort.allocateWriteMemoryBlock(1024);
         ionWriter.setDestination(responseMessage);
         ionWriter.writeObjectBeginPush(1);
 
@@ -78,11 +86,11 @@ public class ProtocolReactor {
 
         responseMessage.writeIndex = ionWriter.index;
 
-        enqueueErrorResponse(message, tcpSocketsPort, responseMessage);
+        enqueueErrorResponse(message, tcpMessagePort, responseMessage);
     }
 
-    protected void enqueueErrorResponse(TcpMessage message, TcpSocketsPort tcpSocketsPort, TcpMessage responseMessage) throws IOException {
-        tcpSocketsPort.writeNowOrEnqueue(message.tcpSocket, responseMessage);
+    protected void enqueueErrorResponse(TcpMessage message, TcpMessagePort tcpMessagePort, TcpMessage responseMessage) throws IOException {
+        tcpMessagePort.writeNowOrEnqueue(message.tcpSocket, responseMessage);
     }
 
 
