@@ -4,6 +4,8 @@ import com.nanosai.gridops.iap.IapMessageBase;
 import com.nanosai.gridops.ion.IonFieldTypes;
 import com.nanosai.gridops.tcp.TcpMessage;
 
+import java.io.IOException;
+
 /**
  * Generates an API facade class for an IAP semantic protocol.
  */
@@ -20,9 +22,6 @@ public class SemanticProtocolApiGenerator {
 
         MessageDescriptor createAccountResponse = protocolDescriptor.addMessageDescriptor("CreateAccountResponse", new byte[]{1}, MessageDescriptor.RESPONSE_MEP_TYPE);
         createAccountResponse.addFieldDescriptor("status", IonFieldTypes.INT_POS, new byte[]{18});
-
-        //MessageDescriptor createApiKey  = protocolDescriptor.addMessageDescriptor("CreateApiKeyRequest" , new byte[]{1}, MessageDescriptor.REQUEST_MEP_TYPE);
-        //MessageDescriptor createNodeDef = protocolDescriptor.addMessageDescriptor("CreateNodeDefRequest", new byte[]{2}, MessageDescriptor.REQUEST_MEP_TYPE);
 
         StringBuilder builder = new StringBuilder();
         generate(builder, protocolDescriptor);
@@ -47,6 +46,7 @@ public class SemanticProtocolApiGenerator {
 
     private static void generateImports(StringBuilder target) {
         target.append("import com.nanosai.gridops.iap.IapMessageBase;\n");
+        target.append("import com.nanosai.gridops.ion.codec.IonCodec;\n");
         target.append("import com.nanosai.gridops.ion.read.IonReader;\n");
         target.append("import com.nanosai.gridops.ion.write.IonWriter;\n");
         target.append("import com.nanosai.gridops.mem.MemoryBlock;\n");
@@ -55,28 +55,44 @@ public class SemanticProtocolApiGenerator {
         target.append("import com.nanosai.gridops.tcp.TcpMessagePort;\n");
         target.append("import com.nanosai.gridops.tcp.TcpSocket;\n");
         target.append("import java.net.InetSocketAddress;\n");
+        target.append("import java.io.IOException;\n");
         target.append("\n");
     }
 
     private static void generateConstants(StringBuilder target, SemanticProtocolDescriptor protocolDescriptor) {
-        target.append("\n    protected static final byte[] semanticProtocolId = new byte[]{");
-        for(int i=0; i<protocolDescriptor.semanticProtocolId.length; i++){
+        target.append("\n    protected static final byte[] semanticProtocolId = ");
+        appendStringRepOfBytes(target, protocolDescriptor.semanticProtocolId);
+        target.append(";");
+
+        target.append("\n    protected static final byte[] semanticProtocolVersion = ");
+        appendStringRepOfBytes(target, protocolDescriptor.semanticProtocolVersion);
+        target.append(";");
+
+        target.append("\n");
+    }
+
+    private static void appendStringRepOfBytes(StringBuilder target, byte[] byteRep) {
+        target.append("new byte[]{");
+        for(int i=0; i<byteRep.length; i++){
             if(i > 0){
                 target.append(", ");
             }
-            target.append(String.valueOf(protocolDescriptor.semanticProtocolId[i]));
+            target.append(String.valueOf(byteRep[i]));
         }
-        target.append("};");
+        target.append("}");
+    }
 
-
-        target.append("\n    protected static final byte[] semanticProtocolVersion = new byte[]{");
-        for(int i=0; i<protocolDescriptor.semanticProtocolVersion.length; i++){
-            if(i > 0){
-                target.append(", ");
-            }
-            target.append(String.valueOf(protocolDescriptor.semanticProtocolVersion[i]));
+    private static void generateKeyValueConstants(StringBuilder target, MessageDescriptor messageDescriptor) {
+        for (FieldDescriptor fieldDescriptor : messageDescriptor.fieldDescriptors) {
+            target.append("\n    public static final byte[] ");
+            appendFieldKeyConstantName(target, fieldDescriptor.fieldName);
+            target.append(" = ");
+            appendStringRepOfBytes(target, fieldDescriptor.fieldKeyValue);
         }
-        target.append("};").append("\n");
+    }
+
+    private static void appendFieldKeyConstantName(StringBuilder target, String fieldName) {
+        target.append(fieldName).append("Key");
     }
 
     private static void generateFields(StringBuilder target, SemanticProtocolDescriptor protocolDescriptor) {
@@ -107,6 +123,8 @@ public class SemanticProtocolApiGenerator {
 
 
     private static void generateMethods(StringBuilder target, SemanticProtocolDescriptor protocolDescriptor) {
+        generateGeneralSendMethod(target);
+        generateGeneralReceiveMethod(target);
         for(MessageDescriptor messageDescriptor : protocolDescriptor.messageDescriptors){
             if(messageDescriptor.isRequest() || messageDescriptor.isNotificationOut()){
                 generateSendMethod(target, protocolDescriptor, messageDescriptor);
@@ -115,6 +133,21 @@ public class SemanticProtocolApiGenerator {
             }
         }
     }
+
+    private static void generateGeneralSendMethod(StringBuilder target) {
+        target.append("\n\n    public void sendRequest(byte[] receiverId, byte[] messageType, IonCodec requestCodec) throws IOException {");
+        target.append("\n        this.iapRequestBase.setReceiverNodeId(receiverId);");
+        target.append("\n        this.iapRequestBase.setMessageType(messageType);");
+        target.append("\n        TcpMessage outgoingMessage = this.tcpMessagePort.allocateWriteMemoryBlock(1024);");
+        target.append("\n");
+        target.append("\n        this.ionWriter.setDestination(outgoingMessage);");
+        target.append("\n        this.ionWriter.writeObject(2, iapRequestBase, requestCodec, outgoingMessage);");
+        target.append("\n        this.tcpMessagePort.writeNowOrEnqueue(this.serverTcpSocket, outgoingMessage);");
+        target.append("\n        this.tcpMessagePort.writeBlock();");
+        target.append("\n        outgoingMessage.free();");
+        target.append("\n    }");
+    }
+
 
     private static void generateSendMethod(StringBuilder target, SemanticProtocolDescriptor protocolDescriptor, MessageDescriptor messageDescriptor){
         target.append("\n\n    public void ");
@@ -129,22 +162,27 @@ public class SemanticProtocolApiGenerator {
 
         target.append(") throws Exception {");
 
-        target.append("\n        this.iapRequestBase.setReceiverNodeId(new byte[]{0});");
-        target.append("\n        this.iapRequestBase.setMessageType(new byte[]{0});");
-
-        //todo Replace hardcoded memory block size of 1024 - get from somewhere (message descriptor?)
-        target.append("\n        TcpMessage outgoingMessage = this.tcpMessagePort.allocateWriteMemoryBlock(1024);");
-        target.append("\n");
-        target.append("\n        this.ionWriter.setDestination(outgoingMessage);");
-
-        //todo Replace hardcoded lengthLength of 2 with a real lengthLength from somewhere (message descriptor?)
-        target.append("\n        this.ionWriter.writeIapMessage(2, iapRequestBase, createAccountRequest, outgoingMessage);");
-        target.append("\n        this.tcpMessagePort.writeNowOrEnqueue(this.serverTcpSocket, outgoingMessage);");
-        target.append("\n        this.tcpMessagePort.writeBlock();");
-        target.append("\n        outgoingMessage.free();");
-
+        target.append("\n        sendRequest(new byte[]{0}, ");
+        appendStringRepOfBytes(target, messageDescriptor.messageType);
+        target.append(", ");
+        target.append(messageDescriptor.getMessageNameFirstCharLowercase());
+        target.append(");");
         target.append("\n    }");
+    }
 
+    private static void generateGeneralReceiveMethod(StringBuilder target){
+        target.append("\n\n    public void receiveResponse(IonCodec response) throws Exception{");
+        target.append("\n        this.messageBatch.clear();");
+        target.append("\n        this.tcpMessagePort.readBlock(this.messageBatch);");
+        target.append("\n        this.ionReader.setSource(this.messageBatch.blocks[0]);");
+        target.append("\n");
+        target.append("\n        this.ionReader.nextParse().moveInto().nextParse();");
+        target.append("\n        this.iapResponseBase.read(this.ionReader);");
+        target.append("\n        ");
+        target.append("\n        response.read(this.ionReader);");
+        target.append("\n        ");
+        target.append("\n        this.messageBatch.blocks[0].free();");
+        target.append("\n    }");
     }
 
     private static void generateReceiveMethod(StringBuilder target, SemanticProtocolDescriptor protocolDescriptor, MessageDescriptor messageDescriptor){
@@ -159,17 +197,9 @@ public class SemanticProtocolApiGenerator {
 
         target.append(") throws Exception {");
 
-        //target.append("\n");
-        target.append("\n        this.messageBatch.clear();");
-        target.append("\n        this.tcpMessagePort.readBlock(this.messageBatch);");
-        target.append("\n        this.ionReader.setSource(this.messageBatch.blocks[0]);");
-        target.append("\n        ");
-        target.append("\n        this.ionReader.nextParse().moveInto().nextParse();");
-        target.append("\n        this.iapResponseBase.read(this.ionReader);");
-        target.append("\n");
-        target.append("\n        createAccountResponse.read(this.ionReader);");
-        target.append("\n");
-        target.append("\n        this.messageBatch.blocks[0].free();");
+        target.append("\n        receiveResponse(");
+        target.append(messageDescriptor.getMessageNameFirstCharLowercase());
+        target.append(");");
 
         target.append("\n    }");
 
